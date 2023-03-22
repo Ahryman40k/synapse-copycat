@@ -1,0 +1,22 @@
+
+:host > section {
+
+    display: grid;
+    gap: 1rem;
+    grid-auto-flow: column;
+    grid-auto-columns: 12rem;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 1em;
+    padding: 1rem;
+}
+
+
+
+
+.box {
+    height: 10em;
+    width: 12em;
+    background-color: #111111;
+    scroll-snap-align: start;
+}

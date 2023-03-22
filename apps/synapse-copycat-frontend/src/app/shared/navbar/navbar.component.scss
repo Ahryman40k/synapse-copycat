@@ -1,0 +1,36 @@
+:host {
+    margin: 0;
+    padding: 0;
+}
+
+.sticky {
+    position: fixed;
+    top: 0;
+    width: 100%;
+  }
+
+.navbar {
+  height: 2em;
+  display: flex;
+  align-items: center;
+
+  gap:2em;
+
+  .spacer {
+    flex-grow: 1;
+  }
+
+  img {
+    margin-left: 1rem;
+    padding: 0.25em;
+    max-height: 1.5em;
+  }
+
+  button {
+    border: none;
+    height: 100%;
+  }
+
+
+
+}

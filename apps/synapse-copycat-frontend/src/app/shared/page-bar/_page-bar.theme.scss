@@ -1,0 +1,7 @@
+@use "sass:map";
+
+@mixin page-bar_theme($theme ) {
+    .pagebar {
+        background-color: map-get($theme, "primary");
+    }
+}
