@@ -5,26 +5,27 @@
   "projectType": "application",
   "targets": {
     "e2e": {
-      "executor": "@nrwl/cypress:cypress",
+      "executor": "@nx/cypress:cypress",
       "options": {
         "cypressConfig": "apps/synapse-copycat-frontend-e2e/cypress.config.ts",
-        "devServerTarget": "synapse-copycat-frontend:serve:development",
+        "devServerTarget": "synapse-copycat:serve:development",
         "testingType": "e2e"
       },
       "configurations": {
         "production": {
-          "devServerTarget": "synapse-copycat-frontend:serve:production"
+          "devServerTarget": "synapse-copycat:serve:production"
         }
       }
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": ["apps/synapse-copycat-frontend-e2e/**/*.{js,ts}"]
-      }
+      "executor": "@nx/eslint:lint",
+      "outputs": [
+        "{options.outputFile}"
+      ]
     }
   },
   "tags": [],
-  "implicitDependencies": ["synapse-copycat-frontend"]
+  "implicitDependencies": [
+    "synapse-copycat"
+  ]
 }

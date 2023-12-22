@@ -1,0 +1,692 @@
+{
+    "pipes": [],
+    "interfaces": [],
+    "injectables": [],
+    "guards": [],
+    "interceptors": [],
+    "classes": [],
+    "directives": [],
+    "components": [],
+    "modules": [],
+    "miscellaneous": {
+        "variables": [
+            {
+                "name": "a",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "extractUsbDevice(UsbDeviceRepository, '1532', '0086')"
+            },
+            {
+                "name": "Camera",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'usb',\n      kind: 'camera',\n      name: 'Razer Kiyo',\n      visual: './assets/images/razer-kiyo.png',\n      id: '3205',\n    },\n  },\n}"
+            },
+            {
+                "name": "config",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/.storybook/main.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "StorybookConfig",
+                "defaultValue": "{\n  stories: ['../src/app/**/*.stories.@(js|jsx|ts|tsx|mdx)'],\n  addons: [\n    '@storybook/addon-essentials',\n    '@storybook/addon-interactions',\n    '@storybook/addon-styling-webpack',\n    '@storybook/addon-actions',\n    '@storybook/addon-a11y',\n    '@storybook/addon-coverage',\n  ],\n  framework: {\n    name: '@storybook/angular',\n    options: {},\n  },\n  // staticDirs: ['../assets'],\n  docs: {\n    autodocs: 'tag',\n    defaultName: 'docs',\n  },\n  features: {\n    // storyStoreV7: false,\n  },\n  core: {\n    disableTelemetry: true,\n  },\n  staticDirs: ['../src'],\n}"
+            },
+            {
+                "name": "connectedDevices",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/app.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Device[]",
+                "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'twinkly',\n    name: 'Twinkly',\n    visual: './assets/images/razer-logo.svg',\n  },\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'goove',\n    name: 'Govee',\n    visual: './assets/images/razer-logo.svg',\n  },\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'nanoleaf',\n    name: 'Nanoleaf',\n    visual: './assets/images/razer-logo.svg',\n  },\n]"
+            },
+            {
+                "name": "connectedDevices",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Device[]",
+                "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'twinkly',\n    name: 'Twinkly',\n    visual: './assets/images/razer-logo.svg',\n  },\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'goove',\n    name: 'Govee',\n    visual: './assets/images/razer-logo.svg',\n  },\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'nanoleaf',\n    name: 'Nanoleaf',\n    visual: './assets/images/razer-logo.svg',\n  },\n]"
+            },
+            {
+                "name": "extractUsbDevice",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "(\n  devices: Map<string, Map<string, Pick<Device, 'kind' | 'name' | 'visual'>>>,\n  deviceGroup: string,\n  deviceId: string\n): Device => {\n  const groupExists = devices.has(deviceGroup);\n  if (!groupExists) throw new Error(`Unkown device group ${deviceGroup}`);\n\n  const deviceIdExists = groupExists && devices.get(deviceGroup)?.has(deviceId);\n  if (deviceIdExists)\n    throw new Error(\n      `Unknown device id ${deviceId} in device group ${deviceGroup}`\n    );\n\n  const device = devices.get(deviceGroup)!.get(deviceId);\n  return {\n    __type: 'device',\n    group: 'usb',\n\n    id: deviceId,\n    ...device,\n  } as Device;\n}"
+            },
+            {
+                "name": "FullyLoaded",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\n  args: {\n    usb: usbDevices,\n    connected: connectedDevices,\n  },\n  parameters: {\n    docs: {\n      description: {\n        story: 'Fully loaded state',\n      },\n    },\n  },\n}"
+            },
+            {
+                "name": "InitialState",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\n  args: {},\n  parameters: {\n    docs: {\n      description: {\n        story:\n          ' default state if no usb devices found or no connected devices found ',\n      },\n    },\n  },\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<DeviceCardComponent>",
+                "defaultValue": "{\n  title: 'Components / Device Card',\n  component: DeviceCardComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<NavbarComponent>",
+                "defaultValue": "{\n  component: NavbarComponent,\n  title: 'Components / Top bar',\n  tags: ['autodocs'],\n  parameters: {\n    layout: 'fullscreen',\n  },\n  argTypes: {\n    onDeviceActivated: {\n      action: (device: Device) => `Activate device ${device.name}`,\n      table: {\n        disable: true,\n      },\n    },\n  },\n}"
+            },
+            {
+                "name": "Mouse",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'usb',\n      kind: 'mouse',\n      name: 'Razer Basilisk Ultimate',\n      visual: './assets/images/razer-basilisk-ultimate.png',\n      id: '3204',\n    },\n  },\n}"
+            },
+            {
+                "name": "preview",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/.storybook/preview.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Preview",
+                "defaultValue": "{}"
+            },
+            {
+                "name": "Primary",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/app.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "object",
+                "defaultValue": "{\n  render: (args: AppComponent) => ({\n    props: args,\n  }),\n  args: {},\n}"
+            },
+            {
+                "name": "Primary",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/page-bar/page-bar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "Template.bind({})"
+            },
+            {
+                "name": "Template",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/page-bar/page-bar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "() => `\n   <synapse-copycat-page-bar> \n  </synapse-copycat-page-bar>\n `"
+            },
+            {
+                "name": "Twinkly",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'connected',\n      kind: 'twinkly',\n      name: 'Twinkly',\n      visual: './assets/images/twinkly.png',\n    },\n  },\n}"
+            },
+            {
+                "name": "usbDevices",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/app.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Device[]",
+                "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'keyboard',\n    name: 'Razer Huntsman Elite',\n    visual: './assets/images/razer-logo.svg',\n    id: '3201',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'camera',\n    name: 'Razer Kiyo',\n    visual: './assets/images/razer-logo.svg',\n    id: '3202',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mousemat',\n    name: 'Razer Goliathus extended Chroma',\n    visual: './assets/images/razer-logo.svg',\n    id: '3203',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mouse',\n    name: 'Razer Basilisk Ultimate',\n    visual: './assets/images/razer-logo.svg',\n    id: '3204',\n  },\n]"
+            },
+            {
+                "name": "usbDevices",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Device[]",
+                "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'keyboard',\n    name: 'Razer Huntsman Elite',\n    visual: './assets/images/razer-logo.svg',\n    id: '3201',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'camera',\n    name: 'Razer Kiyo',\n    visual: './assets/images/razer-logo.svg',\n    id: '3202',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mousemat',\n    name: 'Razer Goliathus extended Chroma',\n    visual: './assets/images/razer-logo.svg',\n    id: '3203',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mouse',\n    name: 'Razer Basilisk Ultimate',\n    visual: 'assets/devices/razer-basilisk-ultimate.png',\n    id: '3204',\n  },\n]"
+            },
+            {
+                "name": "WithConnectedDevicesLoaded",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\n  args: {\n    connected: connectedDevices,\n  },\n  parameters: {\n    docs: {\n      description: {\n        story: 'State when connected devices found',\n      },\n    },\n  },\n}"
+            },
+            {
+                "name": "WithUsbDevicesLoaded",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\n  args: {\n    usb: usbDevices,\n  },\n  parameters: {\n    docs: {\n      description: {\n        story: 'State when usb devices found',\n      },\n    },\n  },\n}"
+            }
+        ],
+        "functions": [],
+        "typealiases": [
+            {
+                "name": "Story",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "StoryObj<DeviceCardComponent>",
+                "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 183
+            },
+            {
+                "name": "Story",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "StoryObj<NavbarComponent>",
+                "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 183
+            }
+        ],
+        "enumerations": [],
+        "groupedVariables": {
+            "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts": [
+                {
+                    "name": "a",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "extractUsbDevice(UsbDeviceRepository, '1532', '0086')"
+                },
+                {
+                    "name": "connectedDevices",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Device[]",
+                    "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'twinkly',\n    name: 'Twinkly',\n    visual: './assets/images/razer-logo.svg',\n  },\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'goove',\n    name: 'Govee',\n    visual: './assets/images/razer-logo.svg',\n  },\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'nanoleaf',\n    name: 'Nanoleaf',\n    visual: './assets/images/razer-logo.svg',\n  },\n]"
+                },
+                {
+                    "name": "extractUsbDevice",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "(\n  devices: Map<string, Map<string, Pick<Device, 'kind' | 'name' | 'visual'>>>,\n  deviceGroup: string,\n  deviceId: string\n): Device => {\n  const groupExists = devices.has(deviceGroup);\n  if (!groupExists) throw new Error(`Unkown device group ${deviceGroup}`);\n\n  const deviceIdExists = groupExists && devices.get(deviceGroup)?.has(deviceId);\n  if (deviceIdExists)\n    throw new Error(\n      `Unknown device id ${deviceId} in device group ${deviceGroup}`\n    );\n\n  const device = devices.get(deviceGroup)!.get(deviceId);\n  return {\n    __type: 'device',\n    group: 'usb',\n\n    id: deviceId,\n    ...device,\n  } as Device;\n}"
+                },
+                {
+                    "name": "FullyLoaded",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\n  args: {\n    usb: usbDevices,\n    connected: connectedDevices,\n  },\n  parameters: {\n    docs: {\n      description: {\n        story: 'Fully loaded state',\n      },\n    },\n  },\n}"
+                },
+                {
+                    "name": "InitialState",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\n  args: {},\n  parameters: {\n    docs: {\n      description: {\n        story:\n          ' default state if no usb devices found or no connected devices found ',\n      },\n    },\n  },\n}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<NavbarComponent>",
+                    "defaultValue": "{\n  component: NavbarComponent,\n  title: 'Components / Top bar',\n  tags: ['autodocs'],\n  parameters: {\n    layout: 'fullscreen',\n  },\n  argTypes: {\n    onDeviceActivated: {\n      action: (device: Device) => `Activate device ${device.name}`,\n      table: {\n        disable: true,\n      },\n    },\n  },\n}"
+                },
+                {
+                    "name": "usbDevices",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Device[]",
+                    "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'keyboard',\n    name: 'Razer Huntsman Elite',\n    visual: './assets/images/razer-logo.svg',\n    id: '3201',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'camera',\n    name: 'Razer Kiyo',\n    visual: './assets/images/razer-logo.svg',\n    id: '3202',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mousemat',\n    name: 'Razer Goliathus extended Chroma',\n    visual: './assets/images/razer-logo.svg',\n    id: '3203',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mouse',\n    name: 'Razer Basilisk Ultimate',\n    visual: 'assets/devices/razer-basilisk-ultimate.png',\n    id: '3204',\n  },\n]"
+                },
+                {
+                    "name": "WithConnectedDevicesLoaded",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\n  args: {\n    connected: connectedDevices,\n  },\n  parameters: {\n    docs: {\n      description: {\n        story: 'State when connected devices found',\n      },\n    },\n  },\n}"
+                },
+                {
+                    "name": "WithUsbDevicesLoaded",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\n  args: {\n    usb: usbDevices,\n  },\n  parameters: {\n    docs: {\n      description: {\n        story: 'State when usb devices found',\n      },\n    },\n  },\n}"
+                }
+            ],
+            "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts": [
+                {
+                    "name": "Camera",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'usb',\n      kind: 'camera',\n      name: 'Razer Kiyo',\n      visual: './assets/images/razer-kiyo.png',\n      id: '3205',\n    },\n  },\n}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<DeviceCardComponent>",
+                    "defaultValue": "{\n  title: 'Components / Device Card',\n  component: DeviceCardComponent,\n  tags: ['autodocs'],\n}"
+                },
+                {
+                    "name": "Mouse",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'usb',\n      kind: 'mouse',\n      name: 'Razer Basilisk Ultimate',\n      visual: './assets/images/razer-basilisk-ultimate.png',\n      id: '3204',\n    },\n  },\n}"
+                },
+                {
+                    "name": "Twinkly",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'connected',\n      kind: 'twinkly',\n      name: 'Twinkly',\n      visual: './assets/images/twinkly.png',\n    },\n  },\n}"
+                }
+            ],
+            "apps/synapse-copycat/.storybook/main.ts": [
+                {
+                    "name": "config",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/.storybook/main.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "StorybookConfig",
+                    "defaultValue": "{\n  stories: ['../src/app/**/*.stories.@(js|jsx|ts|tsx|mdx)'],\n  addons: [\n    '@storybook/addon-essentials',\n    '@storybook/addon-interactions',\n    '@storybook/addon-styling-webpack',\n    '@storybook/addon-actions',\n    '@storybook/addon-a11y',\n    '@storybook/addon-coverage',\n  ],\n  framework: {\n    name: '@storybook/angular',\n    options: {},\n  },\n  // staticDirs: ['../assets'],\n  docs: {\n    autodocs: 'tag',\n    defaultName: 'docs',\n  },\n  features: {\n    // storyStoreV7: false,\n  },\n  core: {\n    disableTelemetry: true,\n  },\n  staticDirs: ['../src'],\n}"
+                }
+            ],
+            "apps/synapse-copycat/src/app/app.component.stories.ts": [
+                {
+                    "name": "connectedDevices",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/app.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Device[]",
+                    "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'twinkly',\n    name: 'Twinkly',\n    visual: './assets/images/razer-logo.svg',\n  },\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'goove',\n    name: 'Govee',\n    visual: './assets/images/razer-logo.svg',\n  },\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'nanoleaf',\n    name: 'Nanoleaf',\n    visual: './assets/images/razer-logo.svg',\n  },\n]"
+                },
+                {
+                    "name": "Primary",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/app.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "object",
+                    "defaultValue": "{\n  render: (args: AppComponent) => ({\n    props: args,\n  }),\n  args: {},\n}"
+                },
+                {
+                    "name": "usbDevices",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/app.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Device[]",
+                    "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'keyboard',\n    name: 'Razer Huntsman Elite',\n    visual: './assets/images/razer-logo.svg',\n    id: '3201',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'camera',\n    name: 'Razer Kiyo',\n    visual: './assets/images/razer-logo.svg',\n    id: '3202',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mousemat',\n    name: 'Razer Goliathus extended Chroma',\n    visual: './assets/images/razer-logo.svg',\n    id: '3203',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mouse',\n    name: 'Razer Basilisk Ultimate',\n    visual: './assets/images/razer-logo.svg',\n    id: '3204',\n  },\n]"
+                }
+            ],
+            "apps/synapse-copycat/.storybook/preview.ts": [
+                {
+                    "name": "preview",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/.storybook/preview.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Preview",
+                    "defaultValue": "{}"
+                }
+            ],
+            "apps/synapse-copycat/src/app/shared/page-bar/page-bar.component.stories.ts": [
+                {
+                    "name": "Primary",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/page-bar/page-bar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "Template.bind({})"
+                },
+                {
+                    "name": "Template",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/page-bar/page-bar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "() => `\n   <synapse-copycat-page-bar> \n  </synapse-copycat-page-bar>\n `"
+                }
+            ]
+        },
+        "groupedFunctions": {},
+        "groupedEnumerations": {},
+        "groupedTypeAliases": {
+            "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts": [
+                {
+                    "name": "Story",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "StoryObj<DeviceCardComponent>",
+                    "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                }
+            ],
+            "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts": [
+                {
+                    "name": "Story",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "StoryObj<NavbarComponent>",
+                    "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                }
+            ]
+        }
+    },
+    "routes": [],
+    "coverage": {
+        "count": 0,
+        "status": "low",
+        "files": [
+            {
+                "filePath": "apps/synapse-copycat/.storybook/main.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "config",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/.storybook/preview.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "preview",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/app.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "connectedDevices",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/app.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Primary",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/app.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "usbDevices",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Camera",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Mouse",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Twinkly",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "a",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "connectedDevices",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "extractUsbDevice",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "FullyLoaded",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "InitialState",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "usbDevices",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "WithConnectedDevicesLoaded",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "WithUsbDevicesLoaded",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/page-bar/page-bar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Primary",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/page-bar/page-bar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Template",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            }
+        ]
+    }
+}

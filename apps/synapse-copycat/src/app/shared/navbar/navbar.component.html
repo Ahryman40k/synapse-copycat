@@ -1,0 +1,21 @@
+<nav class="navbar sticky">
+  <img src="assets/images/razer-logo.svg" />
+  <button navbar>Synapse</button>
+
+  @for( device of usb; track device.kind ) {
+  <button navbar (click)="showDevicePage(device)">
+    {{ device.kind | uppercase }}
+  </button>
+  } @for( device of connected; track device.kind ){
+  <button navbar (click)="showDevicePage(device)">
+    {{ device.kind | uppercase }}
+  </button>
+  }
+
+  <div class="spacer"></div>
+
+  <ng-icon name="featherSettings"></ng-icon>
+  <ng-icon name="featherMinimize2"></ng-icon>
+  <ng-icon name="featherSquare"></ng-icon>
+  <ng-icon name="featherX"></ng-icon>
+</nav>

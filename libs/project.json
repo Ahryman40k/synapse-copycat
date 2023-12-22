@@ -1,0 +1,56 @@
+
+{
+  "name": "openrazer-wrapper",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "libs/openrazer-wrapper/src",
+  "prefix": "openrazer",
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:browser",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/synapse-copycat-frontend",
+        "index": "apps/synapse-copycat-frontend/src/index.html",
+        "main": "apps/synapse-copycat-frontend/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "apps/synapse-copycat-frontend/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          "apps/synapse-copycat-frontend/src/favicon.ico",
+          "apps/synapse-copycat-frontend/src/assets",
+          "apps/synapse-copycat-frontend/src/assets/images"
+        ],
+        "styles": ["apps/synapse-copycat-frontend/src/styles.scss"],
+        "scripts": []
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "2kb",
+              "maximumError": "4kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "vendorChunk": true,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
+        }
+      },
+      "defaultConfiguration": "production"
+    }
+  },
+  "tags": []
+}
