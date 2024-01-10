@@ -1,7 +1,7 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, Input, inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
-import { connectedSelector, usbSelector } from '../../actions';
+import { deviceGroupSelector } from '../../actions';
 
 @Component({
   selector: 'synapse-copycat-welcome-page',
@@ -16,8 +16,8 @@ export class WelcomePageComponent  {
 
   readonly store = inject(Store);
 
-  readonly usb$ = this.store.select(usbSelector)
-  readonly connected$ = this.store.select(connectedSelector)
+  @Input() usb$ = this.store.select(deviceGroupSelector('usb'))
+  @Input() connected$ = this.store.select(deviceGroupSelector('connected'))
 
 
 }

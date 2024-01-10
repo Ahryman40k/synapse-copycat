@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { combineLatest, delay, from, Observable, take } from 'rxjs';
 import { Device } from '../models';
 
+import { invoke} from '@tauri-apps/api'
+
 function* discoveringUsb(): IterableIterator<Device> {
   yield {
     __type: 'device',
@@ -65,6 +67,10 @@ function* discoveringConnected(): IterableIterator<Device> {
 })
 export class DeviceService {
   discover(): Observable<Device[]> {
+
+    invoke<{ vendor_id: number, product_id: number }[]>( 'devices', {} ).then( devices => console.log(devices))
+
+
     return combineLatest([
       from(discoveringUsb()),
       from(discoveringConnected()),

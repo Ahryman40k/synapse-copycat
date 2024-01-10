@@ -1,14 +1,29 @@
 {
-  "1532": {
-    "0086": {
+  "5426": {
+    "134": {
       "kind": "mouse",
       "name": "Razer Basilisk Ultimate",
       "visual": "assets/devices/razer-basilisk-ultimate.png"
     },
-    "0088": {
+    "136": {
       "kind": "mouse",
       "name": "Razer Basilisk Ultimate",
       "visual": "assets/devices/razer-basilisk-ultimate.png"
+    }, 
+    "226": {
+      "kind": "keyboard",
+      "name": "Razer Huntsman Elite",
+      "visual": "assets/devices/razer-huntsman-elite.png"
+    },
+    "3074": {
+      "kind": "mousemat",
+      "name": "Razer Goliathus Extended",
+      "visual": "assets/devices/razer-goliathus-extended.png"
+    },
+    "3587": {
+      "kind": "camera",
+      "name": "Razer Kiyo",
+      "visual": "assets/devices/razer-kiyo.png"
     }
   }
 }

@@ -3,7 +3,7 @@ import { NavbarComponent } from './shared/navbar/navbar.component';
 import { DefaultLayoutComponent } from './pages/default-layout/default-layout.component';
 import { Store } from '@ngrx/store';
 import { getDevices } from './actions/devices.actions';
-import { connectedSelector, usbSelector } from './actions';
+import { deviceGroupSelector } from './actions';
 import { Device } from './models';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -25,8 +25,8 @@ export class AppComponent implements OnInit {
 
   private readonly store = inject(Store);
 
-  readonly usb$ = this.store.select(usbSelector);
-  readonly connected$ = this.store.select(connectedSelector);
+  readonly usb$ = this.store.select(deviceGroupSelector('usb'));
+  readonly connected$ = this.store.select(deviceGroupSelector('connected'));
 
   ngOnInit(): void {
     this.store.dispatch(getDevices());

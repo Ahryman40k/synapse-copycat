@@ -1,5 +1,5 @@
 import { createReducer, createSelector, on } from '@ngrx/store';
-import { Device } from '../models';
+import { Device, DeviceGroup } from '../models';
 import * as DevicesActions from './devices.actions';
 
 export interface DeviceState {
@@ -36,12 +36,8 @@ export const devicesReducer = createReducer(
 
 export const selectDevices = (state: AppState) => state.devices;
 
-export const usbSelector = createSelector(
+export const deviceGroupSelector = (deviceGroup : DeviceGroup) => createSelector(
   selectDevices,
-  (devices) => devices.usb
+  (devices) => deviceGroup === 'usb' ? devices.usb : devices.connected
 );
 
-export const connectedSelector = createSelector(
-  selectDevices,
-  (devices) => devices.connected
-);

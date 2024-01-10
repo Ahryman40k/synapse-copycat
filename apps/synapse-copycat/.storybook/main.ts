@@ -1,7 +1,5 @@
 import type { StorybookConfig } from '@storybook/angular';
 
-import { Title } from '@storybook/blocks';
-
 const config: StorybookConfig = {
   stories: ['../src/app/**/*.stories.@(js|jsx|ts|tsx|mdx)'],
   addons: [
@@ -16,7 +14,6 @@ const config: StorybookConfig = {
     name: '@storybook/angular',
     options: {},
   },
-  // staticDirs: ['../assets'],
   docs: {
     autodocs: 'tag',
     defaultName: 'docs',
@@ -27,7 +24,9 @@ const config: StorybookConfig = {
   core: {
     disableTelemetry: true,
   },
-  staticDirs: ['../src'],
+  staticDirs: [
+    '../src',
+],
 };
 
 export default config;

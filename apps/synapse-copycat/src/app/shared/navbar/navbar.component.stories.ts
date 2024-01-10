@@ -20,19 +20,26 @@ type DeviceRepository = z.infer<typeof DeviceRepository>;
 const t = {
   '123': {
     a: {
-      p1: 1,
-      p2: 2,
+      a1: 1,
+      a2: 2,
     },
   },
   '456': {
     b: {
-      p1: 2,
-      p2: 3,
+      b1: 2,
+      b2: 3,
     },
   },
 };
 
-type T = keyof (typeof t)['123']['a'];
+
+type T1A = keyof (typeof t)['123']['a'];
+type T1B = keyof (typeof t)['456']['b'];
+
+const t2 = UsbDeviceRepository
+
+type T2A = keyof (typeof t2)['5426']['134'];
+type T2B = keyof (typeof t2)['5426']['136'];
 
 type ExtractGroupKeys<T> = keyof T;
 type ExtractIdKeys<
@@ -44,7 +51,7 @@ type T1 = ExtractGroupKeys<typeof t>;
 type T2 = ExtractIdKeys<typeof t, ExtractGroupKeys<typeof t>>;
 
 const extractUsbDevice = <
-  T extends DeviceRepository,
+  T extends Record<string, any>,
   G extends string & ExtractGroupKeys<T>,
   D extends ExtractIdKeys<T, G>
 >(
@@ -77,7 +84,7 @@ const extractUsbDevice = <
   } as Device;
 };
 
-const a = extractUsbDevice(t, '', '453');
+//const a = extractUsbDevice(t, '', '453');
 
 const usbDevices: Device[] = [
   {

@@ -5,6 +5,12 @@
   "sourceRoot": "apps/synapse-copycat/src",
   "prefix": "synapse-copycat",
   "targets": {
+    "tauri-dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tauri dev"
+      }
+    },
     "build": {
       "executor": "@angular-devkit/build-angular:browser",
       "outputs": [
