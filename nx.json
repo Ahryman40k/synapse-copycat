@@ -23,7 +23,6 @@
         "default",
         "^production",
         "!{projectRoot}/.storybook/**/*",
-        "!{projectRoot}/.storybook/**/*",
         "{projectRoot}/.storybook/**/*",
         "{projectRoot}/tsconfig.storybook.json"
       ],
@@ -75,6 +74,13 @@
     },
     "@nx/angular:component": {
       "style": "scss"
+    }
+  },
+  "tasksRunnerOptions": {
+    "default": {
+      "options": {
+        "cacheableOperations": ["build-storybook"]
+      }
     }
   }
 }
