@@ -1,14 +1,14 @@
 <nav class="navbar sticky">
   <img src="assets/images/razer-logo.svg" />
-  <button navbar>Synapse</button>
+  <button navbar (click)="goHome()">Synapse</button>
 
   @for( device of usb; track device.kind ) {
   <button navbar (click)="showDevicePage(device)">
-    {{ device.kind | uppercase }}
+    {{ device.kind }}
   </button>
   } @for( device of connected; track device.kind ){
   <button navbar (click)="showDevicePage(device)">
-    {{ device.kind | uppercase }}
+    {{ device.kind }}
   </button>
   }
 

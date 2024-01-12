@@ -38,8 +38,13 @@ export class NavbarComponent {
   @Input() connected: Device[] = [];
 
   @Output() onDeviceActivated = new EventEmitter<Device>();
+  @Output() onGoHome = new EventEmitter<void>();
 
   showDevicePage(device: Device): void {
     this.onDeviceActivated.emit(device);
+  }
+
+  goHome(): void {
+    this.onGoHome.emit();
   }
 }

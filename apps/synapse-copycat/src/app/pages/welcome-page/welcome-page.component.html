@@ -1,36 +1,28 @@
-
 @if (usb$ | async; as usb) {
 <h2>Devices</h2>
 <section>
-    @for (u of usb; track u.visual ) {
-        <synapse-copycat-device-card [device]="u"></synapse-copycat-device-card>
-    }
+  @for (u of usb; track u.visual ) {
+  <synapse-copycat-device-card
+    [device]="u"
+    (click)="activateDevice(u)"
+  ></synapse-copycat-device-card>
+  } @empty {
+    <p> No Razer Usb devices detected</p>
+  }
+</section>
+} 
+
+@if (connected$ | async; as connected) {
+<h2>Modules</h2>
+<section>
+  @for (c of connected; track c.visual ) {
+  <synapse-copycat-device-card
+    [device]="c"
+    (click)="activateDevice(c)"
+  ></synapse-copycat-device-card>
+  }
+  @empty {
+    <p> installed supported modules</p>
+  }
 </section>
 }
-
-
-<section>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-</section>
-
-<section>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-</section>

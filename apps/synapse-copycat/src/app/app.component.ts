@@ -34,7 +34,10 @@ export class AppComponent implements OnInit {
   }
 
   activateDevice(device: Device): void {
-    console.log(device.name, 'activated')
     this.router.navigate(['device', device.kind])
+  }
+
+  backToHome(): void {
+    this.router.navigateByUrl('/')
   }
 }
