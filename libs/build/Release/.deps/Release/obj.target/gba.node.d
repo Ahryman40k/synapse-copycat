@@ -1,1 +1,0 @@
-cmd_Release/obj.target/gba.node := g++ -o Release/obj.target/gba.node -shared -pthread -rdynamic -m64  -Wl,-soname=gba.node -Wl,--start-group Release/obj.target/gba/hello_v8.o Release/obj.target/gba/myobject.o -Wl,--end-group 
