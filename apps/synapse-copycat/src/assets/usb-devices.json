@@ -1,16 +1,21 @@
 {
   "5426": {
+    "126": {
+      "kind": "accessory",
+      "name": "Mouse dock",
+      "visual": "assets/devices/razer-mouse-dock.png"
+    },
     "134": {
       "kind": "mouse",
-      "name": "Razer Basilisk Ultimate",
+      "name": "Razer Basilisk Ultimate (wired)",
       "visual": "assets/devices/razer-basilisk-ultimate.png"
     },
     "136": {
       "kind": "mouse",
-      "name": "Razer Basilisk Ultimate",
+      "name": "Razer Basilisk Ultimate (wireless)",
       "visual": "assets/devices/razer-basilisk-ultimate.png"
     }, 
-    "226": {
+    "550": {
       "kind": "keyboard",
       "name": "Razer Huntsman Elite",
       "visual": "assets/devices/razer-huntsman-elite.png"
@@ -21,7 +26,7 @@
       "visual": "assets/devices/razer-goliathus-extended.png"
     },
     "3587": {
-      "kind": "camera",
+      "kind": "streaming",
       "name": "Razer Kiyo",
       "visual": "assets/devices/razer-kiyo.png"
     }

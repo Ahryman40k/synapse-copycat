@@ -6,7 +6,7 @@
     "distDir": "../../dist/synapse-copycat/browser"
   },
   "package": {
-    "productName": "tauri-app",
+    "productName": "synapse-copycat",
     "version": "0.0.0"
   },
   "tauri": {
@@ -35,10 +35,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "resizable": false,
-        "title": "tauri-app",
+        "resizable": true,
+        "title": "The Synapse copycat",
         "width": 1280,
-        "height": 720
+        "height": 1024
       }
     ]
   }

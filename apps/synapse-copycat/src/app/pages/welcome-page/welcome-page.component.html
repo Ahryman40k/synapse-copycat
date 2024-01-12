@@ -1,21 +1,13 @@
-<p>welcome-page works!</p>
 
-Here are usb: {{ (usb$ | async | json ) }} 
-<hr>
-Here are connected:  {{ connected$ | async | json }} 
-
+@if (usb$ | async; as usb) {
+<h2>Devices</h2>
 <section>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
-    <div class="box">dfsgsdfg</div>
+    @for (u of usb; track u.visual ) {
+        <synapse-copycat-device-card [device]="u"></synapse-copycat-device-card>
+    }
 </section>
+}
+
 
 <section>
     <div class="box">dfsgsdfg</div>

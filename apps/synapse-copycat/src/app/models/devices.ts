@@ -26,10 +26,11 @@ export type ConnectedDevice = z.infer<typeof ConnectedDevicesSchema>;
 
 export const usbDevices = [
   'keyboard',
-  'camera',
+  'streaming',
   'mouse',
   'mousemat',
   'headset',
+  'accessory'
 ] as const;
 export const UsbDeviceSchema = constructZodLiteralUnionType(
   usbDevices.map((d) => z.literal(d))

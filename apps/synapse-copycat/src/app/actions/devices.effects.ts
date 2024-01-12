@@ -3,7 +3,7 @@ import { DeviceService } from '../services/device.service';
 
 import * as DeviceActions from './devices.actions';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { of, switchMap, catchError, map } from 'rxjs';
+import { of, switchMap, catchError, map, tap, exhaustMap } from 'rxjs';
 
 @Injectable()
 export class DeviceEffects {
@@ -13,7 +13,7 @@ export class DeviceEffects {
   readonly loadDevices$ = createEffect(() =>
     this.action$.pipe(
       ofType(DeviceActions.getDevices),
-      switchMap(() =>
+      exhaustMap(() =>
         this.deviceService.discover().pipe(
           map((devices) => DeviceActions.DevicesLoadedSuccess({ devices })),
           catchError((error) =>
@@ -21,6 +21,8 @@ export class DeviceEffects {
           )
         )
       )
-    )
+    ),
+    // { functional: true, dispatch: false }
+
   );
 }

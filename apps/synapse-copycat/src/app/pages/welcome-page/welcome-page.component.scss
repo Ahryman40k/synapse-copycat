@@ -1,22 +1,24 @@
+:host {
 
-:host > section {
+  
+  & > h2 {
+    color: white;
+    font-weight: 900;
+    font-size: 1.2em;
+  }
 
+  & > section {
     display: grid;
     gap: 1rem;
-    grid-auto-flow: column;
-    grid-auto-columns: 12rem;
-    overflow-x: scroll;
-    scroll-snap-type: x mandatory;
-    scroll-padding: 1em;
-    padding: 1rem;
+    grid-template-columns: repeat(auto-fill, 320px);
+
+    margin: 1rem;
+  }
 }
 
-
-
-
 .box {
-    height: 10em;
-    width: 12em;
-    background-color: #111111;
-    scroll-snap-align: start;
+  height: 320px;
+  width: 320px;
+  background-color: #111111;
+  scroll-snap-align: start;
 }

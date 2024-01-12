@@ -3,10 +3,10 @@ import { NavbarComponent } from './shared/navbar/navbar.component';
 import { DefaultLayoutComponent } from './pages/default-layout/default-layout.component';
 import { Store } from '@ngrx/store';
 import { getDevices } from './actions/devices.actions';
-import { deviceGroupSelector } from './actions';
+import { AppState, deviceGroupSelector } from './actions';
 import { Device } from './models';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   standalone: true,
@@ -23,7 +23,8 @@ import { RouterModule } from '@angular/router';
 export class AppComponent implements OnInit {
   title = 'synapse-copycat-frontend';
 
-  private readonly store = inject(Store);
+  private readonly store = inject(Store<AppState>);
+  private readonly router = inject (Router)
 
   readonly usb$ = this.store.select(deviceGroupSelector('usb'));
   readonly connected$ = this.store.select(deviceGroupSelector('connected'));
@@ -32,5 +33,8 @@ export class AppComponent implements OnInit {
     this.store.dispatch(getDevices());
   }
 
-  activateDevice(device: Device): void {}
+  activateDevice(device: Device): void {
+    console.log(device.name, 'activated')
+    this.router.navigate(['device', device.kind])
+  }
 }

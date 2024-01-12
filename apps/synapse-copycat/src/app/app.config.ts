@@ -8,6 +8,8 @@ import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
 import { DeviceEffects } from './actions/devices.effects';
 import { devicesReducer } from './actions';
+import { provideHttpClient } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations'
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -15,6 +17,8 @@ export const appConfig: ApplicationConfig = {
     provideStore({ devices: devicesReducer }),
     // provideRouterStore(),
     // provideStoreDevtools(),
-    provideEffects([DeviceEffects]),
+    provideEffects(DeviceEffects),
+    provideHttpClient(),
+    provideAnimations()
   ],
 };
