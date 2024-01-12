@@ -1,5 +1,16 @@
 import { inject, Injectable } from '@angular/core';
-import { from, map, Observable, shareReplay, tap, withLatestFrom } from 'rxjs';
+import {
+  combineLatest,
+  delay,
+  from,
+  map,
+  merge,
+  Observable,
+  of,
+  shareReplay,
+  tap,
+  withLatestFrom,
+} from 'rxjs';
 import { Device, DeviceRepository } from '../models';
 
 import { invoke } from '@tauri-apps/api';
@@ -139,27 +150,45 @@ export class DeviceService {
     .get<DeviceRepository>('assets/usb-devices.json')
     .pipe(shareReplay());
 
-  discover(): Observable<Device[]> {
-    return from(
-      invoke<{ vendor_id: number; product_id: number }[]>('devices', {})
-    ).pipe(
-      withLatestFrom(this._deviceRepository),
-      map(([devices, repository]) =>
-        devices.map((device) =>
-          extractUsbDevice(
-            repository,
-            device.vendor_id.toString() || '0',
-            device.product_id.toString() || '0'
-          )
+  private discoverUsb$: Observable<Device[]> = from(
+    invoke<{ vendor_id: number; product_id: number }[]>('devices', {})
+  ).pipe(
+    withLatestFrom(this._deviceRepository),
+    map(([devices, repository]) =>
+      devices.map((device) =>
+        extractUsbDevice(
+          repository,
+          device.vendor_id.toString() || '0',
+          device.product_id.toString() || '0'
         )
       )
-    );
+    )
+  );
 
-    /*
-    return combineLatest([
-      from(discoveringUsb()),
-      from(discoveringConnected()),
-    ]).pipe(delay(10000), take(4));
-  }*/
-  }
+  private discoverConnected$: Observable<Device[]> = of([
+    {
+      __type: 'device',
+      group: 'connected',
+      kind: 'twinkly',
+      name: 'Twinkly',
+      visual: 'assets/devices/twinkly.png',
+    },
+    {
+      __type: 'device',
+      group: 'connected',
+      kind: 'goove',
+      name: 'Govee',
+      visual: 'assets/images/razer-logo.svg',
+    },
+    {
+      __type: 'device',
+      group: 'connected',
+      kind: 'nanoleaf',
+      name: 'Nanoleaf',
+      visual: 'assets/images/razer-logo.svg',
+    },
+  ]);
+
+  discover = (): Observable<Device[]> =>
+    merge(this.discoverUsb$, this.discoverConnected$).pipe(delay(1000));
 }

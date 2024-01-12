@@ -29,7 +29,7 @@ export const Camera: Story = {
     device: {
       __type: 'device',
       group: 'usb',
-      kind: 'camera',
+      kind: 'streaming',
       name: 'Razer Kiyo',
       visual: './assets/devices/razer-kiyo.png',
       id: '3205',

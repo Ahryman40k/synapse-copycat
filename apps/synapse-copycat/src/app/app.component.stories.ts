@@ -16,7 +16,7 @@ const usbDevices: Device[] = [
   {
     __type: 'device',
     group: 'usb',
-    kind: 'camera',
+    kind: 'streaming',
     name: 'Razer Kiyo',
     visual: './assets/images/razer-logo.svg',
     id: '3202',
