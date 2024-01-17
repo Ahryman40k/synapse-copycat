@@ -103,6 +103,8 @@
         "browserTarget": "synapse-copycat:build",
         "compodoc": true,
         "compodocArgs": [
+          "-p",
+          "apps/synapse-copycat/tsconfig.json",
           "-e",
           "json",
           "-d",
@@ -126,6 +128,8 @@
         "browserTarget": "synapse-copycat:build",
         "compodoc": true,
         "compodocArgs": [
+          "-p",
+          "apps/synapse-copycat/tsconfig.json",
           "-e",
           "json",
           "-d",

@@ -1,25 +1,23 @@
+// @use '~@synapse/styles';
+
 /* You can add global styles to this file, and also import other style files */
 
 * {
-    font-family: 'Open Sans', Helvetica, Arial, sans-serif;
-    font-size: 16px;
-    margin: 0;
-    padding: 0;
-  }
-  
-body {
-    background-color: #222222;
-    min-height: 100vh;
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  margin: 0;
+  padding: 0;
 }
 
-  
+body {
+  background-color: #222222;
+  min-height: 100vh;
+}
 
 $theme-colors: (
-    "background": #222222,
-    "primary": rgb(68, 214, 44),
+  'background': #222222,
+  'primary': rgb(68, 214, 44),
 );
-
-
 
 @import './app/shared/navbar/navbar.theme';
 @import './app/shared/page-bar/page-bar.theme';
@@ -28,3 +26,5 @@ $theme-colors: (
 @include navbar-theme($theme-colors);
 @include page-bar-theme($theme-colors);
 @include device-card-theme($theme-colors);
+
+@import '@synapse/styles';
