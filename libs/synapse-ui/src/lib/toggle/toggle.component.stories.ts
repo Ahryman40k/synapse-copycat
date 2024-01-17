@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from '@storybook/angular';
+import { Meta, StoryObj, componentWrapperDecorator } from '@storybook/angular';
 
 import { ToggleComponent } from './toggle.component';
 
@@ -6,10 +6,10 @@ const meta: Meta<ToggleComponent> = {
   title: 'Synapse UI / Toggle',
   component: ToggleComponent,
   tags: ['autodocs'],
-  argTypes: {
-    checked: { control: 'boolean' },
-    disabled: { control: 'boolean' }
-  }
+
+  decorators: [
+    componentWrapperDecorator((story) => `<div style="background: #111111; border-radius: 0.4em; padding: 0.7em;">${story}</div>`)
+  ]
 };
 
 export default meta;

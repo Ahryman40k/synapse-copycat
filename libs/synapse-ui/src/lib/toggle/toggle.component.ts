@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   EventEmitter,
@@ -16,8 +17,11 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   templateUrl: './toggle.component.html',
   styleUrl: './toggle.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ToggleComponent {
+
+  @HostBinding('class.synapse-toggle') get componentClass() { return true }
 
   private readonly _changeDetectorRef = inject(ChangeDetectorRef);
 
@@ -31,8 +35,7 @@ export class ToggleComponent {
     this._checked = value;
     this._changeDetectorRef.markForCheck();
   }
-
-
+  
   @Input() disabled: boolean = false;
 
   @Output() onCheckChanged = new EventEmitter<boolean>();

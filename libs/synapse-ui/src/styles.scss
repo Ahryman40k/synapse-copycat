@@ -1,0 +1,32 @@
+// @import './src/lib/button/button.component.theme';
+// @import './src/lib/button-group/button-group.component.theme';
+// @import './src/lib/checkbox/checkbox.component.theme';
+// @import './src/lib/select/select.component.theme';
+// @import './src/lib/slider/slider.component.theme';
+@use './lib/toggle/toggle.component.theme' as toggle;
+
+
+@function make-dark-theme($primary: #44d62c) {
+
+  @return (
+    color: (
+      primary: $primary,
+      background: #222222,
+    )
+  );
+}
+
+$theme: make-dark-theme();
+
+// @include button.theme($theme);
+// @include buttonGroup.theme($theme);
+// @include checkbox.theme($theme);
+// @include select.theme($theme);
+// @include slider.theme($theme);
+
+// @mixin theme-them-all($theme) {
+  @include toggle.toggle-theme($theme);
+
+// }
+
+// @include theme-them-all($theme);

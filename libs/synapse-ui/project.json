@@ -2,7 +2,7 @@
   "name": "synapse-ui",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/synapse-ui/src",
-  "prefix": "lib",
+  "prefix": "synapse",
   "tags": [],
   "projectType": "library",
   "targets": {
@@ -20,10 +20,18 @@
     "storybook": {
       "executor": "@storybook/angular:start-storybook",
       "options": {
-        "port": 4400,
+        "port": 4401,
         "configDir": "libs/synapse-ui/.storybook",
         "browserTarget": "synapse-ui:build-storybook",
-        "compodoc": false
+        "compodoc": true,
+        "compodocArgs": [
+          "-p",
+          "libs/synapse-ui/tsconfig.json",
+          "-e",
+          "json",
+          "-d",
+          "libs/synapse-ui/libs/synapse-ui"
+        ]
       },
       "configurations": {
         "ci": {
@@ -38,7 +46,15 @@
         "outputDir": "dist/storybook/synapse-ui",
         "configDir": "libs/synapse-ui/.storybook",
         "browserTarget": "synapse-ui:build-storybook",
-        "compodoc": false
+        "compodoc": true,
+        "compodocArgs": [
+          "-p",
+          "libs/synapse-ui/tsconfig.json",
+          "-e",
+          "json",
+          "-d",
+          "libs/synapse-ui"
+        ]
       },
       "configurations": {
         "ci": {

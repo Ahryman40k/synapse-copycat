@@ -1,0 +1,23 @@
+@mixin toggle-theme($theme) {
+
+    @debug "############# Theme Toggle ####################";
+
+    .synapse-toggle {
+
+    .slider {
+      background-color: #ccc;
+
+      &:before {
+        background-color: #111111;
+      }
+    }
+
+    input:checked + .slider {
+      background-color: #44d62c;
+    }
+
+    input:focus + .slider {
+      box-shadow: 0 0 1px #44d62c;
+    }
+}
+}

@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "synapse-ui": ["libs/synapse-ui/src/index.ts"]
+      "@synapse/ui": ["libs/synapse-ui/src/index.ts"],
+      "@synapse/styles": ["libs/synapse-ui/src/styles.scss"]
     }
   },
   "exclude": ["node_modules", "tmp"]
