@@ -1,0 +1,4 @@
+<p class="current" [style.margin-left]=" value / (min + max) * 100 + '%'">{{ value }}</p>
+<input type="range" [min]="min" [max]="max" [value]="value" (input)="value" />
+<p>{{ min }}</p>
+<p>{{ max }}</p>
