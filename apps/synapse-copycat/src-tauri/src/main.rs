@@ -54,9 +54,22 @@ fn devices() -> Vec<RazerDevice> {
     result
 }
 
+
+#[tauri::command]
+fn connected_devices() -> Vec<String> {
+    let mut result = vec![];
+
+    result.push(String::from("goove"));
+    result.push(String::from("twinkly"));
+    result.push(String::from("nanoleaf"));
+
+    result
+}
+
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![devices])
+        .invoke_handler(tauri::generate_handler![devices, connected_devices])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
