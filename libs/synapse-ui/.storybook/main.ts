@@ -5,8 +5,7 @@ const config: StorybookConfig = {
   addons: [
     '@storybook/addon-essentials',
     '@storybook/addon-interactions',
-    // '@storybook/preset-scss',
-    '@storybook/addon-styling',
+    '@storybook/addon-themes',
   ],
   framework: {
     name: '@storybook/angular',

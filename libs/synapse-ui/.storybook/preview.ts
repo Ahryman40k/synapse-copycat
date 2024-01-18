@@ -5,20 +5,21 @@ setCompodocJson(docJson);
 import '!style-loader!css-loader!sass-loader!./style-loader.scss';
 
 import type { Preview } from '@storybook/angular';
-import { withThemeByClassName } from '@storybook/addon-styling';
+import { withThemeByClassName } from '@storybook/addon-themes';
 
-// const preview: Preview = {};
-// export default preview;
 
-const themeClasses = ['razer-green', 'razer-orange' ];
 export default {
     decorators: [
       withThemeByClassName({
-        themes: themeClasses.reduce((obj, value) => ({ ...obj, [value]: `${value}` }), {}),
-        defaultTheme: themeClasses[0]
+        themes: {
+          orange: 'razer-orange',
+          default: 'razer-green',
+        },
+        defaultTheme: 'default'
       })
     ],
     // parameters: {
     //   actions: { argTypesRegex: "^on[A-Z].*" }
     // }
-  } satisfies Preview;
+
+  } /* satisfies Preview */;

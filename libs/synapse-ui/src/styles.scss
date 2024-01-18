@@ -1,32 +1,36 @@
-// @import './src/lib/button/button.component.theme';
-// @import './src/lib/button-group/button-group.component.theme';
-// @import './src/lib/checkbox/checkbox.component.theme';
-// @import './src/lib/select/select.component.theme';
-// @import './src/lib/slider/slider.component.theme';
-@use './lib/toggle/toggle.component.theme' as toggle;
+@use 'lib/button/button.component.theme' as button;
+@use 'lib/button-group/button-group.component.theme' as buttonGroup;
+@use 'lib/checkbox/checkbox.component.theme' as checkbox;
+@use 'lib/select/select.component.theme' as select;
+@use 'lib/slider/slider.component.theme' as slider;
+@use 'lib/toggle/toggle.component.theme' as toggle;
 
 
 @function make-dark-theme($primary: #44d62c) {
-
   @return (
-    color: (
-      primary: $primary,
-      background: #222222,
+    "color": (
+      "primary": $primary,
+      "background": #222222,
     )
   );
 }
 
-$theme: make-dark-theme();
 
-// @include button.theme($theme);
-// @include buttonGroup.theme($theme);
-// @include checkbox.theme($theme);
-// @include select.theme($theme);
-// @include slider.theme($theme);
+@function make-light-theme($primary: #e08013) {
+  @return (
+    "color": (
+      "primary": $primary,
+      "background": #FFF,
+    )
+  );
+}
 
-// @mixin theme-them-all($theme) {
+
+@mixin theme-them-all($theme) {
+  @include button.theme($theme);
+  @include buttonGroup.theme($theme);
+  @include checkbox.theme($theme);
+  @include select.theme($theme);
+  @include slider.theme($theme);
   @include toggle.toggle-theme($theme);
-
-// }
-
-// @include theme-them-all($theme);
+}

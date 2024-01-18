@@ -1,2 +1,29 @@
 // https://bitsnpixels.dev/blog/import-your-angular-scss-files-in-storybook.html
-@import '../src/styles.scss';
+@use '../src/styles.scss' as synapse;
+
+// @mixin body-theme($theme) {
+//   $_background: map-get($theme, background);
+//   $app-background-color: mat-color($_background, background);
+
+//   body {
+//     background-color: $app-background-color;
+//   }
+// }
+
+$default-theme: synapse.make-dark-theme();
+$orange-theme: synapse.make-light-theme(#e08013);
+
+@include synapse.theme-them-all($default-theme);
+
+.razer-orange {
+  @debug 'Razer Orange';
+  @include synapse.theme-them-all($orange-theme);
+}
+
+@media (prefers-color-scheme: light) {
+  @include synapse.theme-them-all($orange-theme);
+}
+
+// @media (prefers-color-scheme: dark) {
+//     @include synapse.theme-them-all($orange-theme);
+//   }

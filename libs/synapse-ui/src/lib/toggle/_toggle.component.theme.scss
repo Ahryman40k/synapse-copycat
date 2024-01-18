@@ -1,9 +1,13 @@
+@use "sass:map";
+
 @mixin toggle-theme($theme) {
 
-    @debug "############# Theme Toggle ####################";
+  $primary: map.get($theme, "color", "primary");
+  $background: map.get($theme, "color", "background");
 
-    .synapse-toggle {
+  // @debug( "$$$$$$$$$$$$$$$$$$$$$$ Primary color is #{$primary}");
 
+  .synapse-toggle {
     .slider {
       background-color: #ccc;
 
@@ -13,11 +17,11 @@
     }
 
     input:checked + .slider {
-      background-color: #44d62c;
+      background-color: $primary;
     }
 
     input:focus + .slider {
-      box-shadow: 0 0 1px #44d62c;
+      box-shadow: 0 0 1px $primary;
     }
-}
+  }
 }
