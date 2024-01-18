@@ -3,8 +3,9 @@
   grid-template-columns: [line-start] 1fr [line-middle] 1fr [line-end];
   grid-template-rows: auto 0.5em 2em;
 
-  color: white;
-  font-weight: 900;
+  // color: white;
+  font-weight: 200;
+  font-size: xx-small;
 
   padding: 0.5em;
 
@@ -12,7 +13,7 @@
     -webkit-appearance: none !important;
     width: 100%;
     height: 0.3em;
-    background: #44d62c;
+    // background: #44d62c;
     border: none;
     outline: none;
 
@@ -23,19 +24,19 @@
     -webkit-appearance: none !important;
     width: 1.5em;
     height: 1.5em;
-    background: #44d62c;
-    border: 0.3em solid #44d62c;
+    // background: #44d62c;
+    // border: 0.3em solid #44d62c;
     border-radius: 50%;
     cursor: pointer;
   }
 
-  input[type='range']::-webkit-slider-thumb:hover {
-    background: #5d5d5d;
-  }
+  // input[type='range']::-webkit-slider-thumb:hover {
+  //   background: #5d5d5d;
+  // }
 
   .current {
     // margin-left: 50%;
-    background: #44d62c;
+    // background: #44d62c;
 
     width: 2em;
     grid-column: span 2;

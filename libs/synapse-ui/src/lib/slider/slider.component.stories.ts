@@ -6,11 +6,6 @@ const meta: Meta<SliderComponent> = {
   title: 'Synapse UI / Slider',
   component: SliderComponent,
   tags: ['autodocs'],
-  argTypes: {
-    min: { control: 'number' },
-    max: { control: 'number' },
-    value: { control: 'number' }
-  },
   decorators: [
     componentWrapperDecorator((story) => `<div style="background: #111111; border-radius: 0.4em;">${story}</div>`)
   ]
