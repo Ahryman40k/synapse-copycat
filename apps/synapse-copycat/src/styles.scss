@@ -1,4 +1,7 @@
-// @use '~@synapse/styles';
+@use '../../../libs/synapse-ui/src/styles.scss' as synapse;
+
+
+
 
 /* You can add global styles to this file, and also import other style files */
 
@@ -14,17 +17,24 @@ body {
   min-height: 100vh;
 }
 
-$theme-colors: (
-  'background': #222222,
-  'primary': rgb(68, 214, 44),
-);
+
+$default-theme: synapse.make-dark-theme();
+$orange-theme: synapse.make-light-theme(#e08013);
+
+@include synapse.theme-them-all($default-theme);
+
+.razer-orange {
+  @include synapse.theme-them-all($orange-theme);
+}
+
+@media (prefers-color-scheme: light) {
+  @include synapse.theme-them-all($orange-theme);
+}
 
 @import './app/shared/navbar/navbar.theme';
 @import './app/shared/page-bar/page-bar.theme';
 @import './app/shared/device-card/device-card.theme';
 
-@include navbar-theme($theme-colors);
-@include page-bar-theme($theme-colors);
-@include device-card-theme($theme-colors);
-
-@import '@synapse/styles';
+@include navbar-theme($default-theme);
+@include page-bar-theme($default-theme);
+@include device-card-theme($default-theme);
