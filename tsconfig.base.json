@@ -16,7 +16,13 @@
     "baseUrl": ".",
     "paths": {
       "@synapse/styles": ["libs/synapse-ui/src/styles.scss"],
-      "@synapse/ui": ["libs/synapse-ui/src/index.ts"]
+      "@synapse/ui": ["libs/synapse-ui/src/index.ts"],
+      "axon-copycat": ["libs/axon-copycat/src/index.ts"],
+      "chroma-studio-copycat": ["libs/chroma-studio-copycat/src/index.ts"],
+      "chroma-visualiser-copycat": [
+        "libs/chroma-visualiser-copycat/src/index.ts"
+      ],
+      "studio-copycat": ["libs/studio-copycat/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
