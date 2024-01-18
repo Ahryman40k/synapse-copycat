@@ -1,0 +1,25 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Getting Started"
+  parameters={{ docsOnly: true, previewTabs: { canvas: { hidden: true }} }} />
+
+# Getting Started with Synapse UI
+
+This guide explains how to setup your Angular project to begin using Synapse UI.
+
+
+## Use Synapse UI in your angular app
+
+from this repository, because the root `tsconfig.base.json` defines a useful path, you only have to import styles from your frontend in your `styles.scss` file like so: 
+
+```bash
+@import '@synapse/styles';
+```
+
+## Start storybook
+
+All components are described in storybook application. You only need to start it with the following command:
+
+```bash
+npx nx run synpase-ui:storybook
+```
