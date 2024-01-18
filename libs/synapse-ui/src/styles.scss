@@ -5,26 +5,72 @@
 @use 'lib/slider/slider.component.theme' as slider;
 @use 'lib/toggle/toggle.component.theme' as toggle;
 
+@use 'sass:color';
+@use 'sass:map';
+@use 'sass:list';
+
+@function define-palette(
+  $base-color,
+  $default-hue: 0,
+  $darker-hue: 15%,
+  $lighter-hue: 30%,
+  $text-hue: 0
+) {
+  @return (
+    default: $base-color,
+    darken: darken($base-color, $darker-hue),
+    lighter: lighten($base-color, $lighter-hue),
+    text: $base-color
+  );
+}
 
 @function make-dark-theme($primary: #44d62c) {
+  $default-background: #222222;
   @return (
-    "color": (
-      "primary": $primary,
-      "background": #222222,
+    color: (
+      primary: $primary,
+      primary-palette: define-palette($primary),
+      background: $default-background,
+      background-palette: define-palette($default-background),
+      foreground: #fff,
+    ),
+    _internal: (
+      type: 'dark',
+      schema: '0.1',
     )
   );
 }
-
 
 @function make-light-theme($primary: #e08013) {
+  $default-background: #fff;
   @return (
-    "color": (
-      "primary": $primary,
-      "background": #FFF,
+    color: (
+      primary: $primary,
+      primary-palette: define-palette($primary),
+      background: $default-background,
+      background-palette: define-palette($default-background),
+      foreground: #222222,
+    ),
+    _internal: (
+      type: 'light',
+      schema: '0.1',
     )
   );
 }
 
+
+@function _get_palette_color($theme, $key, $subkey ) {
+  @return map.get($theme, #{$key-palette},$subkey);
+}
+
+// @function get-color($theme, $args...) {
+//   $args-count: list.length($args);
+//   @if $args-count == 1 {
+//     @return map.get($theme, $args...);
+//   } @else if $args-count == 2 {
+//     @return _get_palette_color($theme, $args...);
+//   } @else @error "get-color, can't have more than 2 arguments" ;
+// }
 
 @mixin theme-them-all($theme) {
   @include button.theme($theme);
