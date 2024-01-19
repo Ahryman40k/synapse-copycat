@@ -7,6 +7,16 @@ const meta: Meta<ToggleComponent> = {
   component: ToggleComponent,
   tags: ['autodocs'],
 
+  argTypes: {
+    onCheckChanged: { action: 'State toogled' } 
+  },
+
+  parameters: {
+    actions: {
+      handles: ['mouseover', 'click .btn'],
+    },
+  },
+
   decorators: [
     componentWrapperDecorator((story) => `<div style="background: #111111; border-radius: 0.4em; padding: 0.7em;">${story}</div>`)
   ]
@@ -26,13 +36,15 @@ export const Checked: Story = {
 
 export const Unchecked: Story = {
   args: {
-    checked: false
+    checked: false,
+
   }
 };
 
 export const Disabled: Story = {
   args: {
-    disabled: true
+    checked: true,
+    disabled: true,
   }
 };
 

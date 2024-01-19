@@ -5,8 +5,6 @@
   $primary: map.get($theme, "color", "primary");
   $background: map.get($theme, "color", "background");
 
-  // @debug( "$$$$$$$$$$$$$$$$$$$$$$ Primary color is #{$primary}");
-
   .synapse-toggle {
     .slider {
       background-color: #ccc;
@@ -22,6 +20,26 @@
 
     input:focus + .slider {
       box-shadow: 0 0 1px $primary;
+    }
+  }
+
+  .synapse-toggle-disabled {
+    $darken-primary: darken($primary, 20%);
+
+    .slider {
+      background-color: darken(#ccc, 20%);
+
+      &:before {
+        background-color: #111111;
+      }
+    }
+
+    input:checked + .slider {
+      background-color: $darken-primary;
+    }
+
+    input:focus + .slider {
+      box-shadow: 0 0 1px $darken-primary;
     }
   }
 }

@@ -17,26 +17,36 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   templateUrl: './toggle.component.html',
   styleUrl: './toggle.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToggleComponent {
+  @HostBinding('class.synapse-toggle') private  get componentClass() {
+    return !this.disabled;
+  }
 
-  @HostBinding('class.synapse-toggle') get componentClass() { return true }
+  @HostBinding('class.synapse-toggle-disabled') private get getDisabled() {
+    return this.disabled;
+  }
 
   private readonly _changeDetectorRef = inject(ChangeDetectorRef);
 
-  private _checked: boolean = false;
+  _checked = false;
+
+  @Input() disabled = false;
 
   @Input({ transform: booleanAttribute })
-  get checked(): boolean {
-    return this._checked;
-  }
   set checked(value: boolean) {
-    this._checked = value;
-    this._changeDetectorRef.markForCheck();
+    if (!this.disabled) {
+      this._checked = value;
+      this.onCheckChanged.emit(this._checked);
+      this._changeDetectorRef.markForCheck();
+    }
   }
-  
-  @Input() disabled: boolean = false;
 
   @Output() onCheckChanged = new EventEmitter<boolean>();
+
+  toggle() {
+    this._checked = !this._checked;
+    this.onCheckChanged.emit(this._checked);
+  }
 }
