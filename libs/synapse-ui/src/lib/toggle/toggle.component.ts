@@ -20,7 +20,7 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToggleComponent {
-  @HostBinding('class.synapse-toggle') private  get componentClass() {
+  @HostBinding('class.synapse-toggle') private get componentClass() {
     return !this.disabled;
   }
 

@@ -58,9 +58,8 @@
   );
 }
 
-
-@function _get_palette_color($theme, $key, $subkey ) {
-  @return map.get($theme, #{$key-palette},$subkey);
+@function _get_palette_color($theme, $key, $subkey) {
+  @return map.get($theme, #{$key-palette}, $subkey);
 }
 
 // @function get-color($theme, $args...) {

@@ -6,10 +6,7 @@ import { LightingControlComponent } from '../../shared/lighting-control/lighting
 @Component({
   selector: 'synapse-copycat-mousemat-page',
   standalone: true,
-  imports: [CommonModule,
-    BrightnessControlComponent,
-    LightingControlComponent,
-  ],
+  imports: [CommonModule, BrightnessControlComponent, LightingControlComponent],
   templateUrl: './mousemat-page.component.html',
   styleUrl: './mousemat-page.component.scss',
 })

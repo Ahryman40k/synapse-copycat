@@ -1,9 +1,8 @@
-@use "sass:map";
+@use 'sass:map';
 
 @mixin toggle-theme($theme) {
-
-  $primary: map.get($theme, "color", "primary");
-  $background: map.get($theme, "color", "background");
+  $primary: map.get($theme, 'color', 'primary');
+  $background: map.get($theme, 'color', 'background');
 
   .synapse-toggle {
     .slider {

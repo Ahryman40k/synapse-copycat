@@ -7,11 +7,9 @@ export default {
   component: PageBarComponent,
 } as Meta<PageBarComponent>;
 
-
 const Template = () => `
    <synapse-copycat-page-bar> 
   </synapse-copycat-page-bar>
- `
- 
-export const Primary = Template.bind({});
+ `;
 
+export const Primary = Template.bind({});

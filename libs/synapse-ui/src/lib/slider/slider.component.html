@@ -1,4 +1,13 @@
-<p class="current" [style.margin-left]=" value / (min + max) * 100 + '%'">{{ value }}</p>
-<input name="synapse-slider" type="range" [min]="min" [max]="max" [value]="value" (input)="onValueChanged($event)" />
+<p class="current" [style.margin-left]="(value / (min + max)) * 100 + '%'">
+  {{ value }}
+</p>
+<input
+  name="synapse-slider"
+  type="range"
+  [min]="min"
+  [max]="max"
+  [value]="value"
+  (input)="onValueChanged($event)"
+/>
 <p>{{ min }}</p>
 <p>{{ max }}</p>

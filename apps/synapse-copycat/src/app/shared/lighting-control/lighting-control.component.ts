@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { CheckboxComponent } from '@synapse/ui'
+import { CheckboxComponent } from '@synapse/ui';
 
 @Component({
   selector: 'synapse-copycat-lighting-control',

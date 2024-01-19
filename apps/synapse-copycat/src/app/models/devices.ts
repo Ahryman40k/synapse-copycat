@@ -30,7 +30,7 @@ export const usbDevices = [
   'mouse',
   'mousemat',
   'headset',
-  'accessory'
+  'accessory',
 ] as const;
 export const UsbDeviceSchema = constructZodLiteralUnionType(
   usbDevices.map((d) => z.literal(d))

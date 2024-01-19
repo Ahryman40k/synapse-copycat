@@ -7,7 +7,6 @@ export const appRoutes: Route[] = [
       import('./pages/default-layout/default-layout.component').then(
         (m) => m.routes
       ),
-    providers: [   ],
+    providers: [],
   },
-  
 ];

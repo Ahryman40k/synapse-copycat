@@ -1,9 +1,9 @@
 {
   "build": {
     "beforeDevCommand": "npx nx run synapse-copycat:serve",
-    "beforeBuildCommand": "npx nx run synapse-copycat:build",
+    "beforeBuildCommand": "npx nx run synapse-copycat:build-frontend",
     "devPath": "http://localhost:4200",
-    "distDir": "../../dist/synapse-copycat/browser"
+    "distDir": "../../../dist/apps/synapse-copycat"
   },
   "package": {
     "productName": "synapse-copycat",
@@ -20,7 +20,7 @@
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "com.tauri.dev",
+      "identifier": "ahryman40k.synapse-copycat",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",

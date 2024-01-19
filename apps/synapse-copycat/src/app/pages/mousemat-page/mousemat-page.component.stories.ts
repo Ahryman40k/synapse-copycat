@@ -11,6 +11,4 @@ const meta: Meta<MousematPageComponent> = {
 export default meta;
 type Story = StoryObj<MousematPageComponent>;
 
-export const DefaultPage: Story = {
-};
-
+export const DefaultPage: Story = {};

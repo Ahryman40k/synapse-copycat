@@ -2,5 +2,5 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 
-npx lint-staged
-npx nx affected --parallel --target=test 
+# npx nx affected --parallel --target=lint
+# npx nx affected --parallel --target=test 

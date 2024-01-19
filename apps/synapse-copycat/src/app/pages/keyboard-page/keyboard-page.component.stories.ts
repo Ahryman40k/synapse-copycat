@@ -11,6 +11,4 @@ const meta: Meta<KeyboardPageComponent> = {
 export default meta;
 type Story = StoryObj<KeyboardPageComponent>;
 
-export const DefaultPage: Story = {
-};
-
+export const DefaultPage: Story = {};

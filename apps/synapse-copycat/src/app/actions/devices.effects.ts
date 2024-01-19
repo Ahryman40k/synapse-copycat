@@ -10,19 +10,19 @@ export class DeviceEffects {
   private readonly action$ = inject(Actions);
   private readonly deviceService = inject(DeviceService);
 
-  readonly loadDevices$ = createEffect(() =>
-    this.action$.pipe(
-      ofType(DeviceActions.getDevices),
-      exhaustMap(() =>
-        this.deviceService.discover().pipe(
-          map((devices) => DeviceActions.DevicesLoadedSuccess({ devices })),
-          catchError((error) =>
-            of(DeviceActions.DevicesLoadedFailure({ error }))
+  readonly loadDevices$ = createEffect(
+    () =>
+      this.action$.pipe(
+        ofType(DeviceActions.getDevices),
+        exhaustMap(() =>
+          this.deviceService.discover().pipe(
+            map((devices) => DeviceActions.DevicesLoadedSuccess({ devices })),
+            catchError((error) =>
+              of(DeviceActions.DevicesLoadedFailure({ error }))
+            )
           )
         )
       )
-    ),
     // { functional: true, dispatch: false }
-
   );
 }

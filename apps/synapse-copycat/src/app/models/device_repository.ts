@@ -1,6 +1,5 @@
-
 import { z } from 'zod';
-import { Device, UsbDeviceSchema } from './devices';
+import { UsbDeviceSchema } from './devices';
 
 const UsbDeviceRepositorySchema = z.object({
   name: z.string(),
@@ -11,6 +10,3 @@ const UsbDeviceRepositorySchema = z.object({
 
 export const DeviceRepository = z.record(z.record(UsbDeviceRepositorySchema));
 export type DeviceRepository = z.infer<typeof DeviceRepository>;
-
-
-

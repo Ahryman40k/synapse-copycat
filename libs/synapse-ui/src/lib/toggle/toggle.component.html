@@ -1,4 +1,9 @@
 <label class="switch">
-  <input type="checkbox"  (click)="toggle()"  [disabled]="disabled"  [attr.checked]="_checked ? _checked : undefined"/>
+  <input
+    type="checkbox"
+    (click)="toggle()"
+    [disabled]="disabled"
+    [attr.checked]="_checked ? _checked : undefined"
+  />
   <span class="slider"></span>
 </label>

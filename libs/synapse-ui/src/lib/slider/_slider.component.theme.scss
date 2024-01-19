@@ -24,13 +24,9 @@
     .current {
       background: $primary;
     }
- 
-
-    
   }
 
   .synapse-slider-disabled {
-
     $darken-primary: darken($primary, 20%);
 
     color: white;
@@ -53,7 +49,4 @@
       background: $darken-primary;
     }
   }
-
-  
-  
 }

@@ -30,12 +30,8 @@ describe('Devices Effects', () => {
 
     effects = TestBed.inject(DeviceEffects);
     actions$ = TestBed.inject(Actions);
-    store = TestBed.inject(MockStore<AppState>) ;
+    store = TestBed.inject(MockStore<AppState>);
   });
 
-
-  it('Should discover devices', () => {
- 
-  })
-
+  it('Should discover devices', () => {});
 });

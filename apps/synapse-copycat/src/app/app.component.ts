@@ -24,7 +24,7 @@ export class AppComponent implements OnInit {
   title = 'synapse-copycat-frontend';
 
   private readonly store = inject(Store<AppState>);
-  private readonly router = inject (Router)
+  private readonly router = inject(Router);
 
   readonly usb$ = this.store.select(deviceGroupSelector('usb'));
   readonly connected$ = this.store.select(deviceGroupSelector('connected'));
@@ -34,10 +34,10 @@ export class AppComponent implements OnInit {
   }
 
   activateDevice(device: Device): void {
-    this.router.navigate(['device', device.kind])
+    this.router.navigate(['device', device.kind]);
   }
 
   backToHome(): void {
-    this.router.navigateByUrl('/')
+    this.router.navigateByUrl('/');
   }
 }

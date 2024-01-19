@@ -1,8 +1,5 @@
 @use '../../../libs/synapse-ui/src/styles.scss' as synapse;
 
-
-
-
 /* You can add global styles to this file, and also import other style files */
 
 * {
@@ -16,7 +13,6 @@ body {
   background-color: #222222;
   min-height: 100vh;
 }
-
 
 $default-theme: synapse.make-dark-theme();
 $orange-theme: synapse.make-light-theme(#e08013);

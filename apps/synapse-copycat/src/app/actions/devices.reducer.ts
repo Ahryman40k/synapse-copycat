@@ -36,8 +36,7 @@ export const devicesReducer = createReducer(
 
 export const selectDevices = (state: AppState) => state.devices;
 
-export const deviceGroupSelector = (deviceGroup : DeviceGroup) => createSelector(
-  selectDevices,
-  (devices) => deviceGroup === 'usb' ? devices.usb : devices.connected
-);
-
+export const deviceGroupSelector = (deviceGroup: DeviceGroup) =>
+  createSelector(selectDevices, (devices) =>
+    deviceGroup === 'usb' ? devices.usb : devices.connected
+  );

@@ -11,6 +11,4 @@ const meta: Meta<BrightnessControlComponent> = {
 export default meta;
 type Story = StoryObj<BrightnessControlComponent>;
 
-export const Control: Story = {
-};
-
+export const Control: Story = {};

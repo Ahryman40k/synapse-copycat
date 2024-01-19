@@ -7,12 +7,10 @@
     (click)="activateDevice(u)"
   ></synapse-copycat-device-card>
   } @empty {
-    <p> No Razer Usb devices detected</p>
+  <p>No Razer Usb devices detected</p>
   }
 </section>
-} 
-
-@if (connected$ | async; as connected) {
+} @if (connected$ | async; as connected) {
 <h2>Modules</h2>
 <section>
   @for (c of connected; track c.visual ) {
@@ -20,9 +18,8 @@
     [device]="c"
     (click)="activateDevice(c)"
   ></synapse-copycat-device-card>
-  }
-  @empty {
-    <p> installed supported modules</p>
+  } @empty {
+  <p>installed supported modules</p>
   }
 </section>
 }

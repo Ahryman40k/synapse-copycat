@@ -9,7 +9,7 @@ import { provideEffects } from '@ngrx/effects';
 import { DeviceEffects } from './actions/devices.effects';
 import { devicesReducer } from './actions';
 import { provideHttpClient } from '@angular/common/http';
-import { provideAnimations } from '@angular/platform-browser/animations'
+import { provideAnimations } from '@angular/platform-browser/animations';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -19,6 +19,6 @@ export const appConfig: ApplicationConfig = {
     // provideStoreDevtools(),
     provideEffects(DeviceEffects),
     provideHttpClient(),
-    provideAnimations()
+    provideAnimations(),
   ],
 };

@@ -11,6 +11,4 @@ const meta: Meta<AccessoryPageComponent> = {
 export default meta;
 type Story = StoryObj<AccessoryPageComponent>;
 
-export const DefaultPage: Story = {
-};
-
+export const DefaultPage: Story = {};
