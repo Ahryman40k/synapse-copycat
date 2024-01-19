@@ -1,24 +1,1259 @@
 {
     "pipes": [],
-    "interfaces": [],
-    "injectables": [],
+    "interfaces": [
+        {
+            "name": "AppState",
+            "id": "interface-AppState-37ec7178774785c5aa64c4ff6d987b139850349dbc387a570ecd96e2ea730a132873c44dde9f60896b0122dbb0ef3e4e7e03e1ad25673708cffee31035b2b5bb",
+            "file": "apps/synapse-copycat/src/app/actions/devices.reducer.ts",
+            "deprecated": false,
+            "deprecationMessage": "",
+            "type": "interface",
+            "sourceCode": "import { createReducer, createSelector, on } from '@ngrx/store';\nimport { Device, DeviceGroup } from '../models';\nimport * as DevicesActions from './devices.actions';\n\nexport interface DeviceState {\n  usb: Device[];\n  connected: Device[];\n}\n\nexport interface AppState {\n  devices: DeviceState;\n}\n\nconst initialState: DeviceState = {\n  usb: [],\n  connected: [],\n};\n\nexport const devicesReducer = createReducer(\n  initialState,\n  on(DevicesActions.getDevices, (state) => ({ ...state })),\n  on(DevicesActions.DevicesLoadedSuccess, (state, { devices }) => ({\n    ...state,\n    usb: [...state.usb, ...devices.filter((d) => d.group === 'usb')],\n    connected: [\n      ...state.connected,\n      ...devices.filter((d) => d.group === 'connected'),\n    ],\n  })),\n  on(DevicesActions.DevicesLoadedFailure, (state) => ({\n    ...state,\n    usb: [],\n    connected: [],\n  }))\n);\n\nexport const selectDevices = (state: AppState) => state.devices;\n\nexport const deviceGroupSelector = (deviceGroup : DeviceGroup) => createSelector(\n  selectDevices,\n  (devices) => deviceGroup === 'usb' ? devices.usb : devices.connected\n);\n\n",
+            "properties": [
+                {
+                    "name": "devices",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "DeviceState",
+                    "optional": false,
+                    "description": "",
+                    "line": 11
+                }
+            ],
+            "indexSignatures": [],
+            "kind": 171,
+            "methods": [],
+            "extends": []
+        },
+        {
+            "name": "DeviceState",
+            "id": "interface-DeviceState-37ec7178774785c5aa64c4ff6d987b139850349dbc387a570ecd96e2ea730a132873c44dde9f60896b0122dbb0ef3e4e7e03e1ad25673708cffee31035b2b5bb",
+            "file": "apps/synapse-copycat/src/app/actions/devices.reducer.ts",
+            "deprecated": false,
+            "deprecationMessage": "",
+            "type": "interface",
+            "sourceCode": "import { createReducer, createSelector, on } from '@ngrx/store';\nimport { Device, DeviceGroup } from '../models';\nimport * as DevicesActions from './devices.actions';\n\nexport interface DeviceState {\n  usb: Device[];\n  connected: Device[];\n}\n\nexport interface AppState {\n  devices: DeviceState;\n}\n\nconst initialState: DeviceState = {\n  usb: [],\n  connected: [],\n};\n\nexport const devicesReducer = createReducer(\n  initialState,\n  on(DevicesActions.getDevices, (state) => ({ ...state })),\n  on(DevicesActions.DevicesLoadedSuccess, (state, { devices }) => ({\n    ...state,\n    usb: [...state.usb, ...devices.filter((d) => d.group === 'usb')],\n    connected: [\n      ...state.connected,\n      ...devices.filter((d) => d.group === 'connected'),\n    ],\n  })),\n  on(DevicesActions.DevicesLoadedFailure, (state) => ({\n    ...state,\n    usb: [],\n    connected: [],\n  }))\n);\n\nexport const selectDevices = (state: AppState) => state.devices;\n\nexport const deviceGroupSelector = (deviceGroup : DeviceGroup) => createSelector(\n  selectDevices,\n  (devices) => deviceGroup === 'usb' ? devices.usb : devices.connected\n);\n\n",
+            "properties": [
+                {
+                    "name": "connected",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Device[]",
+                    "optional": false,
+                    "description": "",
+                    "line": 7
+                },
+                {
+                    "name": "usb",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Device[]",
+                    "optional": false,
+                    "description": "",
+                    "line": 6
+                }
+            ],
+            "indexSignatures": [],
+            "kind": 171,
+            "methods": [],
+            "extends": []
+        }
+    ],
+    "injectables": [
+        {
+            "name": "DeviceEffects",
+            "id": "injectable-DeviceEffects-a117a3a661d8988d834ff4e2c7a37567c5589d4a0d99a40c3165366cae429ce82e1a73c1d23b3e197625ab4934bcca6e5536295bd6e8bf56d8e247eb8778ec4e",
+            "file": "apps/synapse-copycat/src/app/actions/devices.effects.ts",
+            "properties": [
+                {
+                    "name": "action$",
+                    "defaultValue": "inject(Actions)",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 10,
+                    "modifierKind": [
+                        123,
+                        148
+                    ]
+                },
+                {
+                    "name": "deviceService",
+                    "defaultValue": "inject(DeviceService)",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 11,
+                    "modifierKind": [
+                        123,
+                        148
+                    ]
+                },
+                {
+                    "name": "loadDevices$",
+                    "defaultValue": "createEffect(() =>\n    this.action$.pipe(\n      ofType(DeviceActions.getDevices),\n      exhaustMap(() =>\n        this.deviceService.discover().pipe(\n          map((devices) => DeviceActions.DevicesLoadedSuccess({ devices })),\n          catchError((error) =>\n            of(DeviceActions.DevicesLoadedFailure({ error }))\n          )\n        )\n      )\n    ),\n    // { functional: true, dispatch: false }\n\n  )",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 13,
+                    "modifierKind": [
+                        148
+                    ]
+                }
+            ],
+            "methods": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "description": "",
+            "rawdescription": "\n",
+            "sourceCode": "import { Injectable, inject } from '@angular/core';\nimport { DeviceService } from '../services/device.service';\n\nimport * as DeviceActions from './devices.actions';\nimport { Actions, createEffect, ofType } from '@ngrx/effects';\nimport { of, switchMap, catchError, map, tap, exhaustMap } from 'rxjs';\n\n@Injectable()\nexport class DeviceEffects {\n  private readonly action$ = inject(Actions);\n  private readonly deviceService = inject(DeviceService);\n\n  readonly loadDevices$ = createEffect(() =>\n    this.action$.pipe(\n      ofType(DeviceActions.getDevices),\n      exhaustMap(() =>\n        this.deviceService.discover().pipe(\n          map((devices) => DeviceActions.DevicesLoadedSuccess({ devices })),\n          catchError((error) =>\n            of(DeviceActions.DevicesLoadedFailure({ error }))\n          )\n        )\n      )\n    ),\n    // { functional: true, dispatch: false }\n\n  );\n}\n",
+            "extends": [],
+            "type": "injectable"
+        },
+        {
+            "name": "DeviceService",
+            "id": "injectable-DeviceService-179ff7d05f01bf1fff2c6685f027bd7e328897561b27a0fece76fd519227fbc033ec32a9c8f544f61a7949bfddd05d2ea4c232c3addbeedd45ac20b3052547a0",
+            "file": "apps/synapse-copycat/src/app/services/device.service.ts",
+            "properties": [
+                {
+                    "name": "_deviceRepository",
+                    "defaultValue": "this._http\n    .get<DeviceRepository>('assets/usb-devices.json')\n    .pipe(shareReplay())",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 149,
+                    "modifierKind": [
+                        123,
+                        148
+                    ]
+                },
+                {
+                    "name": "_http",
+                    "defaultValue": "inject(HttpClient)",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 147,
+                    "modifierKind": [
+                        123,
+                        148
+                    ]
+                },
+                {
+                    "name": "discover",
+                    "defaultValue": "() => {...}",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 192
+                },
+                {
+                    "name": "discoverConnected$",
+                    "defaultValue": "of([\n    {\n      __type: 'device',\n      group: 'connected',\n      kind: 'twinkly',\n      name: 'Twinkly',\n      visual: 'assets/devices/twinkly.png',\n    },\n    {\n      __type: 'device',\n      group: 'connected',\n      kind: 'goove',\n      name: 'Govee',\n      visual: 'assets/images/razer-logo.svg',\n    },\n    {\n      __type: 'device',\n      group: 'connected',\n      kind: 'nanoleaf',\n      name: 'Nanoleaf',\n      visual: 'assets/images/razer-logo.svg',\n    },\n  ])",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Observable<Device[]>",
+                    "optional": false,
+                    "description": "",
+                    "line": 168,
+                    "modifierKind": [
+                        123
+                    ]
+                },
+                {
+                    "name": "discoverUsb$",
+                    "defaultValue": "from(\n    invoke<{ vendor_id: number; product_id: number }[]>('devices', {})\n  ).pipe(\n    withLatestFrom(this._deviceRepository),\n    map(([devices, repository]) =>\n      devices.map((device) =>\n        extractUsbDevice(\n          repository,\n          device.vendor_id.toString() || '0',\n          device.product_id.toString() || '0'\n        )\n      )\n    )\n  )",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Observable<Device[]>",
+                    "optional": false,
+                    "description": "",
+                    "line": 153,
+                    "modifierKind": [
+                        123
+                    ]
+                }
+            ],
+            "methods": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "description": "",
+            "rawdescription": "\n",
+            "sourceCode": "import { inject, Injectable } from '@angular/core';\nimport {\n  combineLatest,\n  delay,\n  from,\n  map,\n  merge,\n  Observable,\n  of,\n  shareReplay,\n  tap,\n  withLatestFrom,\n} from 'rxjs';\nimport { Device, DeviceRepository } from '../models';\n\nimport { invoke } from '@tauri-apps/api';\nimport { HttpClient } from '@angular/common/http';\n\n// function* discoveringUsb(): IterableIterator<Device> {\n//   yield {\n//     __type: 'device',\n//     group: 'usb',\n//     kind: 'keyboard',\n//     name: 'Razer Huntsman Elite',\n//     visual: 'assets/images/razer-logo.svg',\n//     id: '3205',\n//   };\n//   yield {\n//     __type: 'device',\n//     group: 'usb',\n//     kind: 'camera',\n//     name: 'Razer Kiyo',\n//     visual: 'assets/images/razer-kiyo.png',\n//     id: '3206',\n//   };\n//   yield {\n//     __type: 'device',\n//     group: 'usb',\n//     kind: 'mousemat',\n//     name: 'Razer Goliathus extended Chroma',\n//     visual: 'assets/images/razer-logo.svg',\n//     id: '3207',\n//   };\n//   yield {\n//     __type: 'device',\n//     group: 'usb',\n//     kind: 'mouse',\n//     name: 'Razer Basilisk Ultimate',\n//     visual: 'assets/images/razer-basilisk-ultimate.png',\n//     id: '3208',\n//   };\n// }\n\n// function* discoveringConnected(): IterableIterator<Device> {\n//   yield {\n//     __type: 'device',\n//     group: 'connected',\n//     kind: 'twinkly',\n//     name: 'Twinkly',\n//     visual: 'assets/images/twinkly.png',\n//   };\n//   yield {\n//     __type: 'device',\n//     group: 'connected',\n//     kind: 'goove',\n//     name: 'Govee',\n//     visual: 'assets/images/razer-logo.svg',\n//   };\n//   yield {\n//     __type: 'device',\n//     group: 'connected',\n//     kind: 'nanoleaf',\n//     name: 'Nanoleaf',\n//     visual: 'assets/images/razer-logo.svg',\n//   };\n// }\n\n/*\nconst t = {\n  '123': {\n    a: {\n      a1: 1,\n      a2: 2,\n    },\n  },\n  '456': {\n    b: {\n      b1: 2,\n      b2: 3,\n    },\n  },\n};\n\n\ntype T1A = keyof (typeof t)['123']['a'];\ntype T1B = keyof (typeof t)['456']['b'];\n*/\n\ntype ExtractGroupKeys<T> = keyof T;\ntype ExtractIdKeys<\n  T extends Record<string, any>,\n  G extends string\n> = keyof T[G];\n\n// type T1 = ExtractGroupKeys<typeof t>;\n// type T2 = ExtractIdKeys<typeof t, ExtractGroupKeys<typeof t>>;\n\nexport const extractUsbDevice = <\n  T extends Record<string, any>,\n  G extends string & ExtractGroupKeys<T>,\n  D extends string & ExtractIdKeys<T, G>\n>(\n  devices: T,\n  deviceGroup: keyof T,\n  deviceId: D\n): Device => {\n  const groupExists = !!devices[deviceGroup];\n  if (!groupExists) {\n    throw new Error(`Unkown device group ${String(deviceGroup)}`);\n  }\n  const deviceIdExists = groupExists && !!devices[deviceGroup][deviceId];\n  if (!deviceIdExists) {\n    throw new Error(\n      `Unknown device id ${String(deviceId)} in device group ${String(\n        deviceGroup\n      )}`\n    );\n  }\n\n  const device = devices[deviceGroup][deviceId];\n  return {\n    __type: 'device',\n    group: 'usb',\n\n    id: deviceId,\n\n    name: device.name,\n    kind: device.kind,\n    visual: device.visual,\n  } as Device;\n};\n\n@Injectable({\n  providedIn: 'root',\n})\nexport class DeviceService {\n  private readonly _http = inject(HttpClient);\n\n  private readonly _deviceRepository = this._http\n    .get<DeviceRepository>('assets/usb-devices.json')\n    .pipe(shareReplay());\n\n  private discoverUsb$: Observable<Device[]> = from(\n    invoke<{ vendor_id: number; product_id: number }[]>('devices', {})\n  ).pipe(\n    withLatestFrom(this._deviceRepository),\n    map(([devices, repository]) =>\n      devices.map((device) =>\n        extractUsbDevice(\n          repository,\n          device.vendor_id.toString() || '0',\n          device.product_id.toString() || '0'\n        )\n      )\n    )\n  );\n\n  private discoverConnected$: Observable<Device[]> = of([\n    {\n      __type: 'device',\n      group: 'connected',\n      kind: 'twinkly',\n      name: 'Twinkly',\n      visual: 'assets/devices/twinkly.png',\n    },\n    {\n      __type: 'device',\n      group: 'connected',\n      kind: 'goove',\n      name: 'Govee',\n      visual: 'assets/images/razer-logo.svg',\n    },\n    {\n      __type: 'device',\n      group: 'connected',\n      kind: 'nanoleaf',\n      name: 'Nanoleaf',\n      visual: 'assets/images/razer-logo.svg',\n    },\n  ]);\n\n  discover = (): Observable<Device[]> =>\n    merge(this.discoverUsb$, this.discoverConnected$).pipe(delay(1000));\n}\n",
+            "extends": [],
+            "type": "injectable"
+        }
+    ],
     "guards": [],
     "interceptors": [],
     "classes": [],
     "directives": [],
-    "components": [],
+    "components": [
+        {
+            "name": "AccessoryPageComponent",
+            "id": "component-AccessoryPageComponent-2cba16a6532001ee0d7cd92028041d475db91f7f782a6cfebcb47ff9a2721cda52061c48cdfa7a6d4dc4f4146e30fe8e74d3ae8b49e78ec4929da80a56aa0faa",
+            "file": "apps/synapse-copycat/src/app/pages/accessory-page/accessory-page.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "synapse-copycat-accessory-page",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./accessory-page.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component } from '@angular/core';\nimport { CommonModule } from '@angular/common';\n\n@Component({\n  selector: 'synapse-copycat-accessory-page',\n  standalone: true,\n  imports: [CommonModule],\n  templateUrl: './accessory-page.component.html',\n  styleUrl: './accessory-page.component.scss',\n})\nexport class AccessoryPageComponent {}\n",
+            "styleUrl": "./accessory-page.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "templateData": "<p>accessory-page works!</p>\n"
+        },
+        {
+            "name": "AppComponent",
+            "id": "component-AppComponent-54192f5b0273d1193674646214216e955f9abd4e9a41d121cde7d016894487c0cf7adbfab5ace4db95be773377e46460c752be62f43617263be66d78a9c762fc",
+            "file": "apps/synapse-copycat/src/app/app.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "synapse-copycat-root",
+            "styleUrls": [
+                "./app.component.scss"
+            ],
+            "styles": [],
+            "templateUrl": [
+                "./app.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [
+                {
+                    "name": "connected$",
+                    "defaultValue": "this.store.select(deviceGroupSelector('connected'))",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 30,
+                    "modifierKind": [
+                        148
+                    ]
+                },
+                {
+                    "name": "router",
+                    "defaultValue": "inject (Router)",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 27,
+                    "modifierKind": [
+                        123,
+                        148
+                    ]
+                },
+                {
+                    "name": "store",
+                    "defaultValue": "inject(Store<AppState>)",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 26,
+                    "modifierKind": [
+                        123,
+                        148
+                    ]
+                },
+                {
+                    "name": "title",
+                    "defaultValue": "'synapse-copycat-frontend'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string",
+                    "optional": false,
+                    "description": "",
+                    "line": 24
+                },
+                {
+                    "name": "usb$",
+                    "defaultValue": "this.store.select(deviceGroupSelector('usb'))",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 29,
+                    "modifierKind": [
+                        148
+                    ]
+                }
+            ],
+            "methodsClass": [
+                {
+                    "name": "activateDevice",
+                    "args": [
+                        {
+                            "name": "device",
+                            "type": "Device",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 36,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "device",
+                            "type": "Device",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "backToHome",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 40,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "ngOnInit",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 32,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                },
+                {
+                    "name": "RouterModule",
+                    "type": "module"
+                },
+                {
+                    "name": "NavbarComponent",
+                    "type": "component"
+                },
+                {
+                    "name": "DefaultLayoutComponent",
+                    "type": "component"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, inject, OnInit } from '@angular/core';\nimport { NavbarComponent } from './shared/navbar/navbar.component';\nimport { DefaultLayoutComponent } from './pages/default-layout/default-layout.component';\nimport { Store } from '@ngrx/store';\nimport { getDevices } from './actions/devices.actions';\nimport { AppState, deviceGroupSelector } from './actions';\nimport { Device } from './models';\nimport { CommonModule } from '@angular/common';\nimport { Router, RouterModule } from '@angular/router';\n\n@Component({\n  standalone: true,\n  imports: [\n    CommonModule,\n    RouterModule,\n    NavbarComponent,\n    DefaultLayoutComponent,\n  ],\n  selector: 'synapse-copycat-root',\n  templateUrl: './app.component.html',\n  styleUrls: ['./app.component.scss'],\n})\nexport class AppComponent implements OnInit {\n  title = 'synapse-copycat-frontend';\n\n  private readonly store = inject(Store<AppState>);\n  private readonly router = inject (Router)\n\n  readonly usb$ = this.store.select(deviceGroupSelector('usb'));\n  readonly connected$ = this.store.select(deviceGroupSelector('connected'));\n\n  ngOnInit(): void {\n    this.store.dispatch(getDevices());\n  }\n\n  activateDevice(device: Device): void {\n    this.router.navigate(['device', device.kind])\n  }\n\n  backToHome(): void {\n    this.router.navigateByUrl('/')\n  }\n}\n",
+            "assetsDirs": [],
+            "styleUrlsData": [
+                {
+                    "data": ":host {\r\n    min-height: 100%;\r\n}",
+                    "styleUrl": "./app.component.scss"
+                }
+            ],
+            "stylesData": "",
+            "extends": [],
+            "implements": [
+                "OnInit"
+            ],
+            "templateData": "<synapse-copycat-navbar [usb]=\"(usb$ | async) || []\" [connected]=\"(connected$ | async) || []\"\n  (onDeviceActivated)=\"activateDevice($event)\" \n  (onGoHome)=\"backToHome()\">\n</synapse-copycat-navbar>\n\n<synapse-copycat-default-layout> </synapse-copycat-default-layout>\n"
+        },
+        {
+            "name": "BrightnessControlComponent",
+            "id": "component-BrightnessControlComponent-2b43104ba91161fc3b213ead0b43342d2ad58a8599834278ad1d1ed4c72d4972d70c19934bdce28b91fff8a7b2aa542161b813e69299b995e7b66547d81d4681",
+            "file": "apps/synapse-copycat/src/app/shared/brightness-control/brightness-control.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "synapse-copycat-brightness-control",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./brightness-control.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [
+                {
+                    "name": "slider",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "SliderComponent",
+                    "optional": false,
+                    "description": "",
+                    "line": 19,
+                    "decorators": [
+                        {
+                            "name": "ViewChild",
+                            "stringifiedArguments": "'slider'"
+                        }
+                    ],
+                    "modifierKind": [
+                        170
+                    ]
+                }
+            ],
+            "methodsClass": [
+                {
+                    "name": "toggleChanged",
+                    "args": [
+                        {
+                            "name": "state",
+                            "type": "boolean",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 21,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "state",
+                            "type": "boolean",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                },
+                {
+                    "name": "SliderComponent",
+                    "type": "component"
+                },
+                {
+                    "name": "ToggleComponent",
+                    "type": "component"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, ViewChild } from '@angular/core';\nimport { CommonModule } from '@angular/common';\n\nimport { SliderComponent, ToggleComponent } from '@synapse/ui'\n\n\n@Component({\n  selector: 'synapse-copycat-brightness-control',\n  standalone: true,\n  imports: [CommonModule, \n    SliderComponent,\n    ToggleComponent\n  ],\n  templateUrl: './brightness-control.component.html',\n  styleUrl: './brightness-control.component.scss',\n})\nexport class BrightnessControlComponent {\n\n  @ViewChild('slider') slider!: SliderComponent\n\n  toggleChanged( state: boolean) {\n    this.slider.disabled = state\n  }\n}\n",
+            "styleUrl": "./brightness-control.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "templateData": "<span class=\"control-title\">brightness</span>\r\n<synapse-toggle (onCheckChanged)=\"toggleChanged($event)\"></synapse-toggle>\r\n<synapse-slider #slider></synapse-slider>"
+        },
+        {
+            "name": "DefaultLayoutComponent",
+            "id": "component-DefaultLayoutComponent-338681a4692ad7375d94501ff1aeaa2a6c973314bb67453f93dcb03ff5d92117306792a8d3164d3b466c9836ff6b03d91f0f6a39c28b945519658eeeaa43ffd5",
+            "file": "apps/synapse-copycat/src/app/pages/default-layout/default-layout.component.ts",
+            "changeDetection": "ChangeDetectionStrategy.OnPush",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "synapse-copycat-default-layout",
+            "styleUrls": [
+                "./default-layout.component.scss"
+            ],
+            "styles": [],
+            "templateUrl": [
+                "./default-layout.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                },
+                {
+                    "name": "RouterModule",
+                    "type": "module"
+                },
+                {
+                    "name": "PageBarComponent",
+                    "type": "component"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { ChangeDetectionStrategy, Component } from '@angular/core';\nimport { CommonModule } from '@angular/common';\nimport { Route, RouterModule } from '@angular/router';\nimport { WelcomePageComponent } from '../welcome-page/welcome-page.component';\nimport { PageBarComponent } from '../../shared/page-bar/page-bar.component';\nimport { MousematPageComponent } from '../mousemat-page/mousemat-page.component';\nimport { MousePageComponent } from '../mouse-page/mouse-page.component';\nimport { AccessoryPageComponent } from '../accessory-page/accessory-page.component';\nimport { KeyboardPageComponent } from '../keyboard-page/keyboard-page.component';\nimport { StreamingPageComponent } from '../streaming-page/streaming-page.component';\n\nexport const routes: Route[] = [\n  { path: '', redirectTo: 'welcome', pathMatch: 'full' },\n  { path: 'welcome', component: WelcomePageComponent },\n  {\n    path: 'device',\n    children: [\n      {\n        path: 'mousemat',\n        component: MousematPageComponent,\n      },\n      {\n        path: 'mouse',\n        component: MousePageComponent,\n      },\n      {\n        path: 'keyboard',\n        component: KeyboardPageComponent,\n      },\n      {\n        path: 'accessory',\n        component: AccessoryPageComponent,\n      },\n      {\n        path: 'streaming',\n        component: StreamingPageComponent,\n      },\n    ],\n  },\n];\n\n@Component({\n  selector: 'synapse-copycat-default-layout',\n  standalone: true,\n  imports: [CommonModule, RouterModule, PageBarComponent],\n  templateUrl: './default-layout.component.html',\n  styleUrls: ['./default-layout.component.scss'],\n  changeDetection: ChangeDetectionStrategy.OnPush,\n})\nexport class DefaultLayoutComponent {}\n",
+            "assetsDirs": [],
+            "styleUrlsData": [
+                {
+                    "data": ":host {\r\n    height: 100%;\r\n}",
+                    "styleUrl": "./default-layout.component.scss"
+                }
+            ],
+            "stylesData": "",
+            "extends": [],
+            "templateData": "\n<synapse-copycat-page-bar></synapse-copycat-page-bar>\n<router-outlet></router-outlet>"
+        },
+        {
+            "name": "DeviceCardComponent",
+            "id": "component-DeviceCardComponent-e5ef2d9a3cfc216f00d7260d1750e1122c8acceb52914f2ba1418c6d87275bbe8619d3852222b775934ec50b65c2d48f8e0ab2c36a5bd24c2109737f06cf8d6f",
+            "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.ts",
+            "changeDetection": "ChangeDetectionStrategy.OnPush",
+            "encapsulation": [
+                "ViewEncapsulation.None"
+            ],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "synapse-copycat-device-card",
+            "styleUrls": [
+                "./device-card.component.scss"
+            ],
+            "styles": [],
+            "templateUrl": [
+                "./device-card.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "device",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 20,
+                    "type": "Device",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import {\n  ChangeDetectionStrategy,\n  Component,\n  Input,\n  ViewEncapsulation,\n} from '@angular/core';\nimport { CommonModule } from '@angular/common';\nimport { Device } from '../../models';\n\n@Component({\n  selector: 'synapse-copycat-device-card',\n  standalone: true,\n  imports: [CommonModule],\n  templateUrl: './device-card.component.html',\n  styleUrls: ['./device-card.component.scss'],\n  encapsulation: ViewEncapsulation.None,\n  changeDetection: ChangeDetectionStrategy.OnPush,\n})\nexport class DeviceCardComponent {\n  @Input() device?: Device;\n}\n",
+            "assetsDirs": [],
+            "styleUrlsData": [
+                {
+                    "data": ".card {\n  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);\n  background-color: #111111;\n  color: white;\n\nborder-radius: 0.5rem;\n\n  transition: 0.3s;\n  width: 20rem;\n  \n  display: flex;\n  flex-direction: column;\n  justify-content: flex-start;\n  align-items: center;\n\n  img {\n    margin-top: 2em;\n    height: 8em;\n  }\n\n  .container {\n    padding: 2em ;\n  }\n}\n\n.card:hover {\n  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);\n\n\n    transform: translateY(-0.5em);\n  \n\n  & h4 {\n    color: limegreen;\n  }\n}\n",
+                    "styleUrl": "./device-card.component.scss"
+                }
+            ],
+            "stylesData": "",
+            "extends": [],
+            "templateData": "@if( device ){\n<div class=\"card\">\n  <img [src]=\"device.visual\" alt=\"mouse\" />\n  <div class=\"container\">\n    <h4>\n      <b>{{ device.name }}</b>\n    </h4>\n  </div>\n</div>\n}\n\n<!-- <div class=\"card\"> -->\n<!--   <img src=\"assets/images/razer-kiyo.png\" alt=\"camera\" /> -->\n<!--   <div class=\"container\"> -->\n<!--     <h4><b>Razer KIYO</b></h4> -->\n<!--   </div> -->\n<!-- </div> -->\n"
+        },
+        {
+            "name": "EffectsControlComponent",
+            "id": "component-EffectsControlComponent-5df907f54e2255403d95955c547f1e9b22464fbae0cd3a84f7128eff3fbb6436abc18a9c8827f81b134edfb47bc35d336596e30d79543cbfd44c3f01446d8a79",
+            "file": "apps/synapse-copycat/src/app/shared/effects-control/effects-control.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "synapse-copycat-effects-control",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./effects-control.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component } from '@angular/core';\nimport { CommonModule } from '@angular/common';\n\n@Component({\n  selector: 'synapse-copycat-effects-control',\n  standalone: true,\n  imports: [CommonModule],\n  templateUrl: './effects-control.component.html',\n  styleUrl: './effects-control.component.scss',\n})\nexport class EffectsControlComponent {}\n",
+            "styleUrl": "./effects-control.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "templateData": "<p>effects-control works!</p>\n"
+        },
+        {
+            "name": "KeyboardPageComponent",
+            "id": "component-KeyboardPageComponent-91151fef2d34d8dfd9e7655e2d1d8605738dc442ad522ea7f885830c007840b1fe87c0e146982e4483ce1c1699dc3e674ff6f3033cd1278aaba41c960cfd5f42",
+            "file": "apps/synapse-copycat/src/app/pages/keyboard-page/keyboard-page.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "synapse-copycat-keyboard-page",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./keyboard-page.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component } from '@angular/core';\nimport { CommonModule } from '@angular/common';\n\n@Component({\n  selector: 'synapse-copycat-keyboard-page',\n  standalone: true,\n  imports: [CommonModule],\n  templateUrl: './keyboard-page.component.html',\n  styleUrl: './keyboard-page.component.scss',\n})\nexport class KeyboardPageComponent {}\n",
+            "styleUrl": "./keyboard-page.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "templateData": "\n<div class=\"background\">\n\n    <img src=\"assets/devices/razer-huntsman-elite.png\"  alt=\"\">\n</div>"
+        },
+        {
+            "name": "LightingControlComponent",
+            "id": "component-LightingControlComponent-66550437d453dc1ead3fbe91e5ef08c4f83c85c38f7f3656f84556ac485c93fd6b8168014406069b29e20e2a0b997339d62d1966eb424d4a8e695f2c92da6801",
+            "file": "apps/synapse-copycat/src/app/shared/lighting-control/lighting-control.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "synapse-copycat-lighting-control",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./lighting-control.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                },
+                {
+                    "name": "CheckboxComponent",
+                    "type": "component"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component } from '@angular/core';\nimport { CommonModule } from '@angular/common';\n\nimport { CheckboxComponent } from '@synapse/ui'\n\n@Component({\n  selector: 'synapse-copycat-lighting-control',\n  standalone: true,\n  imports: [CommonModule, CheckboxComponent],\n  templateUrl: './lighting-control.component.html',\n  styleUrl: './lighting-control.component.scss',\n})\nexport class LightingControlComponent {}\n",
+            "styleUrl": "./lighting-control.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "templateData": "<span class=\"control-title\">switch off lighting</span>\n<synapse-checkbox>When display is turned off</synapse-checkbox>"
+        },
+        {
+            "name": "MousematPageComponent",
+            "id": "component-MousematPageComponent-9250f1b34091154b6a1c44c38949fafabf890e5bba2da4d967e338eff9b06fd39d760841ae46dc084981abf4a856639f5fd117c270d9f5723a85bf5571009e38",
+            "file": "apps/synapse-copycat/src/app/pages/mousemat-page/mousemat-page.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "synapse-copycat-mousemat-page",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./mousemat-page.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                },
+                {
+                    "name": "BrightnessControlComponent",
+                    "type": "component"
+                },
+                {
+                    "name": "LightingControlComponent",
+                    "type": "component"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component } from '@angular/core';\nimport { CommonModule } from '@angular/common';\nimport { BrightnessControlComponent } from '../../shared/brightness-control/brightness-control.component';\nimport { LightingControlComponent } from '../../shared/lighting-control/lighting-control.component';\n\n@Component({\n  selector: 'synapse-copycat-mousemat-page',\n  standalone: true,\n  imports: [CommonModule,\n    BrightnessControlComponent,\n    LightingControlComponent,\n  ],\n  templateUrl: './mousemat-page.component.html',\n  styleUrl: './mousemat-page.component.scss',\n})\nexport class MousematPageComponent {}\n",
+            "styleUrl": "./mousemat-page.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "templateData": "\n<div class=\"background\">\n\n    <img src=\"assets/devices/razer-goliathus-extended.png\"  alt=\"\">\n</div>\n<synapse-copycat-brightness-control></synapse-copycat-brightness-control>\n<synapse-copycat-lighting-control></synapse-copycat-lighting-control>"
+        },
+        {
+            "name": "MousePageComponent",
+            "id": "component-MousePageComponent-de0fbf3f17f1fcd515b1643f25b05f666c5266f1280aced9708ab708f69204ca91fd32fa8410d1ef4d50da632d18d6c834d06fee753a095937e8894f2507159d",
+            "file": "apps/synapse-copycat/src/app/pages/mouse-page/mouse-page.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "synapse-copycat-mouse-page",
+            "styleUrls": [
+                "./mouse-page.component.scss"
+            ],
+            "styles": [],
+            "templateUrl": [
+                "./mouse-page.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component } from '@angular/core';\nimport { CommonModule } from '@angular/common';\n\n@Component({\n  selector: 'synapse-copycat-mouse-page',\n  standalone: true,\n  imports: [CommonModule],\n  templateUrl: './mouse-page.component.html',\n  styleUrls: ['./mouse-page.component.scss'],\n})\nexport class MousePageComponent {}\n",
+            "assetsDirs": [],
+            "styleUrlsData": [
+                {
+                    "data": "",
+                    "styleUrl": "./mouse-page.component.scss"
+                }
+            ],
+            "stylesData": "",
+            "extends": [],
+            "templateData": "<p>mouse-page works!</p>\n"
+        },
+        {
+            "name": "NavbarComponent",
+            "id": "component-NavbarComponent-5f1549b4b6d6a313b8bfe24a586f1ebaae8cd41c16d2c8c880c89af32dbcc83762c38170a3115cc6db5135e367fba4e922d4a617a109c1f1bd99be804de6b02c",
+            "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.ts",
+            "changeDetection": "ChangeDetectionStrategy.OnPush",
+            "encapsulation": [
+                "ViewEncapsulation.None"
+            ],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [
+                {
+                    "name": "provideIcons({\n    featherX, featherSquare, featherMinimize2, featherSettings,\n})"
+                }
+            ],
+            "selector": "synapse-copycat-navbar",
+            "styleUrls": [
+                "./navbar.component.scss"
+            ],
+            "styles": [],
+            "templateUrl": [
+                "./navbar.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "connected",
+                    "defaultValue": "[]",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 38,
+                    "type": "Device[]",
+                    "decorators": []
+                },
+                {
+                    "name": "usb",
+                    "defaultValue": "[]",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 37,
+                    "type": "Device[]",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [
+                {
+                    "name": "onDeviceActivated",
+                    "defaultValue": "new EventEmitter<Device>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 40,
+                    "type": "EventEmitter"
+                },
+                {
+                    "name": "onGoHome",
+                    "defaultValue": "new EventEmitter<void>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 41,
+                    "type": "EventEmitter"
+                }
+            ],
+            "propertiesClass": [],
+            "methodsClass": [
+                {
+                    "name": "goHome",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 47,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "showDevicePage",
+                    "args": [
+                        {
+                            "name": "device",
+                            "type": "Device",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 43,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "device",
+                            "type": "Device",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                },
+                {
+                    "name": "NgIconComponent",
+                    "type": "component"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import {\n  ChangeDetectionStrategy,\n  Component,\n  EventEmitter,\n  Input,\n  Output,\n  ViewEncapsulation,\n} from '@angular/core';\nimport { CommonModule } from '@angular/common';\nimport { NgIconComponent, provideIcons } from '@ng-icons/core';\nimport {\n  featherX,\n  featherSquare,\n  featherMinimize2,\n  featherSettings,\n} from '@ng-icons/feather-icons';\nimport { Device } from '../../models';\n\n@Component({\n  selector: 'synapse-copycat-navbar',\n  standalone: true,\n  imports: [CommonModule, NgIconComponent],\n  providers: [\n    provideIcons({\n      featherX,\n      featherSquare,\n      featherMinimize2,\n      featherSettings,\n    }),\n  ],\n  templateUrl: './navbar.component.html',\n  styleUrls: ['./navbar.component.scss'],\n  changeDetection: ChangeDetectionStrategy.OnPush,\n  encapsulation: ViewEncapsulation.None,\n})\nexport class NavbarComponent {\n  @Input() usb: Device[] = [];\n  @Input() connected: Device[] = [];\n\n  @Output() onDeviceActivated = new EventEmitter<Device>();\n  @Output() onGoHome = new EventEmitter<void>();\n\n  showDevicePage(device: Device): void {\n    this.onDeviceActivated.emit(device);\n  }\n\n  goHome(): void {\n    this.onGoHome.emit();\n  }\n}\n",
+            "assetsDirs": [],
+            "styleUrlsData": [
+                {
+                    "data": ":host {\n    margin: 0;\n    padding: 0;\n}\n\n.sticky {\n    position: fixed;\n    top: 0;\n    width: 100%;\n  }\n\n.navbar {\n  height: 2em;\n  display: flex;\n  align-items: center;\n\n  gap:2em;\n\n  .spacer {\n    flex-grow: 1;\n  }\n\n  img {\n    margin-left: 1rem;\n    padding: 0.25em;\n    max-height: 1.5em;\n  }\n\n  button {\n    border: none;\n    height: 100%;\n    text-transform: uppercase;\n  }\n\n\n\n}\n",
+                    "styleUrl": "./navbar.component.scss"
+                }
+            ],
+            "stylesData": "",
+            "extends": [],
+            "templateData": "<nav class=\"navbar sticky\">\n  <img src=\"assets/images/razer-logo.svg\" />\n  <button navbar (click)=\"goHome()\">Synapse</button>\n\n  @for( device of usb; track device.kind ) {\n  <button navbar (click)=\"showDevicePage(device)\">\n    {{ device.kind }}\n  </button>\n  } @for( device of connected; track device.kind ){\n  <button navbar (click)=\"showDevicePage(device)\">\n    {{ device.kind }}\n  </button>\n  }\n\n  <div class=\"spacer\"></div>\n\n  <ng-icon name=\"featherSettings\"></ng-icon>\n  <ng-icon name=\"featherMinimize2\"></ng-icon>\n  <ng-icon name=\"featherSquare\"></ng-icon>\n  <ng-icon name=\"featherX\"></ng-icon>\n</nav>\n"
+        },
+        {
+            "name": "PageBarComponent",
+            "id": "component-PageBarComponent-c5292ad1efc65518d01e88592451fa64feb227f748c0dc93f97b348f0bc2ce38d34c3f94ea7312cf08566910ecfb044f385d17d9adb781f38654887719686a54",
+            "file": "apps/synapse-copycat/src/app/shared/page-bar/page-bar.component.ts",
+            "changeDetection": "ChangeDetectionStrategy.OnPush",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "synapse-copycat-page-bar",
+            "styleUrls": [
+                "./page-bar.component.scss"
+            ],
+            "styles": [],
+            "templateUrl": [
+                "./page-bar.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { ChangeDetectionStrategy, Component } from '@angular/core';\nimport { CommonModule } from '@angular/common';\n\n@Component({\n  selector: 'synapse-copycat-page-bar',\n  standalone: true,\n  imports: [CommonModule],\n  templateUrl: './page-bar.component.html',\n  styleUrls: ['./page-bar.component.scss'],\n  changeDetection: ChangeDetectionStrategy.OnPush,\n})\nexport class PageBarComponent {}\n",
+            "assetsDirs": [],
+            "styleUrlsData": [
+                {
+                    "data": ".pagebar {\n    height: 5em;\n}",
+                    "styleUrl": "./page-bar.component.scss"
+                }
+            ],
+            "stylesData": "",
+            "extends": [],
+            "templateData": "<nav class=\"pagebar\">\n\n</nav>\n"
+        },
+        {
+            "name": "StreamingPageComponent",
+            "id": "component-StreamingPageComponent-975e11538dc37fac98852335084b58dea8d39e2faa0c32c3ad089321e26b5a913c3393b986d83806c39a0b2d987bfab1c45c4195442a57da4a8706007b165147",
+            "file": "apps/synapse-copycat/src/app/pages/streaming-page/streaming-page.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "synapse-copycat-streaming-page",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./streaming-page.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component } from '@angular/core';\nimport { CommonModule } from '@angular/common';\n\n@Component({\n  selector: 'synapse-copycat-streaming-page',\n  standalone: true,\n  imports: [CommonModule],\n  templateUrl: './streaming-page.component.html',\n  styleUrl: './streaming-page.component.scss',\n})\nexport class StreamingPageComponent {}\n",
+            "styleUrl": "./streaming-page.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "templateData": "<p>streaming-page works!</p>\n"
+        },
+        {
+            "name": "WelcomePageComponent",
+            "id": "component-WelcomePageComponent-8870fe7d8ca83446db7cd4323352bffedac361d821909f71dfc956c0099b493b8b5019eb3559dd6c1e33b6c546b3a3e822158ad7c61c4b6522ff217c477f8529",
+            "file": "apps/synapse-copycat/src/app/pages/welcome-page/welcome-page.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "synapse-copycat-welcome-page",
+            "styleUrls": [
+                "./welcome-page.component.scss"
+            ],
+            "styles": [],
+            "templateUrl": [
+                "./welcome-page.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "connected$",
+                    "defaultValue": "this.store.select(deviceGroupSelector('connected'))",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 24,
+                    "type": "any",
+                    "decorators": []
+                },
+                {
+                    "name": "usb$",
+                    "defaultValue": "this.store.select(deviceGroupSelector('usb'))",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 23,
+                    "type": "any",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [],
+            "propertiesClass": [
+                {
+                    "name": "router",
+                    "defaultValue": "inject(Router)",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 21,
+                    "modifierKind": [
+                        123,
+                        148
+                    ]
+                },
+                {
+                    "name": "store",
+                    "defaultValue": "inject(Store)",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 20,
+                    "modifierKind": [
+                        123,
+                        148
+                    ]
+                }
+            ],
+            "methodsClass": [
+                {
+                    "name": "activateDevice",
+                    "args": [
+                        {
+                            "name": "device",
+                            "type": "Device",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 27,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "device",
+                            "type": "Device",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                },
+                {
+                    "name": "DeviceCardComponent",
+                    "type": "component"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, Input, inject} from '@angular/core';\nimport { CommonModule } from '@angular/common';\nimport { Store } from '@ngrx/store';\nimport { deviceGroupSelector } from '../../actions';\nimport { DeviceCardComponent } from '../../shared/device-card/device-card.component';\nimport { Router } from '@angular/router';\nimport { Device } from '../../models';\n\n@Component({\n  selector: 'synapse-copycat-welcome-page',\n  standalone: true,\n  imports: [CommonModule, \n    DeviceCardComponent\n  ],\n  templateUrl: './welcome-page.component.html',\n  styleUrls: ['./welcome-page.component.scss'],\n})\nexport class WelcomePageComponent  {\n\n  private readonly store = inject(Store);\n  private readonly router = inject(Router)\n\n  @Input() usb$ = this.store.select(deviceGroupSelector('usb'))\n  @Input() connected$ = this.store.select(deviceGroupSelector('connected'))\n\n\n  activateDevice(device: Device) {\n    this.router.navigate(['device', device.kind])\n  }\n}\n",
+            "assetsDirs": [],
+            "styleUrlsData": [
+                {
+                    "data": ":host {\n\n  \n  & > h2 {\n    color: white;\n    font-weight: 900;\n    font-size: 1.2em;\n  }\n\n  & > section {\n    display: grid;\n    gap: 1rem;\n    grid-template-columns: repeat(auto-fill, 320px);\n\n    margin: 1rem;\n  }\n}\n\n.box {\n  height: 320px;\n  width: 320px;\n  background-color: #111111;\n  scroll-snap-align: start;\n}\n",
+                    "styleUrl": "./welcome-page.component.scss"
+                }
+            ],
+            "stylesData": "",
+            "extends": [],
+            "templateData": "@if (usb$ | async; as usb) {\n<h2>Devices</h2>\n<section>\n  @for (u of usb; track u.visual ) {\n  <synapse-copycat-device-card\n    [device]=\"u\"\n    (click)=\"activateDevice(u)\"\n  ></synapse-copycat-device-card>\n  } @empty {\n    <p> No Razer Usb devices detected</p>\n  }\n</section>\n} \n\n@if (connected$ | async; as connected) {\n<h2>Modules</h2>\n<section>\n  @for (c of connected; track c.visual ) {\n  <synapse-copycat-device-card\n    [device]=\"c\"\n    (click)=\"activateDevice(c)\"\n  ></synapse-copycat-device-card>\n  }\n  @empty {\n    <p> installed supported modules</p>\n  }\n</section>\n}\n"
+        }
+    ],
     "modules": [],
     "miscellaneous": {
         "variables": [
             {
-                "name": "a",
+                "name": "appConfig",
                 "ctype": "miscellaneous",
                 "subtype": "variable",
-                "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "file": "apps/synapse-copycat/src/app/app.config.ts",
                 "deprecated": false,
                 "deprecationMessage": "",
-                "type": "",
-                "defaultValue": "extractUsbDevice(UsbDeviceRepository, '1532', '0086')"
+                "type": "ApplicationConfig",
+                "defaultValue": "{\n  providers: [\n    provideRouter(appRoutes, withEnabledBlockingInitialNavigation()),\n    provideStore({ devices: devicesReducer }),\n    // provideRouterStore(),\n    // provideStoreDevtools(),\n    provideEffects(DeviceEffects),\n    provideHttpClient(),\n    provideAnimations()\n  ],\n}"
+            },
+            {
+                "name": "appRoutes",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/app.routes.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Route[]",
+                "defaultValue": "[\n  {\n    path: '',\n    loadChildren: () =>\n      import('./pages/default-layout/default-layout.component').then(\n        (m) => m.routes\n      ),\n    providers: [   ],\n  },\n  \n]"
             },
             {
                 "name": "Camera",
@@ -28,17 +1263,7 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'usb',\n      kind: 'camera',\n      name: 'Razer Kiyo',\n      visual: './assets/images/razer-kiyo.png',\n      id: '3205',\n    },\n  },\n}"
-            },
-            {
-                "name": "config",
-                "ctype": "miscellaneous",
-                "subtype": "variable",
-                "file": "apps/synapse-copycat/.storybook/main.ts",
-                "deprecated": false,
-                "deprecationMessage": "",
-                "type": "StorybookConfig",
-                "defaultValue": "{\n  stories: ['../src/app/**/*.stories.@(js|jsx|ts|tsx|mdx)'],\n  addons: [\n    '@storybook/addon-essentials',\n    '@storybook/addon-interactions',\n    '@storybook/addon-styling-webpack',\n    '@storybook/addon-actions',\n    '@storybook/addon-a11y',\n    '@storybook/addon-coverage',\n  ],\n  framework: {\n    name: '@storybook/angular',\n    options: {},\n  },\n  // staticDirs: ['../assets'],\n  docs: {\n    autodocs: 'tag',\n    defaultName: 'docs',\n  },\n  features: {\n    // storyStoreV7: false,\n  },\n  core: {\n    disableTelemetry: true,\n  },\n  staticDirs: ['../src'],\n}"
+                "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'usb',\n      kind: 'streaming',\n      name: 'Razer Kiyo',\n      visual: './assets/devices/razer-kiyo.png',\n      id: '3205',\n    },\n  },\n}"
             },
             {
                 "name": "connectedDevices",
@@ -54,6 +1279,16 @@
                 "name": "connectedDevices",
                 "ctype": "miscellaneous",
                 "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "['twinkly', 'goove', 'nanoleaf'] as const"
+            },
+            {
+                "name": "connectedDevices",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
                 "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
                 "deprecated": false,
                 "deprecationMessage": "",
@@ -61,14 +1296,164 @@
                 "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'twinkly',\n    name: 'Twinkly',\n    visual: './assets/images/razer-logo.svg',\n  },\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'goove',\n    name: 'Govee',\n    visual: './assets/images/razer-logo.svg',\n  },\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'nanoleaf',\n    name: 'Nanoleaf',\n    visual: './assets/images/razer-logo.svg',\n  },\n]"
             },
             {
-                "name": "extractUsbDevice",
+                "name": "ConnectedDevicesSchema",
                 "ctype": "miscellaneous",
                 "subtype": "variable",
-                "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "file": "apps/synapse-copycat/src/app/models/devices.ts",
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "",
-                "defaultValue": "(\n  devices: Map<string, Map<string, Pick<Device, 'kind' | 'name' | 'visual'>>>,\n  deviceGroup: string,\n  deviceId: string\n): Device => {\n  const groupExists = devices.has(deviceGroup);\n  if (!groupExists) throw new Error(`Unkown device group ${deviceGroup}`);\n\n  const deviceIdExists = groupExists && devices.get(deviceGroup)?.has(deviceId);\n  if (deviceIdExists)\n    throw new Error(\n      `Unknown device id ${deviceId} in device group ${deviceGroup}`\n    );\n\n  const device = devices.get(deviceGroup)!.get(deviceId);\n  return {\n    __type: 'device',\n    group: 'usb',\n\n    id: deviceId,\n    ...device,\n  } as Device;\n}"
+                "defaultValue": "constructZodLiteralUnionType(\n  connectedDevices.map((d) => z.literal(d))\n)"
+            },
+            {
+                "name": "Control",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/lighting-control/lighting-control.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\n}"
+            },
+            {
+                "name": "Control",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/brightness-control/brightness-control.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\n}"
+            },
+            {
+                "name": "DefaultPage",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/pages/accessory-page/accessory-page.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\n}"
+            },
+            {
+                "name": "DefaultPage",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/pages/keyboard-page/keyboard-page.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\n}"
+            },
+            {
+                "name": "DefaultPage",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/pages/mousemat-page/mousemat-page.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Story",
+                "defaultValue": "{\n}"
+            },
+            {
+                "name": "Device",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "z\n  .object({\n    __type: z.literal('device'),\n    name: z.string(),\n    visual: z.string(),\n  })\n  .and(\n    z.discriminatedUnion('group', [\n      z.object({\n        group: z.literal('usb'),\n        kind: UsbDeviceSchema,\n        id: z.string(),\n      }),\n      z.object({\n        group: z.literal('connected'),\n        kind: ConnectedDevicesSchema,\n      }),\n    ])\n  )"
+            },
+            {
+                "name": "deviceGroup",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "['usb', 'connected'] as const"
+            },
+            {
+                "name": "DeviceGroup",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "constructZodLiteralUnionType(\n  deviceGroup.map((g) => z.literal(g))\n)"
+            },
+            {
+                "name": "deviceGroupSelector",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/actions/devices.reducer.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "(deviceGroup : DeviceGroup) => createSelector(\n  selectDevices,\n  (devices) => deviceGroup === 'usb' ? devices.usb : devices.connected\n)"
+            },
+            {
+                "name": "deviceNames",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/models/device_name.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "[\n  'MouseBasiliskV3',\n  'MouseViperV2Pro',\n  'MouseRazerCobraPro',\n  'CameraKyo',\n  'KeyboardBlackWidow',\n  'KeyboardHuntsmanV3Pro',\n] as const"
+            },
+            {
+                "name": "DeviceRepository",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/models/device_repository.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "z.record(z.record(UsbDeviceRepositorySchema))"
+            },
+            {
+                "name": "DevicesLoadedFailure",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/actions/devices.actions.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "createAction(\n  'Devices failed to load',\n  props<{ error: Error }>()\n)"
+            },
+            {
+                "name": "DevicesLoadedSuccess",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/actions/devices.actions.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "createAction(\n  'Devices loaded successfully',\n  props<{ devices: Device[] }>()\n)"
+            },
+            {
+                "name": "devicesReducer",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/actions/devices.reducer.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "createReducer(\n  initialState,\n  on(DevicesActions.getDevices, (state) => ({ ...state })),\n  on(DevicesActions.DevicesLoadedSuccess, (state, { devices }) => ({\n    ...state,\n    usb: [...state.usb, ...devices.filter((d) => d.group === 'usb')],\n    connected: [\n      ...state.connected,\n      ...devices.filter((d) => d.group === 'connected'),\n    ],\n  })),\n  on(DevicesActions.DevicesLoadedFailure, (state) => ({\n    ...state,\n    usb: [],\n    connected: [],\n  }))\n)"
+            },
+            {
+                "name": "extractUsbDevice",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/services/device.service.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "<\n  T extends Record<string, any>,\n  G extends string & ExtractGroupKeys<T>,\n  D extends string & ExtractIdKeys<T, G>\n>(\n  devices: T,\n  deviceGroup: keyof T,\n  deviceId: D\n): Device => {\n  const groupExists = !!devices[deviceGroup];\n  if (!groupExists) {\n    throw new Error(`Unkown device group ${String(deviceGroup)}`);\n  }\n  const deviceIdExists = groupExists && !!devices[deviceGroup][deviceId];\n  if (!deviceIdExists) {\n    throw new Error(\n      `Unknown device id ${String(deviceId)} in device group ${String(\n        deviceGroup\n      )}`\n    );\n  }\n\n  const device = devices[deviceGroup][deviceId];\n  return {\n    __type: 'device',\n    group: 'usb',\n\n    id: deviceId,\n\n    name: device.name,\n    kind: device.kind,\n    visual: device.visual,\n  } as Device;\n}"
             },
             {
                 "name": "FullyLoaded",
@@ -79,6 +1464,26 @@
                 "deprecationMessage": "",
                 "type": "Story",
                 "defaultValue": "{\n  args: {\n    usb: usbDevices,\n    connected: connectedDevices,\n  },\n  parameters: {\n    docs: {\n      description: {\n        story: 'Fully loaded state',\n      },\n    },\n  },\n}"
+            },
+            {
+                "name": "getDevices",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/actions/devices.actions.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "createAction('Get devices')"
+            },
+            {
+                "name": "initialState",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/actions/devices.reducer.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "DeviceState",
+                "defaultValue": "{\n  usb: [],\n  connected: [],\n}"
             },
             {
                 "name": "InitialState",
@@ -104,11 +1509,61 @@
                 "name": "meta",
                 "ctype": "miscellaneous",
                 "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/lighting-control/lighting-control.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<LightingControlComponent>",
+                "defaultValue": "{\n  title: 'Components / Device Controls / Lighting',\n  component: LightingControlComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/brightness-control/brightness-control.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<BrightnessControlComponent>",
+                "defaultValue": "{\n  title: 'Components / Device Controls / Brightness',\n  component: BrightnessControlComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
                 "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Meta<NavbarComponent>",
                 "defaultValue": "{\n  component: NavbarComponent,\n  title: 'Components / Top bar',\n  tags: ['autodocs'],\n  parameters: {\n    layout: 'fullscreen',\n  },\n  argTypes: {\n    onDeviceActivated: {\n      action: (device: Device) => `Activate device ${device.name}`,\n      table: {\n        disable: true,\n      },\n    },\n  },\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/pages/accessory-page/accessory-page.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<AccessoryPageComponent>",
+                "defaultValue": "{\n  title: 'Pages / Accessory Page',\n  component: AccessoryPageComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/pages/keyboard-page/keyboard-page.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<KeyboardPageComponent>",
+                "defaultValue": "{\n  title: 'Pages / Keyboard Page',\n  component: KeyboardPageComponent,\n  tags: ['autodocs'],\n}"
+            },
+            {
+                "name": "meta",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/pages/mousemat-page/mousemat-page.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Meta<MousematPageComponent>",
+                "defaultValue": "{\n  title: 'Pages / Mousemat Page',\n  component: MousematPageComponent,\n  tags: ['autodocs'],\n}"
             },
             {
                 "name": "Mouse",
@@ -118,17 +1573,7 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'usb',\n      kind: 'mouse',\n      name: 'Razer Basilisk Ultimate',\n      visual: './assets/images/razer-basilisk-ultimate.png',\n      id: '3204',\n    },\n  },\n}"
-            },
-            {
-                "name": "preview",
-                "ctype": "miscellaneous",
-                "subtype": "variable",
-                "file": "apps/synapse-copycat/.storybook/preview.ts",
-                "deprecated": false,
-                "deprecationMessage": "",
-                "type": "Preview",
-                "defaultValue": "{}"
+                "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'usb',\n      kind: 'mouse',\n      name: 'Razer Basilisk Ultimate',\n      visual: 'assets/devices/razer-basilisk-ultimate.png',\n      id: '3204',\n    },\n  },\n}"
             },
             {
                 "name": "Primary",
@@ -151,6 +1596,26 @@
                 "defaultValue": "Template.bind({})"
             },
             {
+                "name": "routes",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/pages/default-layout/default-layout.component.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Route[]",
+                "defaultValue": "[\n  { path: '', redirectTo: 'welcome', pathMatch: 'full' },\n  { path: 'welcome', component: WelcomePageComponent },\n  {\n    path: 'device',\n    children: [\n      {\n        path: 'mousemat',\n        component: MousematPageComponent,\n      },\n      {\n        path: 'mouse',\n        component: MousePageComponent,\n      },\n      {\n        path: 'keyboard',\n        component: KeyboardPageComponent,\n      },\n      {\n        path: 'accessory',\n        component: AccessoryPageComponent,\n      },\n      {\n        path: 'streaming',\n        component: StreamingPageComponent,\n      },\n    ],\n  },\n]"
+            },
+            {
+                "name": "selectDevices",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/actions/devices.reducer.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "(state: AppState) => state.devices"
+            },
+            {
                 "name": "Template",
                 "ctype": "miscellaneous",
                 "subtype": "variable",
@@ -168,7 +1633,27 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Story",
-                "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'connected',\n      kind: 'twinkly',\n      name: 'Twinkly',\n      visual: './assets/images/twinkly.png',\n    },\n  },\n}"
+                "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'connected',\n      kind: 'twinkly',\n      name: 'Twinkly',\n      visual: './assets/devices/twinkly.png',\n    },\n  },\n}"
+            },
+            {
+                "name": "UsbDeviceRepositorySchema",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/models/device_repository.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "z.object({\r\n  name: z.string(),\r\n  visual: z.string(),\r\n  kind: UsbDeviceSchema,\r\n  id: z.string(),\r\n})"
+            },
+            {
+                "name": "UsbDeviceRepositorySchema",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "z.object({\n  name: z.string(),\n  visual: z.string(),\n  kind: UsbDeviceSchema,\n  id: z.string(),\n})"
             },
             {
                 "name": "usbDevices",
@@ -178,7 +1663,17 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Device[]",
-                "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'keyboard',\n    name: 'Razer Huntsman Elite',\n    visual: './assets/images/razer-logo.svg',\n    id: '3201',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'camera',\n    name: 'Razer Kiyo',\n    visual: './assets/images/razer-logo.svg',\n    id: '3202',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mousemat',\n    name: 'Razer Goliathus extended Chroma',\n    visual: './assets/images/razer-logo.svg',\n    id: '3203',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mouse',\n    name: 'Razer Basilisk Ultimate',\n    visual: './assets/images/razer-logo.svg',\n    id: '3204',\n  },\n]"
+                "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'keyboard',\n    name: 'Razer Huntsman Elite',\n    visual: './assets/images/razer-logo.svg',\n    id: '3201',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'streaming',\n    name: 'Razer Kiyo',\n    visual: './assets/images/razer-logo.svg',\n    id: '3202',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mousemat',\n    name: 'Razer Goliathus extended Chroma',\n    visual: './assets/images/razer-logo.svg',\n    id: '3203',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mouse',\n    name: 'Razer Basilisk Ultimate',\n    visual: './assets/images/razer-logo.svg',\n    id: '3204',\n  },\n]"
+            },
+            {
+                "name": "usbDevices",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "[\n  'keyboard',\n  'streaming',\n  'mouse',\n  'mousemat',\n  'headset',\n  'accessory'\n] as const"
             },
             {
                 "name": "usbDevices",
@@ -188,7 +1683,17 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "Device[]",
-                "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'keyboard',\n    name: 'Razer Huntsman Elite',\n    visual: './assets/images/razer-logo.svg',\n    id: '3201',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'camera',\n    name: 'Razer Kiyo',\n    visual: './assets/images/razer-logo.svg',\n    id: '3202',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mousemat',\n    name: 'Razer Goliathus extended Chroma',\n    visual: './assets/images/razer-logo.svg',\n    id: '3203',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mouse',\n    name: 'Razer Basilisk Ultimate',\n    visual: 'assets/devices/razer-basilisk-ultimate.png',\n    id: '3204',\n  },\n]"
+                "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'keyboard',\n    name: 'Razer Huntsman Elite',\n    visual: './assets/images/razer-logo.svg',\n    id: '3201',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'streaming',\n    name: 'Razer Kiyo',\n    visual: './assets/images/razer-logo.svg',\n    id: '3202',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mousemat',\n    name: 'Razer Goliathus extended Chroma',\n    visual: './assets/images/razer-logo.svg',\n    id: '3203',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mouse',\n    name: 'Razer Basilisk Ultimate',\n    visual: 'assets/devices/razer-basilisk-ultimate.png',\n    id: '3204',\n  },\n]"
+            },
+            {
+                "name": "UsbDeviceSchema",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "constructZodLiteralUnionType(\n  usbDevices.map((d) => z.literal(d))\n)"
             },
             {
                 "name": "WithConnectedDevicesLoaded",
@@ -211,8 +1716,139 @@
                 "defaultValue": "{\n  args: {\n    usb: usbDevices,\n  },\n  parameters: {\n    docs: {\n      description: {\n        story: 'State when usb devices found',\n      },\n    },\n  },\n}"
             }
         ],
-        "functions": [],
+        "functions": [
+            {
+                "name": "constructZodLiteralUnionType",
+                "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                "ctype": "miscellaneous",
+                "subtype": "function",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "args": [
+                    {
+                        "name": "literals",
+                        "deprecated": false,
+                        "deprecationMessage": ""
+                    }
+                ],
+                "jsdoctags": [
+                    {
+                        "name": "literals",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "tagName": {
+                            "text": "param"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "isValidZodLiteralUnion",
+                "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                "ctype": "miscellaneous",
+                "subtype": "function",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "args": [
+                    {
+                        "name": "literals",
+                        "deprecated": false,
+                        "deprecationMessage": ""
+                    }
+                ],
+                "returnType": "[T, T, ...T[]]",
+                "jsdoctags": [
+                    {
+                        "name": "literals",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "tagName": {
+                            "text": "param"
+                        }
+                    }
+                ]
+            }
+        ],
         "typealiases": [
+            {
+                "name": "ConnectedDevice",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "z.infer<>",
+                "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 183
+            },
+            {
+                "name": "Device",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "z.infer<>",
+                "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 183
+            },
+            {
+                "name": "DeviceGroup",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "z.infer<>",
+                "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 183
+            },
+            {
+                "name": "DeviceName",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "",
+                "file": "apps/synapse-copycat/src/app/models/device_name.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 199
+            },
+            {
+                "name": "DeviceRepository",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "z.infer<>",
+                "file": "apps/synapse-copycat/src/app/models/device_repository.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 183
+            },
+            {
+                "name": "ExtractGroupKeys",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "",
+                "file": "apps/synapse-copycat/src/app/services/device.service.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 198
+            },
+            {
+                "name": "ExtractIdKeys",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "",
+                "file": "apps/synapse-copycat/src/app/services/device.service.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 198
+            },
             {
                 "name": "Story",
                 "ctype": "miscellaneous",
@@ -228,8 +1864,74 @@
                 "name": "Story",
                 "ctype": "miscellaneous",
                 "subtype": "typealias",
+                "rawtype": "StoryObj<LightingControlComponent>",
+                "file": "apps/synapse-copycat/src/app/shared/lighting-control/lighting-control.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 183
+            },
+            {
+                "name": "Story",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "StoryObj<BrightnessControlComponent>",
+                "file": "apps/synapse-copycat/src/app/shared/brightness-control/brightness-control.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 183
+            },
+            {
+                "name": "Story",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
                 "rawtype": "StoryObj<NavbarComponent>",
                 "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 183
+            },
+            {
+                "name": "Story",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "StoryObj<AccessoryPageComponent>",
+                "file": "apps/synapse-copycat/src/app/pages/accessory-page/accessory-page.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 183
+            },
+            {
+                "name": "Story",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "StoryObj<KeyboardPageComponent>",
+                "file": "apps/synapse-copycat/src/app/pages/keyboard-page/keyboard-page.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 183
+            },
+            {
+                "name": "Story",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "StoryObj<MousematPageComponent>",
+                "file": "apps/synapse-copycat/src/app/pages/mousemat-page/mousemat-page.component.stories.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 183
+            },
+            {
+                "name": "UsbDevice",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "z.infer<>",
+                "file": "apps/synapse-copycat/src/app/models/devices.ts",
                 "deprecated": false,
                 "deprecationMessage": "",
                 "description": "",
@@ -238,17 +1940,177 @@
         ],
         "enumerations": [],
         "groupedVariables": {
-            "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts": [
+            "apps/synapse-copycat/src/app/app.config.ts": [
                 {
-                    "name": "a",
+                    "name": "appConfig",
                     "ctype": "miscellaneous",
                     "subtype": "variable",
-                    "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                    "file": "apps/synapse-copycat/src/app/app.config.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "ApplicationConfig",
+                    "defaultValue": "{\n  providers: [\n    provideRouter(appRoutes, withEnabledBlockingInitialNavigation()),\n    provideStore({ devices: devicesReducer }),\n    // provideRouterStore(),\n    // provideStoreDevtools(),\n    provideEffects(DeviceEffects),\n    provideHttpClient(),\n    provideAnimations()\n  ],\n}"
+                }
+            ],
+            "apps/synapse-copycat/src/app/app.routes.ts": [
+                {
+                    "name": "appRoutes",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/app.routes.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Route[]",
+                    "defaultValue": "[\n  {\n    path: '',\n    loadChildren: () =>\n      import('./pages/default-layout/default-layout.component').then(\n        (m) => m.routes\n      ),\n    providers: [   ],\n  },\n  \n]"
+                }
+            ],
+            "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts": [
+                {
+                    "name": "Camera",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'usb',\n      kind: 'streaming',\n      name: 'Razer Kiyo',\n      visual: './assets/devices/razer-kiyo.png',\n      id: '3205',\n    },\n  },\n}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<DeviceCardComponent>",
+                    "defaultValue": "{\n  title: 'Components / Device Card',\n  component: DeviceCardComponent,\n  tags: ['autodocs'],\n}"
+                },
+                {
+                    "name": "Mouse",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'usb',\n      kind: 'mouse',\n      name: 'Razer Basilisk Ultimate',\n      visual: 'assets/devices/razer-basilisk-ultimate.png',\n      id: '3204',\n    },\n  },\n}"
+                },
+                {
+                    "name": "Twinkly",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'connected',\n      kind: 'twinkly',\n      name: 'Twinkly',\n      visual: './assets/devices/twinkly.png',\n    },\n  },\n}"
+                }
+            ],
+            "apps/synapse-copycat/src/app/app.component.stories.ts": [
+                {
+                    "name": "connectedDevices",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/app.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Device[]",
+                    "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'twinkly',\n    name: 'Twinkly',\n    visual: './assets/images/razer-logo.svg',\n  },\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'goove',\n    name: 'Govee',\n    visual: './assets/images/razer-logo.svg',\n  },\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'nanoleaf',\n    name: 'Nanoleaf',\n    visual: './assets/images/razer-logo.svg',\n  },\n]"
+                },
+                {
+                    "name": "Primary",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/app.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "object",
+                    "defaultValue": "{\n  render: (args: AppComponent) => ({\n    props: args,\n  }),\n  args: {},\n}"
+                },
+                {
+                    "name": "usbDevices",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/app.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Device[]",
+                    "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'keyboard',\n    name: 'Razer Huntsman Elite',\n    visual: './assets/images/razer-logo.svg',\n    id: '3201',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'streaming',\n    name: 'Razer Kiyo',\n    visual: './assets/images/razer-logo.svg',\n    id: '3202',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mousemat',\n    name: 'Razer Goliathus extended Chroma',\n    visual: './assets/images/razer-logo.svg',\n    id: '3203',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mouse',\n    name: 'Razer Basilisk Ultimate',\n    visual: './assets/images/razer-logo.svg',\n    id: '3204',\n  },\n]"
+                }
+            ],
+            "apps/synapse-copycat/src/app/models/devices.ts": [
+                {
+                    "name": "connectedDevices",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/models/devices.ts",
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "",
-                    "defaultValue": "extractUsbDevice(UsbDeviceRepository, '1532', '0086')"
+                    "defaultValue": "['twinkly', 'goove', 'nanoleaf'] as const"
                 },
+                {
+                    "name": "ConnectedDevicesSchema",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "constructZodLiteralUnionType(\n  connectedDevices.map((d) => z.literal(d))\n)"
+                },
+                {
+                    "name": "Device",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "z\n  .object({\n    __type: z.literal('device'),\n    name: z.string(),\n    visual: z.string(),\n  })\n  .and(\n    z.discriminatedUnion('group', [\n      z.object({\n        group: z.literal('usb'),\n        kind: UsbDeviceSchema,\n        id: z.string(),\n      }),\n      z.object({\n        group: z.literal('connected'),\n        kind: ConnectedDevicesSchema,\n      }),\n    ])\n  )"
+                },
+                {
+                    "name": "deviceGroup",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "['usb', 'connected'] as const"
+                },
+                {
+                    "name": "DeviceGroup",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "constructZodLiteralUnionType(\n  deviceGroup.map((g) => z.literal(g))\n)"
+                },
+                {
+                    "name": "usbDevices",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "[\n  'keyboard',\n  'streaming',\n  'mouse',\n  'mousemat',\n  'headset',\n  'accessory'\n] as const"
+                },
+                {
+                    "name": "UsbDeviceSchema",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "constructZodLiteralUnionType(\n  usbDevices.map((d) => z.literal(d))\n)"
+                }
+            ],
+            "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts": [
                 {
                     "name": "connectedDevices",
                     "ctype": "miscellaneous",
@@ -258,16 +2120,6 @@
                     "deprecationMessage": "",
                     "type": "Device[]",
                     "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'twinkly',\n    name: 'Twinkly',\n    visual: './assets/images/razer-logo.svg',\n  },\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'goove',\n    name: 'Govee',\n    visual: './assets/images/razer-logo.svg',\n  },\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'nanoleaf',\n    name: 'Nanoleaf',\n    visual: './assets/images/razer-logo.svg',\n  },\n]"
-                },
-                {
-                    "name": "extractUsbDevice",
-                    "ctype": "miscellaneous",
-                    "subtype": "variable",
-                    "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
-                    "deprecated": false,
-                    "deprecationMessage": "",
-                    "type": "",
-                    "defaultValue": "(\n  devices: Map<string, Map<string, Pick<Device, 'kind' | 'name' | 'visual'>>>,\n  deviceGroup: string,\n  deviceId: string\n): Device => {\n  const groupExists = devices.has(deviceGroup);\n  if (!groupExists) throw new Error(`Unkown device group ${deviceGroup}`);\n\n  const deviceIdExists = groupExists && devices.get(deviceGroup)?.has(deviceId);\n  if (deviceIdExists)\n    throw new Error(\n      `Unknown device id ${deviceId} in device group ${deviceGroup}`\n    );\n\n  const device = devices.get(deviceGroup)!.get(deviceId);\n  return {\n    __type: 'device',\n    group: 'usb',\n\n    id: deviceId,\n    ...device,\n  } as Device;\n}"
                 },
                 {
                     "name": "FullyLoaded",
@@ -300,6 +2152,16 @@
                     "defaultValue": "{\n  component: NavbarComponent,\n  title: 'Components / Top bar',\n  tags: ['autodocs'],\n  parameters: {\n    layout: 'fullscreen',\n  },\n  argTypes: {\n    onDeviceActivated: {\n      action: (device: Device) => `Activate device ${device.name}`,\n      table: {\n        disable: true,\n      },\n    },\n  },\n}"
                 },
                 {
+                    "name": "UsbDeviceRepositorySchema",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "z.object({\n  name: z.string(),\n  visual: z.string(),\n  kind: UsbDeviceSchema,\n  id: z.string(),\n})"
+                },
+                {
                     "name": "usbDevices",
                     "ctype": "miscellaneous",
                     "subtype": "variable",
@@ -307,7 +2169,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Device[]",
-                    "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'keyboard',\n    name: 'Razer Huntsman Elite',\n    visual: './assets/images/razer-logo.svg',\n    id: '3201',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'camera',\n    name: 'Razer Kiyo',\n    visual: './assets/images/razer-logo.svg',\n    id: '3202',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mousemat',\n    name: 'Razer Goliathus extended Chroma',\n    visual: './assets/images/razer-logo.svg',\n    id: '3203',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mouse',\n    name: 'Razer Basilisk Ultimate',\n    visual: 'assets/devices/razer-basilisk-ultimate.png',\n    id: '3204',\n  },\n]"
+                    "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'keyboard',\n    name: 'Razer Huntsman Elite',\n    visual: './assets/images/razer-logo.svg',\n    id: '3201',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'streaming',\n    name: 'Razer Kiyo',\n    visual: './assets/images/razer-logo.svg',\n    id: '3202',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mousemat',\n    name: 'Razer Goliathus extended Chroma',\n    visual: './assets/images/razer-logo.svg',\n    id: '3203',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mouse',\n    name: 'Razer Basilisk Ultimate',\n    visual: 'assets/devices/razer-basilisk-ultimate.png',\n    id: '3204',\n  },\n]"
                 },
                 {
                     "name": "WithConnectedDevicesLoaded",
@@ -330,102 +2192,234 @@
                     "defaultValue": "{\n  args: {\n    usb: usbDevices,\n  },\n  parameters: {\n    docs: {\n      description: {\n        story: 'State when usb devices found',\n      },\n    },\n  },\n}"
                 }
             ],
-            "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts": [
+            "apps/synapse-copycat/src/app/shared/lighting-control/lighting-control.component.stories.ts": [
                 {
-                    "name": "Camera",
+                    "name": "Control",
                     "ctype": "miscellaneous",
                     "subtype": "variable",
-                    "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                    "file": "apps/synapse-copycat/src/app/shared/lighting-control/lighting-control.component.stories.ts",
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Story",
-                    "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'usb',\n      kind: 'camera',\n      name: 'Razer Kiyo',\n      visual: './assets/images/razer-kiyo.png',\n      id: '3205',\n    },\n  },\n}"
+                    "defaultValue": "{\n}"
                 },
                 {
                     "name": "meta",
                     "ctype": "miscellaneous",
                     "subtype": "variable",
-                    "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                    "file": "apps/synapse-copycat/src/app/shared/lighting-control/lighting-control.component.stories.ts",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "type": "Meta<DeviceCardComponent>",
-                    "defaultValue": "{\n  title: 'Components / Device Card',\n  component: DeviceCardComponent,\n  tags: ['autodocs'],\n}"
-                },
+                    "type": "Meta<LightingControlComponent>",
+                    "defaultValue": "{\n  title: 'Components / Device Controls / Lighting',\n  component: LightingControlComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "apps/synapse-copycat/src/app/shared/brightness-control/brightness-control.component.stories.ts": [
                 {
-                    "name": "Mouse",
+                    "name": "Control",
                     "ctype": "miscellaneous",
                     "subtype": "variable",
-                    "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                    "file": "apps/synapse-copycat/src/app/shared/brightness-control/brightness-control.component.stories.ts",
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Story",
-                    "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'usb',\n      kind: 'mouse',\n      name: 'Razer Basilisk Ultimate',\n      visual: './assets/images/razer-basilisk-ultimate.png',\n      id: '3204',\n    },\n  },\n}"
+                    "defaultValue": "{\n}"
                 },
                 {
-                    "name": "Twinkly",
+                    "name": "meta",
                     "ctype": "miscellaneous",
                     "subtype": "variable",
-                    "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                    "file": "apps/synapse-copycat/src/app/shared/brightness-control/brightness-control.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<BrightnessControlComponent>",
+                    "defaultValue": "{\n  title: 'Components / Device Controls / Brightness',\n  component: BrightnessControlComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "apps/synapse-copycat/src/app/pages/accessory-page/accessory-page.component.stories.ts": [
+                {
+                    "name": "DefaultPage",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/pages/accessory-page/accessory-page.component.stories.ts",
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Story",
-                    "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'connected',\n      kind: 'twinkly',\n      name: 'Twinkly',\n      visual: './assets/images/twinkly.png',\n    },\n  },\n}"
-                }
-            ],
-            "apps/synapse-copycat/.storybook/main.ts": [
-                {
-                    "name": "config",
-                    "ctype": "miscellaneous",
-                    "subtype": "variable",
-                    "file": "apps/synapse-copycat/.storybook/main.ts",
-                    "deprecated": false,
-                    "deprecationMessage": "",
-                    "type": "StorybookConfig",
-                    "defaultValue": "{\n  stories: ['../src/app/**/*.stories.@(js|jsx|ts|tsx|mdx)'],\n  addons: [\n    '@storybook/addon-essentials',\n    '@storybook/addon-interactions',\n    '@storybook/addon-styling-webpack',\n    '@storybook/addon-actions',\n    '@storybook/addon-a11y',\n    '@storybook/addon-coverage',\n  ],\n  framework: {\n    name: '@storybook/angular',\n    options: {},\n  },\n  // staticDirs: ['../assets'],\n  docs: {\n    autodocs: 'tag',\n    defaultName: 'docs',\n  },\n  features: {\n    // storyStoreV7: false,\n  },\n  core: {\n    disableTelemetry: true,\n  },\n  staticDirs: ['../src'],\n}"
-                }
-            ],
-            "apps/synapse-copycat/src/app/app.component.stories.ts": [
-                {
-                    "name": "connectedDevices",
-                    "ctype": "miscellaneous",
-                    "subtype": "variable",
-                    "file": "apps/synapse-copycat/src/app/app.component.stories.ts",
-                    "deprecated": false,
-                    "deprecationMessage": "",
-                    "type": "Device[]",
-                    "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'twinkly',\n    name: 'Twinkly',\n    visual: './assets/images/razer-logo.svg',\n  },\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'goove',\n    name: 'Govee',\n    visual: './assets/images/razer-logo.svg',\n  },\n  {\n    __type: 'device',\n    group: 'connected',\n    kind: 'nanoleaf',\n    name: 'Nanoleaf',\n    visual: './assets/images/razer-logo.svg',\n  },\n]"
+                    "defaultValue": "{\n}"
                 },
                 {
-                    "name": "Primary",
+                    "name": "meta",
                     "ctype": "miscellaneous",
                     "subtype": "variable",
-                    "file": "apps/synapse-copycat/src/app/app.component.stories.ts",
+                    "file": "apps/synapse-copycat/src/app/pages/accessory-page/accessory-page.component.stories.ts",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "type": "object",
-                    "defaultValue": "{\n  render: (args: AppComponent) => ({\n    props: args,\n  }),\n  args: {},\n}"
-                },
-                {
-                    "name": "usbDevices",
-                    "ctype": "miscellaneous",
-                    "subtype": "variable",
-                    "file": "apps/synapse-copycat/src/app/app.component.stories.ts",
-                    "deprecated": false,
-                    "deprecationMessage": "",
-                    "type": "Device[]",
-                    "defaultValue": "[\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'keyboard',\n    name: 'Razer Huntsman Elite',\n    visual: './assets/images/razer-logo.svg',\n    id: '3201',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'camera',\n    name: 'Razer Kiyo',\n    visual: './assets/images/razer-logo.svg',\n    id: '3202',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mousemat',\n    name: 'Razer Goliathus extended Chroma',\n    visual: './assets/images/razer-logo.svg',\n    id: '3203',\n  },\n  {\n    __type: 'device',\n    group: 'usb',\n    kind: 'mouse',\n    name: 'Razer Basilisk Ultimate',\n    visual: './assets/images/razer-logo.svg',\n    id: '3204',\n  },\n]"
+                    "type": "Meta<AccessoryPageComponent>",
+                    "defaultValue": "{\n  title: 'Pages / Accessory Page',\n  component: AccessoryPageComponent,\n  tags: ['autodocs'],\n}"
                 }
             ],
-            "apps/synapse-copycat/.storybook/preview.ts": [
+            "apps/synapse-copycat/src/app/pages/keyboard-page/keyboard-page.component.stories.ts": [
                 {
-                    "name": "preview",
+                    "name": "DefaultPage",
                     "ctype": "miscellaneous",
                     "subtype": "variable",
-                    "file": "apps/synapse-copycat/.storybook/preview.ts",
+                    "file": "apps/synapse-copycat/src/app/pages/keyboard-page/keyboard-page.component.stories.ts",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "type": "Preview",
-                    "defaultValue": "{}"
+                    "type": "Story",
+                    "defaultValue": "{\n}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/pages/keyboard-page/keyboard-page.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<KeyboardPageComponent>",
+                    "defaultValue": "{\n  title: 'Pages / Keyboard Page',\n  component: KeyboardPageComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "apps/synapse-copycat/src/app/pages/mousemat-page/mousemat-page.component.stories.ts": [
+                {
+                    "name": "DefaultPage",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/pages/mousemat-page/mousemat-page.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Story",
+                    "defaultValue": "{\n}"
+                },
+                {
+                    "name": "meta",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/pages/mousemat-page/mousemat-page.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Meta<MousematPageComponent>",
+                    "defaultValue": "{\n  title: 'Pages / Mousemat Page',\n  component: MousematPageComponent,\n  tags: ['autodocs'],\n}"
+                }
+            ],
+            "apps/synapse-copycat/src/app/actions/devices.reducer.ts": [
+                {
+                    "name": "deviceGroupSelector",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/actions/devices.reducer.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "(deviceGroup : DeviceGroup) => createSelector(\n  selectDevices,\n  (devices) => deviceGroup === 'usb' ? devices.usb : devices.connected\n)"
+                },
+                {
+                    "name": "devicesReducer",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/actions/devices.reducer.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "createReducer(\n  initialState,\n  on(DevicesActions.getDevices, (state) => ({ ...state })),\n  on(DevicesActions.DevicesLoadedSuccess, (state, { devices }) => ({\n    ...state,\n    usb: [...state.usb, ...devices.filter((d) => d.group === 'usb')],\n    connected: [\n      ...state.connected,\n      ...devices.filter((d) => d.group === 'connected'),\n    ],\n  })),\n  on(DevicesActions.DevicesLoadedFailure, (state) => ({\n    ...state,\n    usb: [],\n    connected: [],\n  }))\n)"
+                },
+                {
+                    "name": "initialState",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/actions/devices.reducer.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "DeviceState",
+                    "defaultValue": "{\n  usb: [],\n  connected: [],\n}"
+                },
+                {
+                    "name": "selectDevices",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/actions/devices.reducer.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "(state: AppState) => state.devices"
+                }
+            ],
+            "apps/synapse-copycat/src/app/models/device_name.ts": [
+                {
+                    "name": "deviceNames",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/models/device_name.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "[\n  'MouseBasiliskV3',\n  'MouseViperV2Pro',\n  'MouseRazerCobraPro',\n  'CameraKyo',\n  'KeyboardBlackWidow',\n  'KeyboardHuntsmanV3Pro',\n] as const"
+                }
+            ],
+            "apps/synapse-copycat/src/app/models/device_repository.ts": [
+                {
+                    "name": "DeviceRepository",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/models/device_repository.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "z.record(z.record(UsbDeviceRepositorySchema))"
+                },
+                {
+                    "name": "UsbDeviceRepositorySchema",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/models/device_repository.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "z.object({\r\n  name: z.string(),\r\n  visual: z.string(),\r\n  kind: UsbDeviceSchema,\r\n  id: z.string(),\r\n})"
+                }
+            ],
+            "apps/synapse-copycat/src/app/actions/devices.actions.ts": [
+                {
+                    "name": "DevicesLoadedFailure",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/actions/devices.actions.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "createAction(\n  'Devices failed to load',\n  props<{ error: Error }>()\n)"
+                },
+                {
+                    "name": "DevicesLoadedSuccess",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/actions/devices.actions.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "createAction(\n  'Devices loaded successfully',\n  props<{ devices: Device[] }>()\n)"
+                },
+                {
+                    "name": "getDevices",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/actions/devices.actions.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "createAction('Get devices')"
+                }
+            ],
+            "apps/synapse-copycat/src/app/services/device.service.ts": [
+                {
+                    "name": "extractUsbDevice",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/services/device.service.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "<\n  T extends Record<string, any>,\n  G extends string & ExtractGroupKeys<T>,\n  D extends string & ExtractIdKeys<T, G>\n>(\n  devices: T,\n  deviceGroup: keyof T,\n  deviceId: D\n): Device => {\n  const groupExists = !!devices[deviceGroup];\n  if (!groupExists) {\n    throw new Error(`Unkown device group ${String(deviceGroup)}`);\n  }\n  const deviceIdExists = groupExists && !!devices[deviceGroup][deviceId];\n  if (!deviceIdExists) {\n    throw new Error(\n      `Unknown device id ${String(deviceId)} in device group ${String(\n        deviceGroup\n      )}`\n    );\n  }\n\n  const device = devices[deviceGroup][deviceId];\n  return {\n    __type: 'device',\n    group: 'usb',\n\n    id: deviceId,\n\n    name: device.name,\n    kind: device.kind,\n    visual: device.visual,\n  } as Device;\n}"
                 }
             ],
             "apps/synapse-copycat/src/app/shared/page-bar/page-bar.component.stories.ts": [
@@ -449,11 +2443,175 @@
                     "type": "",
                     "defaultValue": "() => `\n   <synapse-copycat-page-bar> \n  </synapse-copycat-page-bar>\n `"
                 }
+            ],
+            "apps/synapse-copycat/src/app/pages/default-layout/default-layout.component.ts": [
+                {
+                    "name": "routes",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/pages/default-layout/default-layout.component.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Route[]",
+                    "defaultValue": "[\n  { path: '', redirectTo: 'welcome', pathMatch: 'full' },\n  { path: 'welcome', component: WelcomePageComponent },\n  {\n    path: 'device',\n    children: [\n      {\n        path: 'mousemat',\n        component: MousematPageComponent,\n      },\n      {\n        path: 'mouse',\n        component: MousePageComponent,\n      },\n      {\n        path: 'keyboard',\n        component: KeyboardPageComponent,\n      },\n      {\n        path: 'accessory',\n        component: AccessoryPageComponent,\n      },\n      {\n        path: 'streaming',\n        component: StreamingPageComponent,\n      },\n    ],\n  },\n]"
+                }
             ]
         },
-        "groupedFunctions": {},
+        "groupedFunctions": {
+            "apps/synapse-copycat/src/app/models/devices.ts": [
+                {
+                    "name": "constructZodLiteralUnionType",
+                    "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                    "ctype": "miscellaneous",
+                    "subtype": "function",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "args": [
+                        {
+                            "name": "literals",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "jsdoctags": [
+                        {
+                            "name": "literals",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "isValidZodLiteralUnion",
+                    "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                    "ctype": "miscellaneous",
+                    "subtype": "function",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "args": [
+                        {
+                            "name": "literals",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "returnType": "[T, T, ...T[]]",
+                    "jsdoctags": [
+                        {
+                            "name": "literals",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
         "groupedEnumerations": {},
         "groupedTypeAliases": {
+            "apps/synapse-copycat/src/app/models/devices.ts": [
+                {
+                    "name": "ConnectedDevice",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "z.infer<>",
+                    "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                },
+                {
+                    "name": "Device",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "z.infer<>",
+                    "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                },
+                {
+                    "name": "DeviceGroup",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "z.infer<>",
+                    "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                },
+                {
+                    "name": "UsbDevice",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "z.infer<>",
+                    "file": "apps/synapse-copycat/src/app/models/devices.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                }
+            ],
+            "apps/synapse-copycat/src/app/models/device_name.ts": [
+                {
+                    "name": "DeviceName",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "",
+                    "file": "apps/synapse-copycat/src/app/models/device_name.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 199
+                }
+            ],
+            "apps/synapse-copycat/src/app/models/device_repository.ts": [
+                {
+                    "name": "DeviceRepository",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "z.infer<>",
+                    "file": "apps/synapse-copycat/src/app/models/device_repository.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                }
+            ],
+            "apps/synapse-copycat/src/app/services/device.service.ts": [
+                {
+                    "name": "ExtractGroupKeys",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "",
+                    "file": "apps/synapse-copycat/src/app/services/device.service.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 198
+                },
+                {
+                    "name": "ExtractIdKeys",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "",
+                    "file": "apps/synapse-copycat/src/app/services/device.service.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 198
+                }
+            ],
             "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts": [
                 {
                     "name": "Story",
@@ -461,6 +2619,32 @@
                     "subtype": "typealias",
                     "rawtype": "StoryObj<DeviceCardComponent>",
                     "file": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                }
+            ],
+            "apps/synapse-copycat/src/app/shared/lighting-control/lighting-control.component.stories.ts": [
+                {
+                    "name": "Story",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "StoryObj<LightingControlComponent>",
+                    "file": "apps/synapse-copycat/src/app/shared/lighting-control/lighting-control.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                }
+            ],
+            "apps/synapse-copycat/src/app/shared/brightness-control/brightness-control.component.stories.ts": [
+                {
+                    "name": "Story",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "StoryObj<BrightnessControlComponent>",
+                    "file": "apps/synapse-copycat/src/app/shared/brightness-control/brightness-control.component.stories.ts",
                     "deprecated": false,
                     "deprecationMessage": "",
                     "description": "",
@@ -479,6 +2663,45 @@
                     "description": "",
                     "kind": 183
                 }
+            ],
+            "apps/synapse-copycat/src/app/pages/accessory-page/accessory-page.component.stories.ts": [
+                {
+                    "name": "Story",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "StoryObj<AccessoryPageComponent>",
+                    "file": "apps/synapse-copycat/src/app/pages/accessory-page/accessory-page.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                }
+            ],
+            "apps/synapse-copycat/src/app/pages/keyboard-page/keyboard-page.component.stories.ts": [
+                {
+                    "name": "Story",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "StoryObj<KeyboardPageComponent>",
+                    "file": "apps/synapse-copycat/src/app/pages/keyboard-page/keyboard-page.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                }
+            ],
+            "apps/synapse-copycat/src/app/pages/mousemat-page/mousemat-page.component.stories.ts": [
+                {
+                    "name": "Story",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "StoryObj<MousematPageComponent>",
+                    "file": "apps/synapse-copycat/src/app/pages/mousemat-page/mousemat-page.component.stories.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 183
+                }
             ]
         }
     },
@@ -488,21 +2711,98 @@
         "status": "low",
         "files": [
             {
-                "filePath": "apps/synapse-copycat/.storybook/main.ts",
+                "filePath": "apps/synapse-copycat/src/app/actions/devices.actions.ts",
                 "type": "variable",
                 "linktype": "miscellaneous",
                 "linksubtype": "variable",
-                "name": "config",
+                "name": "DevicesLoadedFailure",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
                 "status": "low"
             },
             {
-                "filePath": "apps/synapse-copycat/.storybook/preview.ts",
+                "filePath": "apps/synapse-copycat/src/app/actions/devices.actions.ts",
                 "type": "variable",
                 "linktype": "miscellaneous",
                 "linksubtype": "variable",
-                "name": "preview",
+                "name": "DevicesLoadedSuccess",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/actions/devices.actions.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "getDevices",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/actions/devices.effects.ts",
+                "type": "injectable",
+                "linktype": "injectable",
+                "name": "DeviceEffects",
+                "coveragePercent": 0,
+                "coverageCount": "0/4",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/actions/devices.reducer.ts",
+                "type": "interface",
+                "linktype": "interface",
+                "name": "AppState",
+                "coveragePercent": 0,
+                "coverageCount": "0/2",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/actions/devices.reducer.ts",
+                "type": "interface",
+                "linktype": "interface",
+                "name": "DeviceState",
+                "coveragePercent": 0,
+                "coverageCount": "0/3",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/actions/devices.reducer.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "deviceGroupSelector",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/actions/devices.reducer.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "devicesReducer",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/actions/devices.reducer.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "initialState",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/actions/devices.reducer.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "selectDevices",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
                 "status": "low"
@@ -535,6 +2835,336 @@
                 "name": "usbDevices",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/app.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "AppComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/9",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/app.config.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "appConfig",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/app.routes.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "appRoutes",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/models/device_name.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "deviceNames",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/models/device_repository.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "DeviceRepository",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/models/device_repository.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "UsbDeviceRepositorySchema",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/models/devices.ts",
+                "type": "function",
+                "linktype": "miscellaneous",
+                "linksubtype": "function",
+                "name": "constructZodLiteralUnionType",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/models/devices.ts",
+                "type": "function",
+                "linktype": "miscellaneous",
+                "linksubtype": "function",
+                "name": "isValidZodLiteralUnion",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/models/devices.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "connectedDevices",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/models/devices.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "ConnectedDevicesSchema",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/models/devices.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Device",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/models/devices.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "deviceGroup",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/models/devices.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "DeviceGroup",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/models/devices.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "usbDevices",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/models/devices.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "UsbDeviceSchema",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/pages/accessory-page/accessory-page.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "DefaultPage",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/pages/accessory-page/accessory-page.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/pages/accessory-page/accessory-page.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "AccessoryPageComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/pages/default-layout/default-layout.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "DefaultLayoutComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/pages/default-layout/default-layout.component.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "routes",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/pages/keyboard-page/keyboard-page.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "DefaultPage",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/pages/keyboard-page/keyboard-page.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/pages/keyboard-page/keyboard-page.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "KeyboardPageComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/pages/mouse-page/mouse-page.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "MousePageComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/pages/mousemat-page/mousemat-page.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "DefaultPage",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/pages/mousemat-page/mousemat-page.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/pages/mousemat-page/mousemat-page.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "MousematPageComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/pages/streaming-page/streaming-page.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "StreamingPageComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/pages/welcome-page/welcome-page.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "WelcomePageComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/6",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/services/device.service.ts",
+                "type": "injectable",
+                "linktype": "injectable",
+                "name": "DeviceService",
+                "coveragePercent": 0,
+                "coverageCount": "0/6",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/services/device.service.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "extractUsbDevice",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/brightness-control/brightness-control.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "Control",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/brightness-control/brightness-control.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/brightness-control/brightness-control.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "BrightnessControlComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/3",
                 "status": "low"
             },
             {
@@ -578,11 +3208,48 @@
                 "status": "low"
             },
             {
-                "filePath": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "filePath": "apps/synapse-copycat/src/app/shared/device-card/device-card.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "DeviceCardComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/2",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/effects-control/effects-control.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "EffectsControlComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/lighting-control/lighting-control.component.stories.ts",
                 "type": "variable",
                 "linktype": "miscellaneous",
                 "linksubtype": "variable",
-                "name": "a",
+                "name": "Control",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/lighting-control/lighting-control.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "meta",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/lighting-control/lighting-control.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "LightingControlComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
                 "status": "low"
@@ -593,16 +3260,6 @@
                 "linktype": "miscellaneous",
                 "linksubtype": "variable",
                 "name": "connectedDevices",
-                "coveragePercent": 0,
-                "coverageCount": "0/1",
-                "status": "low"
-            },
-            {
-                "filePath": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
-                "type": "variable",
-                "linktype": "miscellaneous",
-                "linksubtype": "variable",
-                "name": "extractUsbDevice",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
                 "status": "low"
@@ -642,6 +3299,16 @@
                 "type": "variable",
                 "linktype": "miscellaneous",
                 "linksubtype": "variable",
+                "name": "UsbDeviceRepositorySchema",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.stories.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
                 "name": "usbDevices",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
@@ -668,6 +3335,15 @@
                 "status": "low"
             },
             {
+                "filePath": "apps/synapse-copycat/src/app/shared/navbar/navbar.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "NavbarComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/7",
+                "status": "low"
+            },
+            {
                 "filePath": "apps/synapse-copycat/src/app/shared/page-bar/page-bar.component.stories.ts",
                 "type": "variable",
                 "linktype": "miscellaneous",
@@ -683,6 +3359,15 @@
                 "linktype": "miscellaneous",
                 "linksubtype": "variable",
                 "name": "Template",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/shared/page-bar/page-bar.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "PageBarComponent",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
                 "status": "low"

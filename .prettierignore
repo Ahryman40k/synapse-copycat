@@ -5,3 +5,10 @@
 
 /.nx/cache
 .angular
+
+/documentation
+documentation.json
+
+/node_modules
+
+.storybook

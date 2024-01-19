@@ -5,7 +5,6 @@ const config: StorybookConfig = {
   addons: [
     '@storybook/addon-essentials',
     '@storybook/addon-interactions',
-    '@storybook/addon-styling-webpack',
     '@storybook/addon-actions',
     '@storybook/addon-a11y',
     '@storybook/addon-coverage',
@@ -19,7 +18,6 @@ const config: StorybookConfig = {
     defaultName: 'docs',
   },
   features: {
-    // storyStoreV7: false,
   },
   core: {
     disableTelemetry: true,
