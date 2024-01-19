@@ -1,4 +1,5 @@
 @use 'sass:map';
+@use 'sass:color';
 
 @mixin theme($theme) {
   $primary: map.get($theme, 'color', 'primary');
@@ -23,5 +24,36 @@
     .current {
       background: $primary;
     }
+ 
+
+    
   }
+
+  .synapse-slider-disabled {
+
+    $darken-primary: darken($primary, 20%);
+
+    color: white;
+
+    input[type='range'] {
+      background: $darken-primary;
+      pointer-events: none;
+    }
+
+    input[type='range']::-webkit-slider-thumb {
+      background: $darken-primary;
+      border: 0.3em solid $darken-primary;
+    }
+
+    // input[type='range']::-webkit-slider-thumb:hover {
+    //   background: #5d5d5d;
+    // }
+
+    .current {
+      background: $darken-primary;
+    }
+  }
+
+  
+  
 }

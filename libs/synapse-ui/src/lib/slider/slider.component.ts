@@ -1,7 +1,6 @@
 import { Component, HostBinding, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-
 @Component({
   selector: 'synapse-slider',
   standalone: true,
@@ -10,8 +9,12 @@ import { CommonModule } from '@angular/common';
   styleUrl: './slider.component.scss',
 })
 export class SliderComponent {
-
-  @HostBinding('class.synapse-slider') get componentClass() { return true }
+  @HostBinding('class.synapse-slider') get componentClass() {
+    return !this.disabled;
+  }
+  @HostBinding('class.synapse-slider-disabled') get getDisabled() {
+    return this.disabled;
+  }
 
   @Input() min = 0;
 
@@ -22,6 +25,6 @@ export class SliderComponent {
   @Input() disabled = false;
 
   onValueChanged($event: any) {
-    this.value = $event.target.valueAsNumber
+    this.value = $event.target.valueAsNumber;
   }
 }
