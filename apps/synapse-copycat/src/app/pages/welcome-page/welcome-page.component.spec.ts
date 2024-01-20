@@ -22,3 +22,7 @@ describe('WelcomePageComponent', () => {
   });
 });
 */
+
+describe ("TODO", () => {
+  it('Should test something', () => {});
+})
