@@ -37,14 +37,14 @@ export class NavbarComponent {
   @Input() usb: Device[] = [];
   @Input() connected: Device[] = [];
 
-  @Output() onDeviceActivated = new EventEmitter<Device>();
-  @Output() onGoHome = new EventEmitter<void>();
+  @Output() DeviceActivated = new EventEmitter<Device>();
+  @Output() GoHome = new EventEmitter<void>();
 
   showDevicePage(device: Device): void {
-    this.onDeviceActivated.emit(device);
+    this.DeviceActivated.emit(device);
   }
 
   goHome(): void {
-    this.onGoHome.emit();
+    this.GoHome.emit();
   }
 }

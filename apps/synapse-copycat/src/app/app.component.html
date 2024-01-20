@@ -1,8 +1,8 @@
 <synapse-copycat-navbar
   [usb]="(usb$ | async) || []"
   [connected]="(connected$ | async) || []"
-  (onDeviceActivated)="activateDevice($event)"
-  (onGoHome)="backToHome()"
+  (DeviceActivated)="activateDevice($event)"
+  (GoHome)="backToHome()"
 >
 </synapse-copycat-navbar>
 

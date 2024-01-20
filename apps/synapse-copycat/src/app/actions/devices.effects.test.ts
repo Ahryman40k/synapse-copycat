@@ -1,16 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { Actions } from '@ngrx/effects';
-import { Store } from '@ngrx/store';
-import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { provideMockStore } from '@ngrx/store/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Observable } from 'rxjs';
 import { DeviceEffects } from './devices.effects';
-import { AppState, DeviceState } from './devices.reducer';
+import { AppState } from './devices.reducer';
 
 describe('Devices Effects', () => {
-  let effects: DeviceEffects;
-  let actions$: Observable<any>;
-  let store: MockStore<AppState>;
+  // let effects: DeviceEffects;
+  let actions$: Observable<unknown>;
+  // let store: MockStore<AppState>;
 
   const initialState: AppState = {
     devices: {
@@ -28,9 +27,9 @@ describe('Devices Effects', () => {
       ],
     });
 
-    effects = TestBed.inject(DeviceEffects);
+    // effects = TestBed.inject(DeviceEffects);
     actions$ = TestBed.inject(Actions);
-    store = TestBed.inject(MockStore<AppState>);
+    // store = TestBed.inject(MockStore<AppState>);
   });
 
   it('Should discover devices', () => {});

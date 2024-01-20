@@ -1,6 +1,5 @@
 import { inject, Injectable } from '@angular/core';
 import {
-  combineLatest,
   delay,
   from,
   map,
@@ -8,72 +7,12 @@ import {
   Observable,
   of,
   shareReplay,
-  tap,
   withLatestFrom,
 } from 'rxjs';
 import { Device, DeviceRepository } from '../models';
 
 import { invoke } from '@tauri-apps/api';
 import { HttpClient } from '@angular/common/http';
-
-// function* discoveringUsb(): IterableIterator<Device> {
-//   yield {
-//     __type: 'device',
-//     group: 'usb',
-//     kind: 'keyboard',
-//     name: 'Razer Huntsman Elite',
-//     visual: 'assets/images/razer-logo.svg',
-//     id: '3205',
-//   };
-//   yield {
-//     __type: 'device',
-//     group: 'usb',
-//     kind: 'camera',
-//     name: 'Razer Kiyo',
-//     visual: 'assets/images/razer-kiyo.png',
-//     id: '3206',
-//   };
-//   yield {
-//     __type: 'device',
-//     group: 'usb',
-//     kind: 'mousemat',
-//     name: 'Razer Goliathus extended Chroma',
-//     visual: 'assets/images/razer-logo.svg',
-//     id: '3207',
-//   };
-//   yield {
-//     __type: 'device',
-//     group: 'usb',
-//     kind: 'mouse',
-//     name: 'Razer Basilisk Ultimate',
-//     visual: 'assets/images/razer-basilisk-ultimate.png',
-//     id: '3208',
-//   };
-// }
-
-// function* discoveringConnected(): IterableIterator<Device> {
-//   yield {
-//     __type: 'device',
-//     group: 'connected',
-//     kind: 'twinkly',
-//     name: 'Twinkly',
-//     visual: 'assets/images/twinkly.png',
-//   };
-//   yield {
-//     __type: 'device',
-//     group: 'connected',
-//     kind: 'goove',
-//     name: 'Govee',
-//     visual: 'assets/images/razer-logo.svg',
-//   };
-//   yield {
-//     __type: 'device',
-//     group: 'connected',
-//     kind: 'nanoleaf',
-//     name: 'Nanoleaf',
-//     visual: 'assets/images/razer-logo.svg',
-//   };
-// }
 
 /*
 const t = {
@@ -98,15 +37,15 @@ type T1B = keyof (typeof t)['456']['b'];
 
 type ExtractGroupKeys<T> = keyof T;
 type ExtractIdKeys<
-  T extends Record<string, any>,
+  T extends Record<string, unknown>,
   G extends string
-> = keyof T[G];
+> = T[G] extends Record<string, unknown> ? keyof T[G] : never;
 
 // type T1 = ExtractGroupKeys<typeof t>;
 // type T2 = ExtractIdKeys<typeof t, ExtractGroupKeys<typeof t>>;
 
 export const extractUsbDevice = <
-  T extends Record<string, any>,
+  T extends Record<string, Record<string, Partial<Device>>>,
   G extends string & ExtractGroupKeys<T>,
   D extends string & ExtractIdKeys<T, G>
 >(
@@ -118,7 +57,7 @@ export const extractUsbDevice = <
   if (!groupExists) {
     throw new Error(`Unkown device group ${String(deviceGroup)}`);
   }
-  const deviceIdExists = groupExists && !!devices[deviceGroup][deviceId];
+  const deviceIdExists = !!devices[deviceGroup][deviceId];
   if (!deviceIdExists) {
     throw new Error(
       `Unknown device id ${String(deviceId)} in device group ${String(

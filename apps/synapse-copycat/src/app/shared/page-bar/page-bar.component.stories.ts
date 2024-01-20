@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/angular';
+import { Meta } from '@storybook/angular';
 
 import { PageBarComponent } from './page-bar.component';
 

@@ -4,7 +4,7 @@ setCompodocJson(docJson);
 
 import '!style-loader!css-loader!sass-loader!./style-loader.scss';
 
-import type { Preview } from '@storybook/angular';
+// import type { Preview } from '@storybook/angular';
 import { withThemeByClassName } from '@storybook/addon-themes';
 
 

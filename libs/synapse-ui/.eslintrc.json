@@ -21,7 +21,7 @@
           "error",
           {
             "type": "element",
-            "prefix": "lib",
+            "prefix": "synapse",
             "style": "kebab-case"
           }
         ]

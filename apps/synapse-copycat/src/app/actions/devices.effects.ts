@@ -3,7 +3,7 @@ import { DeviceService } from '../services/device.service';
 
 import * as DeviceActions from './devices.actions';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { of, switchMap, catchError, map, tap, exhaustMap } from 'rxjs';
+import { of, catchError, map, exhaustMap } from 'rxjs';
 
 @Injectable()
 export class DeviceEffects {

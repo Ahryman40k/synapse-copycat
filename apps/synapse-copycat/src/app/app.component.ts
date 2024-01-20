@@ -21,7 +21,7 @@ import { Router, RouterModule } from '@angular/router';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
-  title = 'synapse-copycat-frontend';
+  title = 'synapse-copycat';
 
   private readonly store = inject(Store<AppState>);
   private readonly router = inject(Router);

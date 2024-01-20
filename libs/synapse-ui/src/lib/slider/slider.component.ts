@@ -24,7 +24,12 @@ export class SliderComponent {
 
   @Input() disabled = false;
 
-  onValueChanged($event: any) {
-    this.value = $event.target.valueAsNumber;
+  onValueChanged($event: Event) {
+    if (!$event.target) return;
+
+    if ($event.target instanceof HTMLInputElement) {
+      const { valueAsNumber } = $event.target;
+      this.value = valueAsNumber || 0;
+    }
   }
 }

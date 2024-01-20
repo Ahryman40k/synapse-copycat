@@ -38,15 +38,15 @@ export class ToggleComponent {
   set checked(value: boolean) {
     if (!this.disabled) {
       this._checked = value;
-      this.onCheckChanged.emit(this._checked);
+      this.CheckChanged.emit(this._checked);
       this._changeDetectorRef.markForCheck();
     }
   }
 
-  @Output() onCheckChanged = new EventEmitter<boolean>();
+  @Output() CheckChanged = new EventEmitter<boolean>();
 
   toggle() {
     this._checked = !this._checked;
-    this.onCheckChanged.emit(this._checked);
+    this.CheckChanged.emit(this._checked);
   }
 }

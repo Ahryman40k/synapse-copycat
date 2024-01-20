@@ -8,7 +8,7 @@ const meta: Meta<ToggleComponent> = {
   tags: ['autodocs'],
 
   argTypes: {
-    onCheckChanged: { action: 'State toogled' },
+    CheckChanged: { action: 'State toogled' },
   },
 
   parameters: {
