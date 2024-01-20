@@ -9,6 +9,7 @@
     "razer"
   ],
   "scripts": {
+    "nx": "nx",
     "start": "nx serve",
     "build": "nx build",
     "test": "nx test",
