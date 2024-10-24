@@ -4,6 +4,7 @@
   "projectType": "application",
   "sourceRoot": "apps/synapse-copycat/src",
   "prefix": "synapse-copycat",
+  "tags": [],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
@@ -66,10 +67,10 @@
       "executor": "@angular-devkit/build-angular:dev-server",
       "configurations": {
         "production": {
-          "buildTarget": "synapse-copycat:build:production"
+          "buildTarget": "synapse-copycat:build-frontend:production"
         },
         "development": {
-          "buildTarget": "synapse-copycat:build:development"
+          "buildTarget": "synapse-copycat:build-frontend:development"
         }
       },
       "defaultConfiguration": "development"
@@ -77,12 +78,11 @@
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
       "options": {
-        "buildTarget": "synapse-copycat:build"
+        "buildTarget": "synapse-copycat:build-frontend"
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"]
+      "executor": "@nx/eslint:lint"
     },
     "test": {
       "executor": "@nx/jest:jest",
@@ -96,7 +96,7 @@
       "options": {
         "port": 4400,
         "configDir": "apps/synapse-copycat/.storybook",
-        "browserTarget": "synapse-copycat:build",
+        "browserTarget": "synapse-copycat:build-frontend",
         "compodoc": true,
         "compodocArgs": [
           "-p",
@@ -119,7 +119,7 @@
       "options": {
         "outputDir": "dist/storybook/synapse-copycat",
         "configDir": "apps/synapse-copycat/.storybook",
-        "browserTarget": "synapse-copycat:build",
+        "browserTarget": "synapse-copycat:build-frontend",
         "compodoc": true,
         "compodocArgs": [
           "-p",
@@ -136,6 +136,5 @@
         }
       }
     }
-  },
-  "tags": []
+  }
 }

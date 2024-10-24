@@ -1,0 +1,10 @@
+:root button[synapseButton] {
+  background-color: #e08013;
+  color: #fff;
+  margin: 0;
+}
+:root button[synapseButton]:hover {
+  background-color: hsl(from #e08013 h s calc(l * 0.8));
+}
+
+/*# sourceMappingURL=default-dark.css.map */

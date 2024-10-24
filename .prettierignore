@@ -12,3 +12,4 @@ documentation.json
 /node_modules
 
 .storybook
+/.nx/workspace-data

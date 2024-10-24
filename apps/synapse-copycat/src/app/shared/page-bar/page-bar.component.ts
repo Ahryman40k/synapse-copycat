@@ -1,5 +1,12 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ComponentRef } from 'react';
+
+export type TabDescriptor = {
+  title: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: ComponentRef<any>;
+};
 
 @Component({
   selector: 'synapse-copycat-page-bar',
@@ -9,4 +16,6 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./page-bar.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PageBarComponent {}
+export class PageBarComponent {
+  @Input() tabDescriptors: TabDescriptor[] = []
+}

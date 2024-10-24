@@ -1,0 +1,5 @@
+@use '../lib/button/button.component.theme' as button;
+
+@mixin theme-them-all($theme) {
+  @include button.theme($theme);
+}

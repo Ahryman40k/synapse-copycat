@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'synapse-button',
+  selector: 'button[synapseButton]',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './button.component.html',

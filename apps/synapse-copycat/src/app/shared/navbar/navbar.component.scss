@@ -4,7 +4,6 @@
 }
 
 .sticky {
-  position: fixed;
   top: 0;
   width: 100%;
 }
@@ -27,8 +26,10 @@
   }
 
   button {
+    background: none;
     border: none;
     height: 100%;
     text-transform: uppercase;
+    font-weight: 900;
   }
 }

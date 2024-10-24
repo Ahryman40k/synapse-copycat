@@ -5,6 +5,8 @@
 
 use serde::ser::{Serialize, SerializeStruct, Serializer};
 
+mod razer;
+
 #[derive(PartialEq, Debug)]
 struct RazerDevice {
     product_id: u16,
@@ -54,7 +56,6 @@ fn devices() -> Vec<RazerDevice> {
     result
 }
 
-
 #[tauri::command]
 fn connected_devices() -> Vec<String> {
     let mut result = vec![];
@@ -65,7 +66,6 @@ fn connected_devices() -> Vec<String> {
 
     result
 }
-
 
 fn main() {
     tauri::Builder::default()

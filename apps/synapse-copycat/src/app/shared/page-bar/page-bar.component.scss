@@ -1,3 +1,14 @@
-.pagebar {
-  height: 5em;
+:host {
+  background-color: #44d62c;
+
+  button {
+    color: black;
+    font-weight: 900;
+
+    border: none;
+    background: none;
+    padding: 1em;
+
+    text-transform: uppercase;
+  }
 }

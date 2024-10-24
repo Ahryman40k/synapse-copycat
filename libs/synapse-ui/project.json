@@ -3,19 +3,20 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/synapse-ui/src",
   "prefix": "synapse",
-  "tags": [],
   "projectType": "library",
+  "tags": [],
   "targets": {
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
       "options": {
         "jestConfig": "libs/synapse-ui/jest.config.ts"
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"]
+      "executor": "@nx/eslint:lint"
     },
     "storybook": {
       "executor": "@storybook/angular:start-storybook",
@@ -25,13 +26,28 @@
         "browserTarget": "synapse-ui:build-storybook",
         "compodoc": true,
         "compodocArgs": [
-          "-p",
-          "libs/synapse-ui/tsconfig.json",
           "-e",
           "json",
           "-d",
-          "libs/synapse-ui/libs/synapse-ui"
-        ]
+          "libs/synapse-ui"
+        ],
+        "styles": [
+          {
+            "input": "libs/synapse-ui/assets/default-light.css",
+            "bundleName": "default-light",
+            "inject": false
+          },
+          {
+            "input": "libs/synapse-ui/assets/default-dark.css",
+            "bundleName": "default-dark",
+            "inject": false
+          }
+        ],
+        "stylePreprocessorOptions": {
+          "includePaths": [
+            "libs/synapse-ui/src/styles/themes"
+          ]
+        }
       },
       "configurations": {
         "ci": {
@@ -39,9 +55,23 @@
         }
       }
     },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "sass --update {projectRoot}/src/styles/themes/default-light.scss:libs/synapse-ui/assets/default-light.css",
+          "sass --update {projectRoot}/src/styles/themes/default-dark.scss:libs/synapse-ui/assets/default-dark.css"
+        ]
+      },
+      "inputs": [
+        "{projectRoot}/**/*.scss"
+      ]
+    },
     "build-storybook": {
       "executor": "@storybook/angular:build-storybook",
-      "outputs": ["{options.outputDir}"],
+      "outputs": [
+        "{options.outputDir}"
+      ],
       "options": {
         "outputDir": "dist/storybook/synapse-ui",
         "configDir": "libs/synapse-ui/.storybook",
@@ -54,7 +84,25 @@
           "json",
           "-d",
           "libs/synapse-ui"
-        ]
+        ],
+        "styles": [
+          "libs/synapse-ui/src/styles.scss",
+          {
+            "input": "libs/synapse-ui/src/styles/themes/default-light.css",
+            "bundleName": "default-light",
+            "inject": false
+          },
+          {
+            "input": "libs/synapse-ui/src/styles/themes/default-dark.css",
+            "bundleName": "default-dark",
+            "inject": false
+          }
+        ],
+        "stylePreprocessorOptions": {
+          "includePaths": [
+            "libs/synapse-ui/src/styles/themes"
+          ]
+        }
       },
       "configurations": {
         "ci": {

@@ -12,6 +12,7 @@ fn main() -> Result<()> {
             .unwrap_or(false)
     });
 
+
     if let Some(device) = device {
         let handle = device.open()?;
         let endpoint = handle
@@ -23,6 +24,9 @@ fn main() -> Result<()> {
             .flat_map(|descriptor| descriptor.endpoint_descriptors())
             .find(|endpoint| endpoint.direction() == rusb::Direction::Out)
             .unwrap();
+
+
+            handle.
 
             let message = b"\x01\x02\x03";
         let timeout = std::time::Duration::from_secs(1);
@@ -53,6 +57,9 @@ fn main() -> Result<()> {
     }
 
      */
+
+
+
 
     Ok(())
 }

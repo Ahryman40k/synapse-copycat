@@ -1,2 +1,19 @@
+@use 'sass:map';
+
 @mixin theme($theme) {
+  @debug $theme;
+
+  $primary: map.get($theme, palettes, primary);
+  @debug 'Palettes: ' map.get($theme, palettes);
+  @debug 'Primary color: ' $primary;
+
+  button[synapseButton] {
+    background-color: $primary;
+    color: #fff;
+    margin: 0;
+
+    &:hover {
+      background-color: hsl(from $primary h s calc(l * 0.8));
+    }
+  }
 }

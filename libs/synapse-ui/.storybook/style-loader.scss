@@ -10,6 +10,17 @@
 //   }
 // }
 
+/*
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anta&display=swap" rel="stylesheet">
+
+.anta-regular {
+  font-family: "Anta", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+*/
 $default-theme: synapse.make-dark-theme();
 $orange-theme: synapse.make-light-theme(#e08013);
 

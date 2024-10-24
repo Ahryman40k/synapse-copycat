@@ -1,0 +1,38 @@
+@use 'sass:map';
+@use '../../index' as lib;
+
+$theme-version: 1;
+
+@function define-theme($config: ()) {
+  @debug 'config:' $config;
+  $type: map.get($config, color, theme-type) or light;
+  $primary: map.get($config, color, primary);
+  $tertiary: map.get($config, color, tertiary);
+
+  @debug 'get primary color' $primary;
+
+  @return (
+    theme-version: $theme-version,
+    theme-type: $type,
+    palettes: (
+      primary: $primary,
+      error: $tertiary,
+    )
+  );
+}
+
+$theme: define-theme(
+  (
+    color: (
+      theme-type: dark,
+      primary: #e08013,
+      tertiary: #e05000,
+    ),
+  )
+);
+
+@debug 'light theme' $theme;
+
+:root {
+  @include lib.theme-them-all($theme);
+}

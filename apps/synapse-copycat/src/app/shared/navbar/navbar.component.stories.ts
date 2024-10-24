@@ -81,7 +81,7 @@ const meta: Meta<NavbarComponent> = {
     layout: 'fullscreen',
   },
   argTypes: {
-    onDeviceActivated: {
+    DeviceActivated: {
       action: (device: Device) => `Activate device ${device.name}`,
       table: {
         disable: true,
