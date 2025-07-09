@@ -14,36 +14,50 @@
   $darker-hue: 15%,
   $lighter-hue: 30%,
   $text-hue: 0) {
-  @return (default: $base-color,
+  @return (
+    default: $base-color,
     darken: darken($base-color, $darker-hue),
     lighter: lighten($base-color, $lighter-hue),
-    text: $base-color );
+    text: $base-color
+  );
 }
 
 @function make-dark-theme($primary: #44d62c) {
   $default-background: #222222;
-  @return (color: (primary: $primary,
-      primary-palette: define-palette($primary),
-      background: $default-background,
-      background-palette: define-palette($default-background),
-      foreground: #fff,
-    ),
-    _internal: (type: 'dark',
-      schema: '0.1',
-    ));
+  @return (
+      color: (
+        primary: $primary,
+        palettes: (
+          primary: define-palette($primary),
+          background: define-palette($default-background)
+        ) ,
+        background: $default-background,
+        foreground: #fff,
+      ),
+      _internal: (
+        type: 'dark',
+        schema: '0.1',
+      )
+  );
 }
 
 @function make-light-theme($primary: #e08013) {
   $default-background: #fff;
-  @return (color: (primary: $primary,
-      primary-palette: define-palette($primary),
-      background: $default-background,
-      background-palette: define-palette($default-background),
-      foreground: #222222,
-    ),
-    _internal: (type: 'light',
-      schema: '0.1',
-    ));
+  @return (
+      color: (
+        primary: $primary,
+        palettes: (
+          primary: define-palette($primary),
+          background: define-palette($default-background)
+        ),
+        background: $default-background,
+        foreground: #222222,
+      ),
+      _internal: (
+        type: 'light',
+        schema: '0.1',
+      )
+    );
 }
 
 @function _get_palette_color($theme, $key, $subkey) {
@@ -73,4 +87,10 @@ $theme: make-light-theme();
 
 :root {
   @include theme-them-all($theme);
+}
+
+$dark: make-dark-theme();
+
+.dark {
+  @include theme-them-all($dark);
 }

@@ -1,6 +1,0 @@
-[submodule "cli/term"]
-	path = cli/term
-	url = https://codeberg.org/gnarz/term
-[submodule "cli/src/term"]
-	path = cli/src/term
-	url = https://codeberg.org/gnarz/term

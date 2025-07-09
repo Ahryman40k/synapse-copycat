@@ -1,0 +1,14 @@
+
+@use '../../../../libs/synapse-ui/src/theme-api.scss' as themeLib;
+
+$grey: #333333;
+$accent: #2b5580;
+
+$theme-dark: themeLib.make-theme-dark(#44d62c);
+
+:root {
+    @include themelib.apply($theme-dark);
+    // @include forerunner.apply($theme-dark);
+    // @include station.apply($theme-dark);
+    // @include visualization.apply($theme-dark);
+}

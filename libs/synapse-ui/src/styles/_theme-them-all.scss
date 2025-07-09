@@ -1,5 +1,17 @@
 @use '../lib/button/button.component.theme' as button;
+@use '../lib/button-group/button-group.component.theme' as button-group;
+@use '../lib/card/card.component.theme' as card;
+@use '../lib/checkbox/checkbox.component.theme'  as checkbox;
+@use '../lib/select/select.component.theme' as select;
+@use '../lib/slider/slider.component.theme' as slider;
+@use '../lib/toggle/toggle.component.theme' as toggle;
 
 @mixin theme-them-all($theme) {
   @include button.theme($theme);
+  @include button-group.theme($theme);
+  @include card.theme($theme);
+  @include checkbox.theme($theme);
+  @include select.theme($theme);
+  @include slider.theme($theme);
+  @include toggle.theme($theme);
 }

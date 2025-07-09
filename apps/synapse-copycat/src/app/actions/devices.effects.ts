@@ -1,28 +1,28 @@
-import { Injectable, inject } from '@angular/core';
-import { DeviceService } from '../services/device.service';
+import { Injectable, inject } from "@angular/core";
 
-import * as DeviceActions from './devices.actions';
-import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { of, catchError, map, exhaustMap } from 'rxjs';
+import * as DeviceActions from "./devices.actions";
+import { Actions, createEffect, ofType } from "@ngrx/effects";
+import { of, catchError, map, exhaustMap } from "rxjs";
+import { DeviceService } from "../services/device-service-token";
 
 @Injectable()
 export class DeviceEffects {
-  private readonly action$ = inject(Actions);
-  private readonly deviceService = inject(DeviceService);
+	private readonly action$ = inject(Actions);
+	private readonly deviceService = inject(DeviceService);
 
-  readonly loadDevices$ = createEffect(
-    () =>
-      this.action$.pipe(
-        ofType(DeviceActions.getDevices),
-        exhaustMap(() =>
-          this.deviceService.discover().pipe(
-            map((devices) => DeviceActions.DevicesLoadedSuccess({ devices })),
-            catchError((error) =>
-              of(DeviceActions.DevicesLoadedFailure({ error }))
-            )
-          )
-        )
-      )
-    // { functional: true, dispatch: false }
-  );
+	readonly loadDevices$ = createEffect(
+		() =>
+			this.action$.pipe(
+				ofType(DeviceActions.getDevices),
+				exhaustMap(() =>
+					this.deviceService.discover().pipe(
+						map((devices) => DeviceActions.DevicesLoadedSuccess({ devices })),
+						catchError((error) =>
+							of(DeviceActions.DevicesLoadedFailure({ error })),
+						),
+					),
+				),
+			),
+		// { functional: true, dispatch: false }
+	);
 }

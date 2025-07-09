@@ -1,7 +1,5 @@
-use serde_json::Result;
-use zbus::{proxy, Connection};
+use zbus::{proxy};
 
-use std::error::Error;
 
 #[proxy(
     default_service = "org.razer",

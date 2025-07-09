@@ -32,16 +32,7 @@
           "libs/synapse-ui"
         ],
         "styles": [
-          {
-            "input": "libs/synapse-ui/assets/default-light.css",
-            "bundleName": "default-light",
-            "inject": false
-          },
-          {
-            "input": "libs/synapse-ui/assets/default-dark.css",
-            "bundleName": "default-dark",
-            "inject": false
-          }
+          "libs/synapse-ui/.storybook/style-loader.scss",
         ],
         "stylePreprocessorOptions": {
           "includePaths": [

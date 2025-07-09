@@ -3,12 +3,12 @@
     "interfaces": [
         {
             "name": "AppState",
-            "id": "interface-AppState-aec785363bf09228b13b4773e3be45c539cca7e80efbeb6969285ebbc2997bda3e91f9b994ca08047435884dda8fa71f0bc328c3960338cf7a5510f0d695f7e5",
+            "id": "interface-AppState-6a5b029037078eb070c16a2c34405ddf4fd4d19b68e813cd682e3a047131050d2c27aab7d1af240f5862936eeff3261a6d4866167d1eea01a90f0450f69d6ad3",
             "file": "apps/synapse-copycat/src/app/actions/devices.reducer.ts",
             "deprecated": false,
             "deprecationMessage": "",
             "type": "interface",
-            "sourceCode": "import { createReducer, createSelector, on } from '@ngrx/store';\nimport { Device, DeviceGroup } from '../models';\nimport * as DevicesActions from './devices.actions';\n\nexport interface DeviceState {\n  usb: Device[];\n  connected: Device[];\n}\n\nexport interface AppState {\n  devices: DeviceState;\n}\n\nconst initialState: DeviceState = {\n  usb: [],\n  connected: [],\n};\n\nexport const devicesReducer = createReducer(\n  initialState,\n  on(DevicesActions.getDevices, (state) => ({ ...state })),\n  on(DevicesActions.DevicesLoadedSuccess, (state, { devices }) => ({\n    ...state,\n    usb: [...state.usb, ...devices.filter((d) => d.group === 'usb')],\n    connected: [\n      ...state.connected,\n      ...devices.filter((d) => d.group === 'connected'),\n    ],\n  })),\n  on(DevicesActions.DevicesLoadedFailure, (state) => ({\n    ...state,\n    usb: [],\n    connected: [],\n  }))\n);\n\nexport const selectDevices = (state: AppState) => state.devices;\n\nexport const deviceGroupSelector = (deviceGroup: DeviceGroup) =>\n  createSelector(selectDevices, (devices) =>\n    deviceGroup === 'usb' ? devices.usb : devices.connected\n  );\n",
+            "sourceCode": "import { createReducer, createSelector, on } from \"@ngrx/store\";\nimport { Device, DeviceGroup } from \"../models\";\nimport * as DevicesActions from \"./devices.actions\";\n\nexport interface DeviceState {\n\tusb: Device[];\n\tconnected: Device[];\n}\n\nexport interface AppState {\n\tdevices: DeviceState;\n}\n\nconst initialState: DeviceState = {\n\tusb: [],\n\tconnected: [],\n};\n\nexport const devicesReducer = createReducer(\n\tinitialState,\n\ton(DevicesActions.getDevices, (state) => ({ ...state })),\n\ton(DevicesActions.DevicesLoadedSuccess, (state, { devices }) => ({\n\t\t...state,\n\t\tusb: [...state.usb, ...devices.filter((d) => d.group === \"usb\")],\n\t\tconnected: [\n\t\t\t...state.connected,\n\t\t\t...devices.filter((d) => d.group === \"connected\"),\n\t\t],\n\t})),\n\ton(DevicesActions.DevicesLoadedFailure, (state) => ({\n\t\t...state,\n\t\tusb: [],\n\t\tconnected: [],\n\t})),\n);\n\nexport const selectDevices = (state: AppState) => state.devices;\n\nexport const deviceGroupSelector = (deviceGroup: DeviceGroup) =>\n\tcreateSelector(selectDevices, (devices) =>\n\t\tdeviceGroup === \"usb\" ? devices.usb : devices.connected,\n\t);\n",
             "properties": [
                 {
                     "name": "devices",
@@ -26,13 +26,38 @@
             "extends": []
         },
         {
+            "name": "DeviceServiceContract",
+            "id": "interface-DeviceServiceContract-61501adb8d4ca89bc127f7c24af362508be956a2d919e607cbf2ed1da921904ff2f1be59a15ae9d4883708ede3055b1980a110bc70483f44f9c1dc5424e298ce",
+            "file": "apps/synapse-copycat/src/app/services/device-service-token.ts",
+            "deprecated": false,
+            "deprecationMessage": "",
+            "type": "interface",
+            "sourceCode": "import { InjectionToken } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Device } from \"../models\";\n\nexport interface DeviceServiceContract {\n\tdiscover(): Observable<Device[]>;\n}\n\nexport const DeviceService = new InjectionToken<DeviceServiceContract>(\n\t\"DeviceService\",\n);\n",
+            "properties": [],
+            "indexSignatures": [],
+            "kind": 173,
+            "methods": [
+                {
+                    "name": "discover",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "Observable<Device[]>",
+                    "typeParameters": [],
+                    "line": 6,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                }
+            ],
+            "extends": []
+        },
+        {
             "name": "DeviceState",
-            "id": "interface-DeviceState-aec785363bf09228b13b4773e3be45c539cca7e80efbeb6969285ebbc2997bda3e91f9b994ca08047435884dda8fa71f0bc328c3960338cf7a5510f0d695f7e5",
+            "id": "interface-DeviceState-6a5b029037078eb070c16a2c34405ddf4fd4d19b68e813cd682e3a047131050d2c27aab7d1af240f5862936eeff3261a6d4866167d1eea01a90f0450f69d6ad3",
             "file": "apps/synapse-copycat/src/app/actions/devices.reducer.ts",
             "deprecated": false,
             "deprecationMessage": "",
             "type": "interface",
-            "sourceCode": "import { createReducer, createSelector, on } from '@ngrx/store';\nimport { Device, DeviceGroup } from '../models';\nimport * as DevicesActions from './devices.actions';\n\nexport interface DeviceState {\n  usb: Device[];\n  connected: Device[];\n}\n\nexport interface AppState {\n  devices: DeviceState;\n}\n\nconst initialState: DeviceState = {\n  usb: [],\n  connected: [],\n};\n\nexport const devicesReducer = createReducer(\n  initialState,\n  on(DevicesActions.getDevices, (state) => ({ ...state })),\n  on(DevicesActions.DevicesLoadedSuccess, (state, { devices }) => ({\n    ...state,\n    usb: [...state.usb, ...devices.filter((d) => d.group === 'usb')],\n    connected: [\n      ...state.connected,\n      ...devices.filter((d) => d.group === 'connected'),\n    ],\n  })),\n  on(DevicesActions.DevicesLoadedFailure, (state) => ({\n    ...state,\n    usb: [],\n    connected: [],\n  }))\n);\n\nexport const selectDevices = (state: AppState) => state.devices;\n\nexport const deviceGroupSelector = (deviceGroup: DeviceGroup) =>\n  createSelector(selectDevices, (devices) =>\n    deviceGroup === 'usb' ? devices.usb : devices.connected\n  );\n",
+            "sourceCode": "import { createReducer, createSelector, on } from \"@ngrx/store\";\nimport { Device, DeviceGroup } from \"../models\";\nimport * as DevicesActions from \"./devices.actions\";\n\nexport interface DeviceState {\n\tusb: Device[];\n\tconnected: Device[];\n}\n\nexport interface AppState {\n\tdevices: DeviceState;\n}\n\nconst initialState: DeviceState = {\n\tusb: [],\n\tconnected: [],\n};\n\nexport const devicesReducer = createReducer(\n\tinitialState,\n\ton(DevicesActions.getDevices, (state) => ({ ...state })),\n\ton(DevicesActions.DevicesLoadedSuccess, (state, { devices }) => ({\n\t\t...state,\n\t\tusb: [...state.usb, ...devices.filter((d) => d.group === \"usb\")],\n\t\tconnected: [\n\t\t\t...state.connected,\n\t\t\t...devices.filter((d) => d.group === \"connected\"),\n\t\t],\n\t})),\n\ton(DevicesActions.DevicesLoadedFailure, (state) => ({\n\t\t...state,\n\t\tusb: [],\n\t\tconnected: [],\n\t})),\n);\n\nexport const selectDevices = (state: AppState) => state.devices;\n\nexport const deviceGroupSelector = (deviceGroup: DeviceGroup) =>\n\tcreateSelector(selectDevices, (devices) =>\n\t\tdeviceGroup === \"usb\" ? devices.usb : devices.connected,\n\t);\n",
             "properties": [
                 {
                     "name": "connected",
@@ -62,7 +87,7 @@
     "injectables": [
         {
             "name": "DeviceEffects",
-            "id": "injectable-DeviceEffects-ec0a4de7768e52ccc926f420fbdf3028856f97f2c6a3bbfd49d4f2a4947dd0d6a738ec7d7a8fbc833c6c96abef44f8731c384fa64b2e821f241fb174d7ab7e7a",
+            "id": "injectable-DeviceEffects-0bfefd69b99e84cc9d2f5a330264535aa1a2e28d938e80f73bbd6b83e13954e71dbb460e1a554d65c539ef2f88d6493548b05f80dfc5a56d0a1094e66413a8d3",
             "file": "apps/synapse-copycat/src/app/actions/devices.effects.ts",
             "properties": [
                 {
@@ -95,7 +120,7 @@
                 },
                 {
                     "name": "loadDevices$",
-                    "defaultValue": "createEffect(\n    () =>\n      this.action$.pipe(\n        ofType(DeviceActions.getDevices),\n        exhaustMap(() =>\n          this.deviceService.discover().pipe(\n            map((devices) => DeviceActions.DevicesLoadedSuccess({ devices })),\n            catchError((error) =>\n              of(DeviceActions.DevicesLoadedFailure({ error }))\n            )\n          )\n        )\n      )\n    // { functional: true, dispatch: false }\n  )",
+                    "defaultValue": "createEffect(\n\t\t() =>\n\t\t\tthis.action$.pipe(\n\t\t\t\tofType(DeviceActions.getDevices),\n\t\t\t\texhaustMap(() =>\n\t\t\t\t\tthis.deviceService.discover().pipe(\n\t\t\t\t\t\tmap((devices) => DeviceActions.DevicesLoadedSuccess({ devices })),\n\t\t\t\t\t\tcatchError((error) =>\n\t\t\t\t\t\t\tof(DeviceActions.DevicesLoadedFailure({ error })),\n\t\t\t\t\t\t),\n\t\t\t\t\t),\n\t\t\t\t),\n\t\t\t),\n\t\t// { functional: true, dispatch: false }\n\t)",
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "",
@@ -112,24 +137,248 @@
             "deprecationMessage": "",
             "description": "",
             "rawdescription": "\n",
-            "sourceCode": "import { Injectable, inject } from '@angular/core';\nimport { DeviceService } from '../services/device.service';\n\nimport * as DeviceActions from './devices.actions';\nimport { Actions, createEffect, ofType } from '@ngrx/effects';\nimport { of, catchError, map, exhaustMap } from 'rxjs';\n\n@Injectable()\nexport class DeviceEffects {\n  private readonly action$ = inject(Actions);\n  private readonly deviceService = inject(DeviceService);\n\n  readonly loadDevices$ = createEffect(\n    () =>\n      this.action$.pipe(\n        ofType(DeviceActions.getDevices),\n        exhaustMap(() =>\n          this.deviceService.discover().pipe(\n            map((devices) => DeviceActions.DevicesLoadedSuccess({ devices })),\n            catchError((error) =>\n              of(DeviceActions.DevicesLoadedFailure({ error }))\n            )\n          )\n        )\n      )\n    // { functional: true, dispatch: false }\n  );\n}\n",
+            "sourceCode": "import { Injectable, inject } from \"@angular/core\";\n\nimport * as DeviceActions from \"./devices.actions\";\nimport { Actions, createEffect, ofType } from \"@ngrx/effects\";\nimport { of, catchError, map, exhaustMap } from \"rxjs\";\nimport { DeviceService } from \"../services/device-service-token\";\n\n@Injectable()\nexport class DeviceEffects {\n\tprivate readonly action$ = inject(Actions);\n\tprivate readonly deviceService = inject(DeviceService);\n\n\treadonly loadDevices$ = createEffect(\n\t\t() =>\n\t\t\tthis.action$.pipe(\n\t\t\t\tofType(DeviceActions.getDevices),\n\t\t\t\texhaustMap(() =>\n\t\t\t\t\tthis.deviceService.discover().pipe(\n\t\t\t\t\t\tmap((devices) => DeviceActions.DevicesLoadedSuccess({ devices })),\n\t\t\t\t\t\tcatchError((error) =>\n\t\t\t\t\t\t\tof(DeviceActions.DevicesLoadedFailure({ error })),\n\t\t\t\t\t\t),\n\t\t\t\t\t),\n\t\t\t\t),\n\t\t\t),\n\t\t// { functional: true, dispatch: false }\n\t);\n}\n",
             "extends": [],
             "type": "injectable"
         },
         {
-            "name": "DeviceService",
-            "id": "injectable-DeviceService-c2b7d07ca96d858a95c36dd47452953ebec34b8246878e2ca505a1abe4d2814275f00f79317fc7d0c1070cdda9f0189c00903d7342619157f89e22d8784141d1",
-            "file": "apps/synapse-copycat/src/app/services/device.service.ts",
+            "name": "ThemeService",
+            "id": "injectable-ThemeService-aae6f6e482741e19b726b4d7d3436c79dc7b6cafb9a8768beffb819293a1b67ecd077140614c06cf09765e57b571481b43636cfd2be792ab81b8a9ff232123d3",
+            "file": "apps/synapse-copycat/src/app/services/theme-manager.ts",
             "properties": [
                 {
-                    "name": "_deviceRepository",
-                    "defaultValue": "this._http\n    .get<DeviceRepository>('assets/usb-devices.json')\n    .pipe(shareReplay())",
+                    "name": "_activatedTheme",
+                    "defaultValue": "\"default-light-theme\"",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Theme",
+                    "optional": false,
+                    "description": "",
+                    "line": 12,
+                    "modifierKind": [
+                        123
+                    ]
+                },
+                {
+                    "name": "document",
+                    "defaultValue": "inject(DOCUMENT)",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Document",
+                    "optional": false,
+                    "description": "",
+                    "line": 11,
+                    "modifierKind": [
+                        123
+                    ]
+                }
+            ],
+            "methods": [
+                {
+                    "name": "isDarkTheme",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "boolean",
+                    "typeParameters": [],
+                    "line": 39,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "isDarkThemeMatch",
+                    "args": [
+                        {
+                            "name": "theme",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "boolean",
+                    "typeParameters": [],
+                    "line": 14,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "theme",
+                            "type": "string",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "switchTheme",
+                    "args": [
+                        {
+                            "name": "theme",
+                            "type": "Theme",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 23,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "theme",
+                            "type": "Theme",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "description": "",
+            "rawdescription": "\n",
+            "sourceCode": "import { DOCUMENT } from \"@angular/common\";\nimport { Injectable, inject } from \"@angular/core\";\n\nexport const theme = [\"default-light-theme\", \"default-dark-theme\"] as const;\nexport type Theme = (typeof theme)[number];\n\n@Injectable({\n\tprovidedIn: \"root\",\n})\nexport class ThemeService {\n\tprivate document: Document = inject(DOCUMENT);\n\tprivate _activatedTheme: Theme = \"default-light-theme\";\n\n\tisDarkThemeMatch(theme: string): boolean {\n\t\tconst match = theme.split(\"-\");\n\t\treturn match[1] === \"dark\";\n\t}\n\n\tget activatedTheme() {\n\t\treturn this._activatedTheme;\n\t}\n\n\tswitchTheme(theme: Theme): void {\n\t\tconst themeLink = this.document.getElementById(\n\t\t\t\"app-theme\",\n\t\t) as HTMLLinkElement;\n\t\tconst body = this.document.querySelector(\"body\") as HTMLElement;\n\n\t\tif (themeLink) {\n\t\t\tbody.setAttribute(\n\t\t\t\t\"data-theme\",\n\t\t\t\tthis.isDarkThemeMatch(theme) ? \"dark\" : \"light\",\n\t\t\t);\n\t\t\tthemeLink.href = `/assets/themes/${theme}.css`;\n\t\t\tthis._activatedTheme = theme;\n\t\t}\n\t}\n\n\tisDarkTheme(): boolean {\n\t\treturn this.activatedTheme === \"default-dark-theme\";\n\t}\n}\n",
+            "accessors": {
+                "activatedTheme": {
+                    "name": "activatedTheme",
+                    "getSignature": {
+                        "name": "activatedTheme",
+                        "type": "",
+                        "returnType": "",
+                        "line": 19
+                    }
+                }
+            },
+            "extends": [],
+            "type": "injectable"
+        }
+    ],
+    "guards": [],
+    "interceptors": [],
+    "classes": [
+        {
+            "name": "GlobalErrorHandlerService",
+            "id": "class-GlobalErrorHandlerService-2690147ae463847882a2eb47f345e5bc399b5795f5e5dde39b12f24924126e0bc8d99cc392cb0b0c580e1a72d562eff79973bc3ef0d5347ce81fcdbfbc14ec7f",
+            "file": "apps/synapse-copycat/src/app/services/global-error-handler.ts",
+            "deprecated": false,
+            "deprecationMessage": "",
+            "type": "class",
+            "sourceCode": "import { ErrorHandler, inject } from \"@angular/core\";\nimport { Router } from \"@angular/router\";\n\nexport class GlobalErrorHandlerService implements ErrorHandler {\n\tprivate readonly _router = inject(Router);\n\n\thandleError(error: any): void {\n\t\tconsole.log(`URL: ${this._router.url}`);\n\t\tconsole.log(error);\n\t}\n}\n",
+            "inputsClass": [],
+            "outputsClass": [],
+            "properties": [
+                {
+                    "name": "_router",
+                    "defaultValue": "inject(Router)",
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "",
                     "optional": false,
                     "description": "",
-                    "line": 88,
+                    "line": 5,
+                    "modifierKind": [
+                        123,
+                        148
+                    ]
+                }
+            ],
+            "methods": [
+                {
+                    "name": "handleError",
+                    "args": [
+                        {
+                            "name": "error",
+                            "type": "any",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 7,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "name": "error",
+                            "type": "any",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "indexSignatures": [],
+            "extends": [],
+            "hostBindings": [],
+            "hostListeners": [],
+            "implements": [
+                "ErrorHandler"
+            ]
+        },
+        {
+            "name": "LocalDeviceService",
+            "id": "class-LocalDeviceService-c1c664a849b6fb7479f28327ce4234a0ced6458b0ad7e09906b652384ab1f2c8b5a2bc25ae987dc17735ed32aa72dfef81b87d798a99cb44829b411b7500fdf7",
+            "file": "apps/synapse-copycat/src/app/services/local-device.service.ts",
+            "deprecated": false,
+            "deprecationMessage": "",
+            "type": "class",
+            "sourceCode": "import { delay, Observable, of } from \"rxjs\";\nimport { Device } from \"../models\";\nimport { DeviceServiceContract } from \"./device-service-token\";\n\nconst connected: Device[] = [\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"connected\",\n\t\tkind: \"twinkly\",\n\t\tname: \"Twinkly\",\n\t\tvisual: \"assets/devices/twinkly.png\",\n\t},\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"connected\",\n\t\tkind: \"goove\",\n\t\tname: \"Govee\",\n\t\tvisual: \"assets/images/razer-logo.svg\",\n\t},\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"connected\",\n\t\tkind: \"nanoleaf\",\n\t\tname: \"Nanoleaf\",\n\t\tvisual: \"assets/images/razer-logo.svg\",\n\t},\n];\n\nconst devices: Device[] = [\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\t\tid: \"126\",\n\t\tkind: \"accessory\",\n\t\tname: \"Mouse dock\",\n\t\tvisual: \"assets/devices/razer-mouse-dock.png\",\n\t},\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\t\tid: \"136\",\n\t\tkind: \"mouse\",\n\t\tname: \"Razer Basilisk Ultimate (wired)\",\n\t\tvisual: \"assets/devices/razer-basilisk-ultimate.png\",\n\t},\n\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\t\tid: \"136\",\n\t\tkind: \"mouse\",\n\t\tname: \"Razer Basilisk Ultimate (wireless)\",\n\t\tvisual: \"assets/devices/razer-basilisk-ultimate.png\",\n\t},\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\t\tid: \"550\",\n\t\tkind: \"keyboard\",\n\t\tname: \"Razer Huntsman Elite\",\n\t\tvisual: \"assets/devices/razer-huntsman-elite.png\",\n\t},\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\t\tid: \"3074\",\n\t\tkind: \"mousemat\",\n\t\tname: \"Razer Goliathus Extended\",\n\t\tvisual: \"assets/devices/razer-goliathus-extended.png\",\n\t},\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\t\tid: \"3587\",\n\t\tkind: \"streaming\",\n\t\tname: \"Razer Kiyo\",\n\t\tvisual: \"assets/devices/razer-kiyo.png\",\n\t},\n];\n\nexport class LocalDeviceService implements DeviceServiceContract {\n\tdiscover = (): Observable<Device[]> =>\n\t\tof([...devices, ...connected]).pipe(delay(1000));\n}\n",
+            "inputsClass": [],
+            "outputsClass": [],
+            "properties": [
+                {
+                    "name": "discover",
+                    "defaultValue": "() => {...}",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 82
+                }
+            ],
+            "methods": [],
+            "indexSignatures": [],
+            "extends": [],
+            "hostBindings": [],
+            "hostListeners": [],
+            "implements": [
+                "DeviceServiceContract"
+            ]
+        },
+        {
+            "name": "TauriDeviceService",
+            "id": "class-TauriDeviceService-7d2a65c174577267f2378124c17fe9ef9cf492629698ad13ba1e0219dc50ecd8c6f72fc70bbf21e9473c009665e0f22299e2bf5575b38937c55e43d9831e9e38",
+            "file": "apps/synapse-copycat/src/app/services/tauri-device-service.ts",
+            "deprecated": false,
+            "deprecationMessage": "",
+            "type": "class",
+            "sourceCode": "import { inject, Injectable } from \"@angular/core\";\nimport {\n\tdelay,\n\tfrom,\n\tmap,\n\tmerge,\n\tObservable,\n\tof,\n\tshareReplay,\n\twithLatestFrom,\n} from \"rxjs\";\nimport { Device, DeviceRepository } from \"../models\";\nimport { DeviceServiceContract } from \"./device-service-token\";\n\nimport { invoke } from \"@tauri-apps/api\";\nimport { HttpClient } from \"@angular/common/http\";\n\n/*\nconst t = {\n  '123': {\n    a: {\n      a1: 1,\n      a2: 2,\n    },\n  },\n  '456': {\n    b: {\n      b1: 2,\n      b2: 3,\n    },\n  },\n};\n\n\ntype T1A = keyof (typeof t)['123']['a'];\ntype T1B = keyof (typeof t)['456']['b'];\n*/\n\ntype ExtractGroupKeys<T> = keyof T;\ntype ExtractIdKeys<\n\tT extends Record<string, unknown>,\n\tG extends string,\n> = T[G] extends Record<string, unknown> ? keyof T[G] : never;\n\n// type T1 = ExtractGroupKeys<typeof t>;\n// type T2 = ExtractIdKeys<typeof t, ExtractGroupKeys<typeof t>>;\n\nexport const extractUsbDevice = <\n\tT extends Record<string, Record<string, Partial<Device>>>,\n\tG extends string & ExtractGroupKeys<T>,\n\tD extends string & ExtractIdKeys<T, G>,\n>(\n\tdevices: T,\n\tdeviceGroup: keyof T,\n\tdeviceId: D,\n): Device => {\n\tconst groupExists = !!devices[deviceGroup];\n\tif (!groupExists) {\n\t\tthrow new Error(`Unkown device group ${String(deviceGroup)}`);\n\t}\n\tconst deviceIdExists = !!devices[deviceGroup][deviceId];\n\tif (!deviceIdExists) {\n\t\tthrow new Error(\n\t\t\t`Unknown device id ${String(deviceId)} in device group ${String(\n\t\t\t\tdeviceGroup,\n\t\t\t)}`,\n\t\t);\n\t}\n\n\tconst device = devices[deviceGroup][deviceId];\n\treturn {\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\n\t\tid: deviceId,\n\n\t\tname: device.name,\n\t\tkind: device.kind,\n\t\tvisual: device.visual,\n\t} as Device;\n};\n\nexport class TauriDeviceService implements DeviceServiceContract {\n\tprivate readonly _http = inject(HttpClient);\n\n\tprivate readonly _deviceRepository = this._http\n\t\t.get<DeviceRepository>(\"assets/usb-devices.json\")\n\t\t.pipe(shareReplay());\n\n\tprivate discoverUsb$: Observable<Device[]> = from(\n\t\tinvoke<{ vendor_id: number; product_id: number }[]>(\"devices\", {}),\n\t).pipe(\n\t\twithLatestFrom(this._deviceRepository),\n\t\tmap(([devices, repository]) =>\n\t\t\tdevices.map((device) =>\n\t\t\t\textractUsbDevice(\n\t\t\t\t\trepository,\n\t\t\t\t\tdevice.vendor_id.toString() || \"0\",\n\t\t\t\t\tdevice.product_id.toString() || \"0\",\n\t\t\t\t),\n\t\t\t),\n\t\t),\n\t);\n\n\tprivate discoverConnected$: Observable<Device[]> = of([\n\t\t{\n\t\t\t__type: \"device\",\n\t\t\tgroup: \"connected\",\n\t\t\tkind: \"twinkly\",\n\t\t\tname: \"Twinkly\",\n\t\t\tvisual: \"assets/devices/twinkly.png\",\n\t\t},\n\t\t{\n\t\t\t__type: \"device\",\n\t\t\tgroup: \"connected\",\n\t\t\tkind: \"goove\",\n\t\t\tname: \"Govee\",\n\t\t\tvisual: \"assets/images/razer-logo.svg\",\n\t\t},\n\t\t{\n\t\t\t__type: \"device\",\n\t\t\tgroup: \"connected\",\n\t\t\tkind: \"nanoleaf\",\n\t\t\tname: \"Nanoleaf\",\n\t\t\tvisual: \"assets/images/razer-logo.svg\",\n\t\t},\n\t]);\n\n\tdiscover = (): Observable<Device[]> =>\n\t\tmerge(this.discoverUsb$, this.discoverConnected$).pipe(delay(1000));\n}\n",
+            "inputsClass": [],
+            "outputsClass": [],
+            "properties": [
+                {
+                    "name": "_deviceRepository",
+                    "defaultValue": "this._http\n\t\t.get<DeviceRepository>(\"assets/usb-devices.json\")\n\t\t.pipe(shareReplay())",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 86,
                     "modifierKind": [
                         123,
                         148
@@ -143,7 +392,7 @@
                     "type": "",
                     "optional": false,
                     "description": "",
-                    "line": 86,
+                    "line": 84,
                     "modifierKind": [
                         123,
                         148
@@ -157,48 +406,45 @@
                     "type": "",
                     "optional": false,
                     "description": "",
-                    "line": 131
+                    "line": 129
                 },
                 {
                     "name": "discoverConnected$",
-                    "defaultValue": "of([\n    {\n      __type: 'device',\n      group: 'connected',\n      kind: 'twinkly',\n      name: 'Twinkly',\n      visual: 'assets/devices/twinkly.png',\n    },\n    {\n      __type: 'device',\n      group: 'connected',\n      kind: 'goove',\n      name: 'Govee',\n      visual: 'assets/images/razer-logo.svg',\n    },\n    {\n      __type: 'device',\n      group: 'connected',\n      kind: 'nanoleaf',\n      name: 'Nanoleaf',\n      visual: 'assets/images/razer-logo.svg',\n    },\n  ])",
+                    "defaultValue": "of([\n\t\t{\n\t\t\t__type: \"device\",\n\t\t\tgroup: \"connected\",\n\t\t\tkind: \"twinkly\",\n\t\t\tname: \"Twinkly\",\n\t\t\tvisual: \"assets/devices/twinkly.png\",\n\t\t},\n\t\t{\n\t\t\t__type: \"device\",\n\t\t\tgroup: \"connected\",\n\t\t\tkind: \"goove\",\n\t\t\tname: \"Govee\",\n\t\t\tvisual: \"assets/images/razer-logo.svg\",\n\t\t},\n\t\t{\n\t\t\t__type: \"device\",\n\t\t\tgroup: \"connected\",\n\t\t\tkind: \"nanoleaf\",\n\t\t\tname: \"Nanoleaf\",\n\t\t\tvisual: \"assets/images/razer-logo.svg\",\n\t\t},\n\t])",
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Observable<Device[]>",
                     "optional": false,
                     "description": "",
-                    "line": 107,
+                    "line": 105,
                     "modifierKind": [
                         123
                     ]
                 },
                 {
                     "name": "discoverUsb$",
-                    "defaultValue": "from(\n    invoke<{ vendor_id: number; product_id: number }[]>('devices', {})\n  ).pipe(\n    withLatestFrom(this._deviceRepository),\n    map(([devices, repository]) =>\n      devices.map((device) =>\n        extractUsbDevice(\n          repository,\n          device.vendor_id.toString() || '0',\n          device.product_id.toString() || '0'\n        )\n      )\n    )\n  )",
+                    "defaultValue": "from(\n\t\tinvoke<{ vendor_id: number; product_id: number }[]>(\"devices\", {}),\n\t).pipe(\n\t\twithLatestFrom(this._deviceRepository),\n\t\tmap(([devices, repository]) =>\n\t\t\tdevices.map((device) =>\n\t\t\t\textractUsbDevice(\n\t\t\t\t\trepository,\n\t\t\t\t\tdevice.vendor_id.toString() || \"0\",\n\t\t\t\t\tdevice.product_id.toString() || \"0\",\n\t\t\t\t),\n\t\t\t),\n\t\t),\n\t)",
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "Observable<Device[]>",
                     "optional": false,
                     "description": "",
-                    "line": 92,
+                    "line": 90,
                     "modifierKind": [
                         123
                     ]
                 }
             ],
             "methods": [],
-            "deprecated": false,
-            "deprecationMessage": "",
-            "description": "",
-            "rawdescription": "\n",
-            "sourceCode": "import { inject, Injectable } from '@angular/core';\nimport {\n  delay,\n  from,\n  map,\n  merge,\n  Observable,\n  of,\n  shareReplay,\n  withLatestFrom,\n} from 'rxjs';\nimport { Device, DeviceRepository } from '../models';\n\nimport { invoke } from '@tauri-apps/api';\nimport { HttpClient } from '@angular/common/http';\n\n/*\nconst t = {\n  '123': {\n    a: {\n      a1: 1,\n      a2: 2,\n    },\n  },\n  '456': {\n    b: {\n      b1: 2,\n      b2: 3,\n    },\n  },\n};\n\n\ntype T1A = keyof (typeof t)['123']['a'];\ntype T1B = keyof (typeof t)['456']['b'];\n*/\n\ntype ExtractGroupKeys<T> = keyof T;\ntype ExtractIdKeys<\n  T extends Record<string, unknown>,\n  G extends string\n> = T[G] extends Record<string, unknown> ? keyof T[G] : never;\n\n// type T1 = ExtractGroupKeys<typeof t>;\n// type T2 = ExtractIdKeys<typeof t, ExtractGroupKeys<typeof t>>;\n\nexport const extractUsbDevice = <\n  T extends Record<string, Record<string, Partial<Device>>>,\n  G extends string & ExtractGroupKeys<T>,\n  D extends string & ExtractIdKeys<T, G>\n>(\n  devices: T,\n  deviceGroup: keyof T,\n  deviceId: D\n): Device => {\n  const groupExists = !!devices[deviceGroup];\n  if (!groupExists) {\n    throw new Error(`Unkown device group ${String(deviceGroup)}`);\n  }\n  const deviceIdExists = !!devices[deviceGroup][deviceId];\n  if (!deviceIdExists) {\n    throw new Error(\n      `Unknown device id ${String(deviceId)} in device group ${String(\n        deviceGroup\n      )}`\n    );\n  }\n\n  const device = devices[deviceGroup][deviceId];\n  return {\n    __type: 'device',\n    group: 'usb',\n\n    id: deviceId,\n\n    name: device.name,\n    kind: device.kind,\n    visual: device.visual,\n  } as Device;\n};\n\n@Injectable({\n  providedIn: 'root',\n})\nexport class DeviceService {\n  private readonly _http = inject(HttpClient);\n\n  private readonly _deviceRepository = this._http\n    .get<DeviceRepository>('assets/usb-devices.json')\n    .pipe(shareReplay());\n\n  private discoverUsb$: Observable<Device[]> = from(\n    invoke<{ vendor_id: number; product_id: number }[]>('devices', {})\n  ).pipe(\n    withLatestFrom(this._deviceRepository),\n    map(([devices, repository]) =>\n      devices.map((device) =>\n        extractUsbDevice(\n          repository,\n          device.vendor_id.toString() || '0',\n          device.product_id.toString() || '0'\n        )\n      )\n    )\n  );\n\n  private discoverConnected$: Observable<Device[]> = of([\n    {\n      __type: 'device',\n      group: 'connected',\n      kind: 'twinkly',\n      name: 'Twinkly',\n      visual: 'assets/devices/twinkly.png',\n    },\n    {\n      __type: 'device',\n      group: 'connected',\n      kind: 'goove',\n      name: 'Govee',\n      visual: 'assets/images/razer-logo.svg',\n    },\n    {\n      __type: 'device',\n      group: 'connected',\n      kind: 'nanoleaf',\n      name: 'Nanoleaf',\n      visual: 'assets/images/razer-logo.svg',\n    },\n  ]);\n\n  discover = (): Observable<Device[]> =>\n    merge(this.discoverUsb$, this.discoverConnected$).pipe(delay(1000));\n}\n",
+            "indexSignatures": [],
             "extends": [],
-            "type": "injectable"
+            "hostBindings": [],
+            "hostListeners": [],
+            "implements": [
+                "DeviceServiceContract"
+            ]
         }
     ],
-    "guards": [],
-    "interceptors": [],
-    "classes": [],
     "directives": [],
     "components": [
         {
@@ -1271,7 +1517,7 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "ApplicationConfig",
-                "defaultValue": "{\n  providers: [\n    provideRouter(appRoutes, withEnabledBlockingInitialNavigation()),\n    provideStore({ devices: devicesReducer }),\n    // provideRouterStore(),\n    // provideStoreDevtools(),\n    provideEffects(DeviceEffects),\n    provideHttpClient(),\n    provideAnimations(),\n  ],\n}"
+                "defaultValue": "{\n\tproviders: [\n\t\tprovideRouter(appRoutes, withEnabledBlockingInitialNavigation()),\n\t\tprovideStore({ devices: devicesReducer }),\n\t\t// provideRouterStore(),\n\t\t// provideStoreDevtools(),\n\t\tprovideEffects(DeviceEffects),\n\t\tprovideHttpClient(),\n\t\tprovideAnimations(),\n\t\tThemeService,\n\t\t{ provide: ErrorHandler, useClass: GlobalErrorHandlerService },\n\n\t\t{\n\t\t\tprovide: DeviceService,\n\t\t\tuseClass:\n\t\t\t\tenvironment.__kind === \"tauri\"\n\t\t\t\t\t? TauriDeviceService\n\t\t\t\t\t: LocalDeviceService,\n\t\t},\n\t],\n}"
             },
             {
                 "name": "appRoutes",
@@ -1292,6 +1538,16 @@
                 "deprecationMessage": "",
                 "type": "Story",
                 "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'usb',\n      kind: 'streaming',\n      name: 'Razer Kiyo',\n      visual: './assets/devices/razer-kiyo.png',\n      id: '3205',\n    },\n  },\n}"
+            },
+            {
+                "name": "connected",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/services/local-device.service.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Device[]",
+                "defaultValue": "[\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"connected\",\n\t\tkind: \"twinkly\",\n\t\tname: \"Twinkly\",\n\t\tvisual: \"assets/devices/twinkly.png\",\n\t},\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"connected\",\n\t\tkind: \"goove\",\n\t\tname: \"Govee\",\n\t\tvisual: \"assets/images/razer-logo.svg\",\n\t},\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"connected\",\n\t\tkind: \"nanoleaf\",\n\t\tname: \"Nanoleaf\",\n\t\tvisual: \"assets/images/razer-logo.svg\",\n\t},\n]"
             },
             {
                 "name": "connectedDevices",
@@ -1421,7 +1677,7 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "",
-                "defaultValue": "(deviceGroup: DeviceGroup) =>\n  createSelector(selectDevices, (devices) =>\n    deviceGroup === 'usb' ? devices.usb : devices.connected\n  )"
+                "defaultValue": "(deviceGroup: DeviceGroup) =>\n\tcreateSelector(selectDevices, (devices) =>\n\t\tdeviceGroup === \"usb\" ? devices.usb : devices.connected,\n\t)"
             },
             {
                 "name": "deviceNames",
@@ -1442,6 +1698,26 @@
                 "deprecationMessage": "",
                 "type": "",
                 "defaultValue": "z.record(z.record(UsbDeviceRepositorySchema))"
+            },
+            {
+                "name": "devices",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/services/local-device.service.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "Device[]",
+                "defaultValue": "[\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\t\tid: \"126\",\n\t\tkind: \"accessory\",\n\t\tname: \"Mouse dock\",\n\t\tvisual: \"assets/devices/razer-mouse-dock.png\",\n\t},\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\t\tid: \"136\",\n\t\tkind: \"mouse\",\n\t\tname: \"Razer Basilisk Ultimate (wired)\",\n\t\tvisual: \"assets/devices/razer-basilisk-ultimate.png\",\n\t},\n\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\t\tid: \"136\",\n\t\tkind: \"mouse\",\n\t\tname: \"Razer Basilisk Ultimate (wireless)\",\n\t\tvisual: \"assets/devices/razer-basilisk-ultimate.png\",\n\t},\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\t\tid: \"550\",\n\t\tkind: \"keyboard\",\n\t\tname: \"Razer Huntsman Elite\",\n\t\tvisual: \"assets/devices/razer-huntsman-elite.png\",\n\t},\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\t\tid: \"3074\",\n\t\tkind: \"mousemat\",\n\t\tname: \"Razer Goliathus Extended\",\n\t\tvisual: \"assets/devices/razer-goliathus-extended.png\",\n\t},\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\t\tid: \"3587\",\n\t\tkind: \"streaming\",\n\t\tname: \"Razer Kiyo\",\n\t\tvisual: \"assets/devices/razer-kiyo.png\",\n\t},\n]"
+            },
+            {
+                "name": "DeviceService",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/services/device-service-token.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "new InjectionToken<DeviceServiceContract>(\n\t\"DeviceService\",\n)"
             },
             {
                 "name": "DevicesLoadedFailure",
@@ -1471,17 +1747,37 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "",
-                "defaultValue": "createReducer(\n  initialState,\n  on(DevicesActions.getDevices, (state) => ({ ...state })),\n  on(DevicesActions.DevicesLoadedSuccess, (state, { devices }) => ({\n    ...state,\n    usb: [...state.usb, ...devices.filter((d) => d.group === 'usb')],\n    connected: [\n      ...state.connected,\n      ...devices.filter((d) => d.group === 'connected'),\n    ],\n  })),\n  on(DevicesActions.DevicesLoadedFailure, (state) => ({\n    ...state,\n    usb: [],\n    connected: [],\n  }))\n)"
+                "defaultValue": "createReducer(\n\tinitialState,\n\ton(DevicesActions.getDevices, (state) => ({ ...state })),\n\ton(DevicesActions.DevicesLoadedSuccess, (state, { devices }) => ({\n\t\t...state,\n\t\tusb: [...state.usb, ...devices.filter((d) => d.group === \"usb\")],\n\t\tconnected: [\n\t\t\t...state.connected,\n\t\t\t...devices.filter((d) => d.group === \"connected\"),\n\t\t],\n\t})),\n\ton(DevicesActions.DevicesLoadedFailure, (state) => ({\n\t\t...state,\n\t\tusb: [],\n\t\tconnected: [],\n\t})),\n)"
+            },
+            {
+                "name": "environment",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/environments/env.tauri.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "object",
+                "defaultValue": "{\n\t__kind: \"tauri\",\n}"
+            },
+            {
+                "name": "environment",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/environments/env.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "object",
+                "defaultValue": "{\n  __kind: 'dev'\n}"
             },
             {
                 "name": "extractUsbDevice",
                 "ctype": "miscellaneous",
                 "subtype": "variable",
-                "file": "apps/synapse-copycat/src/app/services/device.service.ts",
+                "file": "apps/synapse-copycat/src/app/services/tauri-device-service.ts",
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "",
-                "defaultValue": "<\n  T extends Record<string, Record<string, Partial<Device>>>,\n  G extends string & ExtractGroupKeys<T>,\n  D extends string & ExtractIdKeys<T, G>\n>(\n  devices: T,\n  deviceGroup: keyof T,\n  deviceId: D\n): Device => {\n  const groupExists = !!devices[deviceGroup];\n  if (!groupExists) {\n    throw new Error(`Unkown device group ${String(deviceGroup)}`);\n  }\n  const deviceIdExists = !!devices[deviceGroup][deviceId];\n  if (!deviceIdExists) {\n    throw new Error(\n      `Unknown device id ${String(deviceId)} in device group ${String(\n        deviceGroup\n      )}`\n    );\n  }\n\n  const device = devices[deviceGroup][deviceId];\n  return {\n    __type: 'device',\n    group: 'usb',\n\n    id: deviceId,\n\n    name: device.name,\n    kind: device.kind,\n    visual: device.visual,\n  } as Device;\n}"
+                "defaultValue": "<\n\tT extends Record<string, Record<string, Partial<Device>>>,\n\tG extends string & ExtractGroupKeys<T>,\n\tD extends string & ExtractIdKeys<T, G>,\n>(\n\tdevices: T,\n\tdeviceGroup: keyof T,\n\tdeviceId: D,\n): Device => {\n\tconst groupExists = !!devices[deviceGroup];\n\tif (!groupExists) {\n\t\tthrow new Error(`Unkown device group ${String(deviceGroup)}`);\n\t}\n\tconst deviceIdExists = !!devices[deviceGroup][deviceId];\n\tif (!deviceIdExists) {\n\t\tthrow new Error(\n\t\t\t`Unknown device id ${String(deviceId)} in device group ${String(\n\t\t\t\tdeviceGroup,\n\t\t\t)}`,\n\t\t);\n\t}\n\n\tconst device = devices[deviceGroup][deviceId];\n\treturn {\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\n\t\tid: deviceId,\n\n\t\tname: device.name,\n\t\tkind: device.kind,\n\t\tvisual: device.visual,\n\t} as Device;\n}"
             },
             {
                 "name": "FullyLoaded",
@@ -1511,7 +1807,7 @@
                 "deprecated": false,
                 "deprecationMessage": "",
                 "type": "DeviceState",
-                "defaultValue": "{\n  usb: [],\n  connected: [],\n}"
+                "defaultValue": "{\n\tusb: [],\n\tconnected: [],\n}"
             },
             {
                 "name": "InitialState",
@@ -1652,6 +1948,16 @@
                 "deprecationMessage": "",
                 "type": "",
                 "defaultValue": "() => `\n   <synapse-copycat-page-bar> \n  </synapse-copycat-page-bar>\n `"
+            },
+            {
+                "name": "theme",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "apps/synapse-copycat/src/app/services/theme-manager.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "[\"default-light-theme\", \"default-dark-theme\"] as const"
             },
             {
                 "name": "Twinkly",
@@ -1860,7 +2166,7 @@
                 "ctype": "miscellaneous",
                 "subtype": "typealias",
                 "rawtype": "",
-                "file": "apps/synapse-copycat/src/app/services/device.service.ts",
+                "file": "apps/synapse-copycat/src/app/services/tauri-device-service.ts",
                 "deprecated": false,
                 "deprecationMessage": "",
                 "description": "",
@@ -1871,7 +2177,7 @@
                 "ctype": "miscellaneous",
                 "subtype": "typealias",
                 "rawtype": "",
-                "file": "apps/synapse-copycat/src/app/services/device.service.ts",
+                "file": "apps/synapse-copycat/src/app/services/tauri-device-service.ts",
                 "deprecated": false,
                 "deprecationMessage": "",
                 "description": "",
@@ -1966,6 +2272,17 @@
                 "kind": 187
             },
             {
+                "name": "Theme",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "",
+                "file": "apps/synapse-copycat/src/app/services/theme-manager.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 199
+            },
+            {
                 "name": "UsbDevice",
                 "ctype": "miscellaneous",
                 "subtype": "typealias",
@@ -1988,7 +2305,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "ApplicationConfig",
-                    "defaultValue": "{\n  providers: [\n    provideRouter(appRoutes, withEnabledBlockingInitialNavigation()),\n    provideStore({ devices: devicesReducer }),\n    // provideRouterStore(),\n    // provideStoreDevtools(),\n    provideEffects(DeviceEffects),\n    provideHttpClient(),\n    provideAnimations(),\n  ],\n}"
+                    "defaultValue": "{\n\tproviders: [\n\t\tprovideRouter(appRoutes, withEnabledBlockingInitialNavigation()),\n\t\tprovideStore({ devices: devicesReducer }),\n\t\t// provideRouterStore(),\n\t\t// provideStoreDevtools(),\n\t\tprovideEffects(DeviceEffects),\n\t\tprovideHttpClient(),\n\t\tprovideAnimations(),\n\t\tThemeService,\n\t\t{ provide: ErrorHandler, useClass: GlobalErrorHandlerService },\n\n\t\t{\n\t\t\tprovide: DeviceService,\n\t\t\tuseClass:\n\t\t\t\tenvironment.__kind === \"tauri\"\n\t\t\t\t\t? TauriDeviceService\n\t\t\t\t\t: LocalDeviceService,\n\t\t},\n\t],\n}"
                 }
             ],
             "apps/synapse-copycat/src/app/app.routes.ts": [
@@ -2043,6 +2360,28 @@
                     "deprecationMessage": "",
                     "type": "Story",
                     "defaultValue": "{\n  args: {\n    device: {\n      __type: 'device',\n      group: 'connected',\n      kind: 'twinkly',\n      name: 'Twinkly',\n      visual: './assets/devices/twinkly.png',\n    },\n  },\n}"
+                }
+            ],
+            "apps/synapse-copycat/src/app/services/local-device.service.ts": [
+                {
+                    "name": "connected",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/services/local-device.service.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Device[]",
+                    "defaultValue": "[\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"connected\",\n\t\tkind: \"twinkly\",\n\t\tname: \"Twinkly\",\n\t\tvisual: \"assets/devices/twinkly.png\",\n\t},\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"connected\",\n\t\tkind: \"goove\",\n\t\tname: \"Govee\",\n\t\tvisual: \"assets/images/razer-logo.svg\",\n\t},\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"connected\",\n\t\tkind: \"nanoleaf\",\n\t\tname: \"Nanoleaf\",\n\t\tvisual: \"assets/images/razer-logo.svg\",\n\t},\n]"
+                },
+                {
+                    "name": "devices",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/services/local-device.service.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Device[]",
+                    "defaultValue": "[\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\t\tid: \"126\",\n\t\tkind: \"accessory\",\n\t\tname: \"Mouse dock\",\n\t\tvisual: \"assets/devices/razer-mouse-dock.png\",\n\t},\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\t\tid: \"136\",\n\t\tkind: \"mouse\",\n\t\tname: \"Razer Basilisk Ultimate (wired)\",\n\t\tvisual: \"assets/devices/razer-basilisk-ultimate.png\",\n\t},\n\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\t\tid: \"136\",\n\t\tkind: \"mouse\",\n\t\tname: \"Razer Basilisk Ultimate (wireless)\",\n\t\tvisual: \"assets/devices/razer-basilisk-ultimate.png\",\n\t},\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\t\tid: \"550\",\n\t\tkind: \"keyboard\",\n\t\tname: \"Razer Huntsman Elite\",\n\t\tvisual: \"assets/devices/razer-huntsman-elite.png\",\n\t},\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\t\tid: \"3074\",\n\t\tkind: \"mousemat\",\n\t\tname: \"Razer Goliathus Extended\",\n\t\tvisual: \"assets/devices/razer-goliathus-extended.png\",\n\t},\n\t{\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\t\tid: \"3587\",\n\t\tkind: \"streaming\",\n\t\tname: \"Razer Kiyo\",\n\t\tvisual: \"assets/devices/razer-kiyo.png\",\n\t},\n]"
                 }
             ],
             "apps/synapse-copycat/src/app/app.component.stories.ts": [
@@ -2350,7 +2689,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "",
-                    "defaultValue": "(deviceGroup: DeviceGroup) =>\n  createSelector(selectDevices, (devices) =>\n    deviceGroup === 'usb' ? devices.usb : devices.connected\n  )"
+                    "defaultValue": "(deviceGroup: DeviceGroup) =>\n\tcreateSelector(selectDevices, (devices) =>\n\t\tdeviceGroup === \"usb\" ? devices.usb : devices.connected,\n\t)"
                 },
                 {
                     "name": "devicesReducer",
@@ -2360,7 +2699,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "",
-                    "defaultValue": "createReducer(\n  initialState,\n  on(DevicesActions.getDevices, (state) => ({ ...state })),\n  on(DevicesActions.DevicesLoadedSuccess, (state, { devices }) => ({\n    ...state,\n    usb: [...state.usb, ...devices.filter((d) => d.group === 'usb')],\n    connected: [\n      ...state.connected,\n      ...devices.filter((d) => d.group === 'connected'),\n    ],\n  })),\n  on(DevicesActions.DevicesLoadedFailure, (state) => ({\n    ...state,\n    usb: [],\n    connected: [],\n  }))\n)"
+                    "defaultValue": "createReducer(\n\tinitialState,\n\ton(DevicesActions.getDevices, (state) => ({ ...state })),\n\ton(DevicesActions.DevicesLoadedSuccess, (state, { devices }) => ({\n\t\t...state,\n\t\tusb: [...state.usb, ...devices.filter((d) => d.group === \"usb\")],\n\t\tconnected: [\n\t\t\t...state.connected,\n\t\t\t...devices.filter((d) => d.group === \"connected\"),\n\t\t],\n\t})),\n\ton(DevicesActions.DevicesLoadedFailure, (state) => ({\n\t\t...state,\n\t\tusb: [],\n\t\tconnected: [],\n\t})),\n)"
                 },
                 {
                     "name": "initialState",
@@ -2370,7 +2709,7 @@
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "DeviceState",
-                    "defaultValue": "{\n  usb: [],\n  connected: [],\n}"
+                    "defaultValue": "{\n\tusb: [],\n\tconnected: [],\n}"
                 },
                 {
                     "name": "selectDevices",
@@ -2417,6 +2756,18 @@
                     "defaultValue": "z.object({\n  name: z.string(),\n  visual: z.string(),\n  kind: UsbDeviceSchema,\n  id: z.string(),\n})"
                 }
             ],
+            "apps/synapse-copycat/src/app/services/device-service-token.ts": [
+                {
+                    "name": "DeviceService",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/services/device-service-token.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "new InjectionToken<DeviceServiceContract>(\n\t\"DeviceService\",\n)"
+                }
+            ],
             "apps/synapse-copycat/src/app/actions/devices.actions.ts": [
                 {
                     "name": "DevicesLoadedFailure",
@@ -2449,16 +2800,40 @@
                     "defaultValue": "createAction('Get devices')"
                 }
             ],
-            "apps/synapse-copycat/src/app/services/device.service.ts": [
+            "apps/synapse-copycat/src/app/environments/env.tauri.ts": [
+                {
+                    "name": "environment",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/environments/env.tauri.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "object",
+                    "defaultValue": "{\n\t__kind: \"tauri\",\n}"
+                }
+            ],
+            "apps/synapse-copycat/src/app/environments/env.ts": [
+                {
+                    "name": "environment",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/environments/env.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "object",
+                    "defaultValue": "{\n  __kind: 'dev'\n}"
+                }
+            ],
+            "apps/synapse-copycat/src/app/services/tauri-device-service.ts": [
                 {
                     "name": "extractUsbDevice",
                     "ctype": "miscellaneous",
                     "subtype": "variable",
-                    "file": "apps/synapse-copycat/src/app/services/device.service.ts",
+                    "file": "apps/synapse-copycat/src/app/services/tauri-device-service.ts",
                     "deprecated": false,
                     "deprecationMessage": "",
                     "type": "",
-                    "defaultValue": "<\n  T extends Record<string, Record<string, Partial<Device>>>,\n  G extends string & ExtractGroupKeys<T>,\n  D extends string & ExtractIdKeys<T, G>\n>(\n  devices: T,\n  deviceGroup: keyof T,\n  deviceId: D\n): Device => {\n  const groupExists = !!devices[deviceGroup];\n  if (!groupExists) {\n    throw new Error(`Unkown device group ${String(deviceGroup)}`);\n  }\n  const deviceIdExists = !!devices[deviceGroup][deviceId];\n  if (!deviceIdExists) {\n    throw new Error(\n      `Unknown device id ${String(deviceId)} in device group ${String(\n        deviceGroup\n      )}`\n    );\n  }\n\n  const device = devices[deviceGroup][deviceId];\n  return {\n    __type: 'device',\n    group: 'usb',\n\n    id: deviceId,\n\n    name: device.name,\n    kind: device.kind,\n    visual: device.visual,\n  } as Device;\n}"
+                    "defaultValue": "<\n\tT extends Record<string, Record<string, Partial<Device>>>,\n\tG extends string & ExtractGroupKeys<T>,\n\tD extends string & ExtractIdKeys<T, G>,\n>(\n\tdevices: T,\n\tdeviceGroup: keyof T,\n\tdeviceId: D,\n): Device => {\n\tconst groupExists = !!devices[deviceGroup];\n\tif (!groupExists) {\n\t\tthrow new Error(`Unkown device group ${String(deviceGroup)}`);\n\t}\n\tconst deviceIdExists = !!devices[deviceGroup][deviceId];\n\tif (!deviceIdExists) {\n\t\tthrow new Error(\n\t\t\t`Unknown device id ${String(deviceId)} in device group ${String(\n\t\t\t\tdeviceGroup,\n\t\t\t)}`,\n\t\t);\n\t}\n\n\tconst device = devices[deviceGroup][deviceId];\n\treturn {\n\t\t__type: \"device\",\n\t\tgroup: \"usb\",\n\n\t\tid: deviceId,\n\n\t\tname: device.name,\n\t\tkind: device.kind,\n\t\tvisual: device.visual,\n\t} as Device;\n}"
                 }
             ],
             "apps/synapse-copycat/src/app/shared/page-bar/page-bar.component.stories.ts": [
@@ -2493,6 +2868,18 @@
                     "deprecationMessage": "",
                     "type": "Route[]",
                     "defaultValue": "[\n  { path: '', redirectTo: 'welcome', pathMatch: 'full' },\n  { path: 'welcome', component: WelcomePageComponent },\n  {\n    path: 'device',\n    children: [\n      {\n        path: 'mousemat',\n        component: MousematPageComponent,\n      },\n      {\n        path: 'mouse',\n        component: MousePageComponent,\n      },\n      {\n        path: 'keyboard',\n        component: KeyboardPageComponent,\n      },\n      {\n        path: 'accessory',\n        component: AccessoryPageComponent,\n      },\n      {\n        path: 'streaming',\n        component: StreamingPageComponent,\n      },\n    ],\n  },\n]"
+                }
+            ],
+            "apps/synapse-copycat/src/app/services/theme-manager.ts": [
+                {
+                    "name": "theme",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "apps/synapse-copycat/src/app/services/theme-manager.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "[\"default-light-theme\", \"default-dark-theme\"] as const"
                 }
             ]
         },
@@ -2627,13 +3014,13 @@
                     "kind": 183
                 }
             ],
-            "apps/synapse-copycat/src/app/services/device.service.ts": [
+            "apps/synapse-copycat/src/app/services/tauri-device-service.ts": [
                 {
                     "name": "ExtractGroupKeys",
                     "ctype": "miscellaneous",
                     "subtype": "typealias",
                     "rawtype": "",
-                    "file": "apps/synapse-copycat/src/app/services/device.service.ts",
+                    "file": "apps/synapse-copycat/src/app/services/tauri-device-service.ts",
                     "deprecated": false,
                     "deprecationMessage": "",
                     "description": "",
@@ -2644,7 +3031,7 @@
                     "ctype": "miscellaneous",
                     "subtype": "typealias",
                     "rawtype": "",
-                    "file": "apps/synapse-copycat/src/app/services/device.service.ts",
+                    "file": "apps/synapse-copycat/src/app/services/tauri-device-service.ts",
                     "deprecated": false,
                     "deprecationMessage": "",
                     "description": "",
@@ -2753,6 +3140,19 @@
                     "deprecationMessage": "",
                     "description": "",
                     "kind": 187
+                }
+            ],
+            "apps/synapse-copycat/src/app/services/theme-manager.ts": [
+                {
+                    "name": "Theme",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "",
+                    "file": "apps/synapse-copycat/src/app/services/theme-manager.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 199
                 }
             ]
         }
@@ -2914,6 +3314,26 @@
                 "linktype": "miscellaneous",
                 "linksubtype": "variable",
                 "name": "appRoutes",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/environments/env.tauri.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "environment",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/environments/env.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "environment",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
                 "status": "low"
@@ -3172,20 +3592,96 @@
                 "status": "low"
             },
             {
-                "filePath": "apps/synapse-copycat/src/app/services/device.service.ts",
-                "type": "injectable",
-                "linktype": "injectable",
+                "filePath": "apps/synapse-copycat/src/app/services/device-service-token.ts",
+                "type": "interface",
+                "linktype": "interface",
+                "name": "DeviceServiceContract",
+                "coveragePercent": 0,
+                "coverageCount": "0/2",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/services/device-service-token.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
                 "name": "DeviceService",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/services/global-error-handler.ts",
+                "type": "class",
+                "linktype": "classe",
+                "name": "GlobalErrorHandlerService",
+                "coveragePercent": 0,
+                "coverageCount": "0/3",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/services/local-device.service.ts",
+                "type": "class",
+                "linktype": "classe",
+                "name": "LocalDeviceService",
+                "coveragePercent": 0,
+                "coverageCount": "0/2",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/services/local-device.service.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "connected",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/services/local-device.service.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "devices",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/services/tauri-device-service.ts",
+                "type": "class",
+                "linktype": "classe",
+                "name": "TauriDeviceService",
                 "coveragePercent": 0,
                 "coverageCount": "0/6",
                 "status": "low"
             },
             {
-                "filePath": "apps/synapse-copycat/src/app/services/device.service.ts",
+                "filePath": "apps/synapse-copycat/src/app/services/tauri-device-service.ts",
                 "type": "variable",
                 "linktype": "miscellaneous",
                 "linksubtype": "variable",
                 "name": "extractUsbDevice",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/services/theme-manager.ts",
+                "type": "injectable",
+                "linktype": "injectable",
+                "name": "ThemeService",
+                "coveragePercent": 0,
+                "coverageCount": "0/6",
+                "status": "low"
+            },
+            {
+                "filePath": "apps/synapse-copycat/src/app/services/theme-manager.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "theme",
                 "coveragePercent": 0,
                 "coverageCount": "0/1",
                 "status": "low"

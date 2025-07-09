@@ -1,0 +1,19 @@
+[14:01:28.004] [DEBUG] Extracting storybook data...
+[14:01:28.005] [DEBUG] Getting Storybook info...
+[14:01:28.007] [DEBUG] Loading main config...
+[14:01:28.109] [ERROR] Error: Unable to find or evaluate tools/sb-theme-switcher/.storybook/main.ts: SB_CORE-SERVER_0007 (MainFileEvaluationError): Storybook couldn't evaluate your tools/sb-theme-switcher/.storybook/main.ts file.
+
+Original error:
+Error: Cannot find module 'local-preset.js/package.json'
+Require stack:
+- /tools/sb-theme-switcher/.storybook/main.ts
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+    at Function.resolve (node:internal/modules/helpers:193:19)
+    at getAbsolutePath (/tools/sb-theme-switcher/.storybook/main.ts:17:26)
+    at Object.<anonymous> (/tools/sb-theme-switcher/.storybook/main.ts:7:55)
+    at Module._compile (node:internal/modules/cjs/loader:1529:14)
+    at Module._compile (/home/ahryman/.npm/_npx/fe4463ef2d27eb8b/node_modules/esbuild-register/dist/node.js:2258:26)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1613:10)
+    at Object.newLoader [as .ts] (/home/ahryman/.npm/_npx/fe4463ef2d27eb8b/node_modules/esbuild-register/dist/node.js:2262:9)
+    at Module.load (node:internal/modules/cjs/loader:1275:32)
+    at Module._load (node:internal/modules/cjs/loader:1096:12)

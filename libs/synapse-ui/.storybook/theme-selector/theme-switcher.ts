@@ -1,4 +1,4 @@
-import { makeDecorator } from '@storybook/preview-api'
+import { makeDecorator } from 'storybook/preview-api'
 
 export const PARAM_KEY = 'backgrounds';
 

@@ -21,14 +21,14 @@
   font-style: normal;
 }
 */
-$default-theme: synapse.make-dark-theme();
+$dark-theme: synapse.make-dark-theme(#44d62c);
 $orange-theme: synapse.make-light-theme(#e08013);
 
-@include synapse.theme-them-all($default-theme);
+@include synapse.theme-them-all($orange-theme);
 
 .razer-orange {
   @debug 'Razer Orange';
-  @include synapse.theme-them-all($orange-theme);
+  @include synapse.theme-them-all($dark-theme);
 }
 
 @media (prefers-color-scheme: light) {

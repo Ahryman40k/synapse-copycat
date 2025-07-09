@@ -1,22 +1,22 @@
 {
-  "extends": "../tsconfig.json",
-  "compilerOptions": {
-    "emitDecoratorMetadata": true,
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
-  },
-  "exclude": [
-    "../**/*.spec.ts"
-  ],
-  "include": [
-    "../src/**/*.stories.ts",
-    "../src/**/*.stories.js",
-    "../src/**/*.stories.jsx",
-    "../src/**/*.stories.tsx",
-    "../src/**/*.stories.mdx",
-    "*.js",
-    "*.ts",
-    "preview-head.html",
-    "preview.ts"
-  ]
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		"emitDecoratorMetadata": true,
+		"resolveJsonModule": true,
+		"allowSyntheticDefaultImports": true
+	},
+	"exclude": ["../**/*.spec.ts"],
+	"include": [
+		"../src/**/*.stories.ts",
+		"../src/**/*.stories.js",
+		"../src/**/*.stories.jsx",
+		"../src/**/*.stories.tsx",
+		"../src/**/*.stories.mdx",
+		"*.js",
+		"*.ts",
+		"preview-head.html",
+		"preview.ts",
+		"../../../libs/**/*.stories.mdx",
+		"../../../libs/**/*.stories.ts"
+	]
 }

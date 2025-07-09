@@ -1,4 +1,4 @@
-@use '../../../libs/synapse-ui/src/styles.scss' as synapse;
+@use '../../../libs/synapse-ui/src/theme-api.scss' as synapse;
 
 /* You can add global styles to this file, and also import other style files */
 
@@ -14,23 +14,31 @@ body {
   min-height: 100vh;
 }
 
-$default-theme: synapse.make-dark-theme();
+$dark-theme: synapse.make-dark-theme(#44d62c);
 $orange-theme: synapse.make-light-theme(#e08013);
 
-@include synapse.theme-them-all($default-theme);
+@debug $dark-theme;
+@debug $orange-theme;
 
-.razer-orange {
-  @include synapse.theme-them-all($orange-theme);
-}
 
-@media (prefers-color-scheme: light) {
-  @include synapse.theme-them-all($orange-theme);
-}
+
+// @media (prefers-color-scheme: light) {
+//   @include synapse.theme-them-all($orange-theme);
+// }
 
 @import './app/shared/navbar/navbar.theme';
 @import './app/shared/page-bar/page-bar.theme';
 @import './app/shared/device-card/device-card.theme';
 
-@include navbar-theme($default-theme);
-@include page-bar-theme($default-theme);
-@include device-card-theme($default-theme);
+@include synapse.theme-them-all($dark-theme);
+
+@include navbar-theme($dark-theme);
+@include page-bar-theme($dark-theme);
+@include device-card-theme($dark-theme);
+
+.razer-orange {
+  @include synapse.theme-them-all($orange-theme);
+@include navbar-theme($orange-theme);
+@include page-bar-theme($orange-theme);
+@include device-card-theme($orange-theme);
+}

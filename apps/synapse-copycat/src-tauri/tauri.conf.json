@@ -1,45 +1,45 @@
 {
-  "build": {
-    "beforeDevCommand": "npx nx run synapse-copycat:serve",
-    "beforeBuildCommand": "npx nx run synapse-copycat:build-frontend",
-    "devPath": "http://localhost:4200",
-    "distDir": "../../../dist/apps/synapse-copycat"
-  },
-  "package": {
-    "productName": "synapse-copycat",
-    "version": "0.0.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "all": false,
-        "open": true
-      }
-    },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "ahryman40k.synapse-copycat",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ]
-    },
-    "security": {
-      "csp": null
-    },
-    "windows": [
-      {
-        "fullscreen": false,
-        "resizable": true,
-        "title": "The Synapse copycat",
-        "width": 1280,
-        "height": 1024
-      }
-    ]
-  }
+	"build": {
+		"beforeDevCommand": "npx nx run synapse-copycat:serve:production",
+		"beforeBuildCommand": "npx nx run synapse-copycat:build-frontend:production",
+		"devPath": "http://localhost:4200",
+		"distDir": "../../../dist/apps/synapse-copycat"
+	},
+	"package": {
+		"productName": "synapse-copycat",
+		"version": "0.0.0"
+	},
+	"tauri": {
+		"allowlist": {
+			"all": false,
+			"shell": {
+				"all": false,
+				"open": true
+			}
+		},
+		"bundle": {
+			"active": true,
+			"targets": "all",
+			"identifier": "ahryman40k.synapse-copycat",
+			"icon": [
+				"icons/32x32.png",
+				"icons/128x128.png",
+				"icons/128x128@2x.png",
+				"icons/icon.icns",
+				"icons/icon.ico"
+			]
+		},
+		"security": {
+			"csp": null
+		},
+		"windows": [
+			{
+				"fullscreen": false,
+				"resizable": true,
+				"title": "The Synapse copycat",
+				"width": 1280,
+				"height": 1024
+			}
+		]
+	}
 }

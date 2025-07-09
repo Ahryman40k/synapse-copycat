@@ -1,10 +1,9 @@
 @use 'sass:map';
 
 @mixin theme($theme) {
-  @debug $theme;
 
-  $primary: map.get($theme, palettes, primary);
-  @debug 'Palettes: ' map.get($theme, palettes);
+  $primary: map.get($theme, palettes, primary, default);
+  @debug 'Palettes: ' map.get($theme, palettes, primary);
   @debug 'Primary color: ' $primary;
 
   button[synapseButton] {
