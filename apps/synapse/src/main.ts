@@ -1,8 +1,8 @@
 import { bootstrapApplication } from "@angular/platform-browser";
-import { makeAppConfig } from "./app/app.config";
-import { App } from "./app/app";
-import { ApplicationConfig } from "./app/models/config";
 import { safeParse } from "valibot";
+import { App } from "./app/app";
+import { makeAppConfig } from "./app/app.config";
+import { ApplicationConfig } from "./app/models/config";
 
 fetch("/config/app.json")
 	.then((res) => res.json())

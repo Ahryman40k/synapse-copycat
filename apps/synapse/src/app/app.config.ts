@@ -1,12 +1,12 @@
 import {
-	ApplicationConfig,
+	type ApplicationConfig,
 	provideBrowserGlobalErrorListeners,
 	provideZoneChangeDetection,
 } from "@angular/core";
 import { provideRouter } from "@angular/router";
+import { provideBackendApi, withMock, Mock } from "@synapse-copycat/backend-api";
 import { appRoutes } from "./app.routes";
-import { ApplicationConfig as Config } from "./models/config";
-import { provideBackendApi, withMock } from "@synapse-copycat/backend-api";
+import type { ApplicationConfig as Config } from "./models/config";
 
 export const baseProviders = [
 	provideBrowserGlobalErrorListeners(),
@@ -42,10 +42,10 @@ export function makeAppConfig(config: Config) {
 							visual: "asssets/modules/twinkly.png",
 						},
 					],
-				}
+				} satisfies Mock
 			: undefined;
 
 	return {
-		providers: [...baseProviders, provideBackendApi(withMock(mock))],
+		providers: [...baseProviders, mock ? provideBackendApi(  withMock(mock) ) : provideBackendApi() ],
 	} satisfies ApplicationConfig;
 }

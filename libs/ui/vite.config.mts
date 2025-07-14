@@ -7,7 +7,7 @@ import { defineConfig } from "vite";
 
 export default defineConfig(() => ({
 	root: __dirname,
-	cacheDir: "../../node_modules/.vite/libs/mocks",
+	cacheDir: "../../node_modules/.vite/libs/ui",
 	plugins: [angular(), nxViteTsPaths(), nxCopyAssetsPlugin(["*.md"])],
 	// Uncomment this if you are using workers.
 	// worker: {
@@ -21,7 +21,7 @@ export default defineConfig(() => ({
 		setupFiles: ["src/test-setup.ts"],
 		reporters: ["default"],
 		coverage: {
-			reportsDirectory: "../../coverage/libs/mocks",
+			reportsDirectory: "../../coverage/libs/ui",
 			provider: "v8" as const,
 		},
 	},

@@ -12,7 +12,7 @@ The selected tools for this project are:
 - vitest for unit testing
 - playwright for e2e testing
 - Github actions as CI
-- biome for formatting
+- [biome](https://biomejs.dev/formatter/) for formatting
 - Runtime type checking: Valibot
 - state management: ngrx
 

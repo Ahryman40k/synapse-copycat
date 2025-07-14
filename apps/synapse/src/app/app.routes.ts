@@ -1,4 +1,4 @@
-import { Route } from "@angular/router";
+import type { Route } from "@angular/router";
 import { DashboardPage } from "./domains/dashboard-page";
 
 export const appRoutes: Route[] = [

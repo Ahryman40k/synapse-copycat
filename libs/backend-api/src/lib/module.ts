@@ -1,10 +1,12 @@
-import { provideHttpClient, withInterceptors } from "@angular/common/http";
 import {
-	EnvironmentProviders,
+	type EnvironmentProviders,
 	InjectionToken,
-	Provider,
 	makeEnvironmentProviders,
+	type Provider,
 } from "@angular/core";
+import type { Mock } from "./models";
+import { BackendApiService } from "./services/backend-api";
+
 // import { invoke } from "@tauri-apps/api";
 
 // Helper function to provide Feature object
@@ -30,9 +32,10 @@ export interface MockFeature<FeatureKind extends MockFeatureKind> {
 
 //------------------------------------------------------------
 
+export const BackendApi = new InjectionToken<BackendApiService>("BackendApi");
 export type WithMock = MockFeature<MockFeatureKind.withMocks>;
 
-export function withMock(mock: any): WithMock {
+export function withMock(mock: Mock): WithMock {
 	const providers = [
 		{
 			provide: BackendApi,
@@ -40,65 +43,6 @@ export function withMock(mock: any): WithMock {
 		},
 	] satisfies (Provider | EnvironmentProviders)[];
 	return mockFeature(MockFeatureKind.withMocks, providers);
-}
-
-//------------------------------------------------------------
-
-export const BackendApi = new InjectionToken<BackendApiService>("BackendApi");
-
-export type Device = {
-	__type: "device";
-	kind: "mouse" | "keyboard" | "mousemat" | "streaming" | "accessory";
-	visual: string;
-	id: string;
-	name: string;
-};
-
-export type Module = {
-	__type: "module";
-	kind: "twinky" | "goove" | "nanoleaf";
-	name: "Twinkly" | "Goove" | "Nanoleaf";
-	visual: string;
-};
-
-export type BackendCommands = {
-	devices: {
-		args: {};
-		options: {};
-		returnType: Device[];
-	};
-	modules: {
-		args: {};
-		options: {};
-		returnType: Module[];
-	};
-};
-
-export type Mock = {
-	[K in keyof BackendCommands]: BackendCommands[K]["returnType"];
-};
-
-class BackendApiService {
-	constructor(private readonly mock: Mock | undefined) {}
-
-	invoke<
-		C extends keyof BackendCommands,
-		A extends BackendCommands[C]["args"],
-		O extends BackendCommands[C]["options"],
-		R extends BackendCommands[C]["returnType"],
-	>(cmd: C, args: A, options?: O): Promise<R> {
-		// if (!this.mock) return tauriInvoke<R>(cmd, args, options);
-
-		return new Promise<R>((resolve, reject) => {
-			const result = this.mock![cmd] as R;
-
-			if (result) {
-				resolve(result);
-			}
-
-			reject("Mocked backend call failed");
-		});
-	}
 }
 
 //------------------------------------------------------------

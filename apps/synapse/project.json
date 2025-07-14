@@ -86,6 +86,51 @@
 				"staticFilePath": "dist/apps/synapse/browser",
 				"spa": true
 			}
+		},
+		"storybook": {
+			"executor": "@storybook/angular:start-storybook",
+			"options": {
+				"port": 4400,
+				"configDir": "apps/synapse/.storybook",
+				"browserTarget": "synapse:build",
+				"compodoc": true,
+				"compodocArgs": [
+					"-p",
+					"apps/synapse/tsconfig.json",
+					"-e",
+					"json",
+					"-d",
+					"apps/synapse"
+				]
+			},
+			"configurations": {
+				"ci": {
+					"quiet": true
+				}
+			}
+		},
+		"build-storybook": {
+			"executor": "@storybook/angular:build-storybook",
+			"outputs": ["{options.outputDir}"],
+			"options": {
+				"outputDir": "dist/storybook/synapse",
+				"configDir": "apps/synapse/.storybook",
+				"browserTarget": "synapse:build",
+				"compodoc": true,
+				"compodocArgs": [
+					"-p",
+					"apps/synapse/tsconfig.json",
+					"-e",
+					"json",
+					"-d",
+					"apps/synapse"
+				]
+			},
+			"configurations": {
+				"ci": {
+					"quiet": true
+				}
+			}
 		}
 	}
 }
