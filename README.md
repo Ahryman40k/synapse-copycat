@@ -1,10 +1,44 @@
-# SynapseCopycat
+# Synapse: the linux copycat
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+This project uses Nx as monorepository. It will be helpful to setup:
+- workspace tools
+- manage additional Angular libraries
+- upgrade the project tooling
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+The selected tools for this project are:
+- Angular framework for the frontend
+- Storybook for components development and testing
+- vitepress for technical documentation
+- vitest for unit testing
+- playwright for e2e testing
+- Github actions as CI
+- biome for formatting
+- Runtime type checking: Valibot
+- state management: ngrx
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+Frontend component construction is achieved with [Atomic Design](https://img.storyblok.com/0P7BuKmoYLfS60wwpEBiEy3DzP8=/1600x0/f/88751/1958x1180/1b044ea27a/atomic-design-for-partners-graphic.jpg) method.
+[extra Ressoures](https://www.aubergine.co/insights/how-to-use-angular-and-atomic-design-to-create-web-applications-a-guide-for-new-developers)
+Of course we need to be SOLID and DRY.
+
+## What a modern Angular application should contain
+
+### 1. An external static configuration.
+
+We always have something to configure at startup. At least the backend configuration is a static information that won't change when the application is deployed.
+The configuration can come from a server, a static files from your repository or a file added by your Continuous Deployment tools. It will constraint your application behaviour.
+
+### 2. Runtime type checking. 
+Any external objects that is related to a described project type should be validated at runtime.ex:
+ - Json configuration file
+ - web services objects 
+ - any external information
+Why? Because in Typescript, the Type isn't safely described and at runtime, the received object can be very different from the described type. A solution to avoid that kind of issue and not spending hours debugging your project is to always validate external objects.
+A lot of solutions exists, but I choose valibot for the frontend
+
+### 3. A state management 
+
+State management pattern prevents having decorellated states that aren't reproductible
+
 
 ## Finish your CI setup
 
@@ -34,49 +68,3 @@ npx nx show project synapse
 These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
 
 [More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Add new projects
-
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-Use the plugin's generator to create new projects.
-
-To generate a new application, use:
-
-```sh
-npx nx g @nx/angular:app demo
-```
-
-To generate a new library, use:
-
-```sh
-npx nx g @nx/angular:lib mylib
-```
-
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
