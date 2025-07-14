@@ -7,4 +7,8 @@ import { RouterModule } from '@angular/router';
   templateUrl: './default-layout.html',
   imports: [RouterModule],
 })
-export class DefaultLayout {}
+export class DefaultLayout {
+
+
+
+}
