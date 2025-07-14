@@ -1,2 +1,2 @@
-export * from "./lib/models/";
-export * from "./lib/module";
+export * from './lib/models/';
+export * from './lib/module';

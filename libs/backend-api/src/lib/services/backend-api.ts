@@ -1,13 +1,13 @@
-import type { BackendCommands, Mock } from "../models";
+import type { BackendCommands, Mock } from '../models';
 
 export class BackendApiService {
 	constructor(private readonly mock: Mock | undefined) {}
 
 	invoke<
 		C extends keyof BackendCommands,
-		A extends BackendCommands[C]["args"],
-		O extends BackendCommands[C]["options"],
-		R extends BackendCommands[C]["returnType"],
+		A extends BackendCommands[C]['args'],
+		O extends BackendCommands[C]['options'],
+		R extends BackendCommands[C]['returnType'],
 	>(cmd: C, args: A, options?: O): Promise<R> {
 		// if (!this.mock) return tauriInvoke<R>(cmd, args, options);
 
@@ -18,7 +18,7 @@ export class BackendApiService {
 				resolve(result);
 			}
 
-			reject("Mocked backend call failed");
+			reject('Mocked backend call failed');
 		});
 	}
 }

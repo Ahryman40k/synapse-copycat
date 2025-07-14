@@ -3,9 +3,9 @@ import {
 	InjectionToken,
 	makeEnvironmentProviders,
 	type Provider,
-} from "@angular/core";
-import type { Mock } from "./models";
-import { BackendApiService } from "./services/backend-api";
+} from '@angular/core';
+import type { Mock } from './models';
+import { BackendApiService } from './services/backend-api';
 
 // import { invoke } from "@tauri-apps/api";
 
@@ -32,7 +32,7 @@ export interface MockFeature<FeatureKind extends MockFeatureKind> {
 
 //------------------------------------------------------------
 
-export const BackendApi = new InjectionToken<BackendApiService>("BackendApi");
+export const BackendApi = new InjectionToken<BackendApiService>('BackendApi');
 export type WithMock = MockFeature<MockFeatureKind.withMocks>;
 
 export function withMock(mock: Mock): WithMock {

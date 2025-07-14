@@ -1,16 +1,19 @@
 # Synapse: the linux copycat
 
 This project uses Nx as monorepository. It will be helpful to setup:
+
 - workspace tools
 - manage additional Angular libraries
 - upgrade the project tooling
 
 The selected tools for this project are:
+
 - Angular framework for the frontend
 - Storybook for components development and testing
 - vitepress for technical documentation
 - vitest for unit testing
 - playwright for e2e testing
+- [lefthook](https://github.com/evilmartians/lefthook) for pre-commit script and local validations
 - Github actions as CI
 - [biome](https://biomejs.dev/formatter/) for formatting
 - Runtime type checking: Valibot
@@ -27,23 +30,23 @@ Of course we need to be SOLID and DRY.
 We always have something to configure at startup. At least the backend configuration is a static information that won't change when the application is deployed.
 The configuration can come from a server, a static files from your repository or a file added by your Continuous Deployment tools. It will constraint your application behaviour.
 
-### 2. Runtime type checking. 
-Any external objects that is related to a described project type should be validated at runtime.ex:
- - Json configuration file
- - web services objects 
- - any external information
-Why? Because in Typescript, the Type isn't safely described and at runtime, the received object can be very different from the described type. A solution to avoid that kind of issue and not spending hours debugging your project is to always validate external objects.
-A lot of solutions exists, but I choose valibot for the frontend
+### 2. Runtime type checking.
 
-### 3. A state management 
+Any external objects that is related to a described project type should be validated at runtime.ex:
+
+- Json configuration file
+- web services objects
+- any external information
+  Why? Because in Typescript, the Type isn't safely described and at runtime, the received object can be very different from the described type. A solution to avoid that kind of issue and not spending hours debugging your project is to always validate external objects.
+  A lot of solutions exists, but I choose valibot for the frontend
+
+### 3. A state management
 
 State management pattern prevents having decorellated states that aren't reproductible
-
 
 ## Finish your CI setup
 
 [Click here to finish setting up your workspace!](https://cloud.nx.app/connect/4bKnu3VmCB)
-
 
 ## Run tasks
 

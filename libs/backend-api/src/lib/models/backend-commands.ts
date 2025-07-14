@@ -1,5 +1,5 @@
-import type { Device } from "./device";
-import type { Module } from "./module";
+import type { Device } from './device';
+import type { Module } from './module';
 
 export type BackendCommands = {
 	devices: {
