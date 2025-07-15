@@ -8,16 +8,16 @@ This project uses Nx as monorepository. It will be helpful to setup:
 
 The selected tools for this project are:
 
-- Angular framework for the frontend
-- Storybook for components development and testing
-- vitepress for technical documentation
+- [Angular](https://angular.dev) framework for the frontend
+- [Storybook](https://storybook.js.org/) for components development and testing
+- [vitepress](https://vitepress.dev) for technical documentation
 - vitest for unit testing
-- playwright for e2e testing
+- [playwright](https://playwright.dev) for e2e testing
 - [lefthook](https://github.com/evilmartians/lefthook) for pre-commit script and local validations
-- Github actions as CI
+- [Github actions](https://docs.github.com/en/actions) as CI
 - [biome](https://biomejs.dev/formatter/) for formatting
-- Runtime type checking: Valibot
-- state management: ngrx
+- Runtime type checking: [Valibot](https://valibot.dev)
+- state management: [ngrx](https://ngrx.io)
 
 Frontend component construction is achieved with [Atomic Design](https://img.storyblok.com/0P7BuKmoYLfS60wwpEBiEy3DzP8=/1600x0/f/88751/1958x1180/1b044ea27a/atomic-design-for-partners-graphic.jpg) method.
 [extra Ressoures](https://www.aubergine.co/insights/how-to-use-angular-and-atomic-design-to-create-web-applications-a-guide-for-new-developers)
@@ -43,6 +43,13 @@ Any external objects that is related to a described project type should be valid
 ### 3. A state management
 
 State management pattern prevents having decorellated states that aren't reproductible
+
+
+
+
+
+
+
 
 ## Finish your CI setup
 
