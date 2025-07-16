@@ -48,8 +48,11 @@ pre-commit:
       run: pnpm exec biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
       stage_fixed: true
 
+    - name: lint
+      run: pnpm exec nx run-many -t lint --all
+
+    - name: test
+      run: pnpm exec nx run-many -t test --all
+
     - name: build
       run: pnpm exec nx run-many -t build --all
-
-    # - name: test
-    #   run: pnpm exec nx run-many -t test --all

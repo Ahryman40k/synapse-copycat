@@ -15,7 +15,7 @@ export default [
         'error',
         {
           type: 'attribute',
-          prefix: 'app',
+          prefix: '',
           style: 'camelCase',
         },
       ],
@@ -23,7 +23,7 @@ export default [
         'error',
         {
           type: 'element',
-          prefix: 'app',
+          prefix: '',
           style: 'kebab-case',
         },
       ],

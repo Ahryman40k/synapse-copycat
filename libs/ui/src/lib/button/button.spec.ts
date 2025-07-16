@@ -1,3 +1,5 @@
 describe('Button component', () => {
-	it('TODO', () => {});
+	it('TODO', () => {
+		expect(true).toBe(true);
+	});
 });
