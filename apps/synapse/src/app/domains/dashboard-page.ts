@@ -1,16 +1,20 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { BackendApi } from '@synapse-copycat/backend-api';
+import { Component, inject, OnInit } from '@angular/core';
+import { ApplicationStore } from '../core/stores/application-store';
 
 @Component({
   selector: 'dashboard-page',
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.scss',
-  imports: [CommonModule],
+  imports: [],
 })
-export class DashboardPage {
-  private readonly api = inject(BackendApi);
+export class DashboardPage implements OnInit {
+  readonly #store = inject(ApplicationStore);
 
-  protected devices = this.api.invoke('devices', {});
-  protected modules = this.api.invoke('modules', {});
+  protected devices = this.#store.devices
+  protected modules = this.#store.modules;
+
+  ngOnInit(): void {
+    this.#store.getDevices()
+      this.#store.getModules();
+  }
 }

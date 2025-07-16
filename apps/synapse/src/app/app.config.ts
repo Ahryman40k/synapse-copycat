@@ -3,7 +3,7 @@ import {
   provideBrowserGlobalErrorListeners,
   provideZoneChangeDetection,
 } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withDebugTracing } from '@angular/router';
 import {
   provideBackendApi,
   withMock,
@@ -15,7 +15,7 @@ import type { ApplicationConfig as Config } from './models/config';
 export const baseProviders = [
   provideBrowserGlobalErrorListeners(),
   provideZoneChangeDetection({ eventCoalescing: true }),
-  provideRouter(appRoutes),
+  provideRouter(appRoutes ),
 ];
 
 export function makeAppConfig(config: Config) {

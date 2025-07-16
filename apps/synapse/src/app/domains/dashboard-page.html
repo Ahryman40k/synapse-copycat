@@ -1,12 +1,12 @@
 <h2>Devices</h2>
 <section>
-  @for( device of devices | async; track device.id ) { {{device.id}} - {{
+  @for( device of devices(); track device.id ) { {{device.id}} - {{
   device.name }} <br />
   } @empty { No device detected }
 </section>
 <h2>Modules</h2>
 <section>
-  @for( module of modules | async; track module.kind ) { {{ module.name }}
+  @for( module of modules(); track module.kind ) { {{ module.name }}
   <br />
   } @empty { No module detected }
 </section>
