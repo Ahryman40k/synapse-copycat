@@ -1,20 +1,12 @@
-import { TestBed } from '@angular/core/testing';
-import { App } from './app';
-import { NxWelcome } from './nx-welcome';
+import {render} from '@testing-library/angular'
+import {App} from './app'
 
-describe('App', () => {
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [App, NxWelcome],
-    }).compileComponents();
-  });
+describe('Application', () => {
+it('should create', async () => {
+		const { fixture } = await render(App, {
+		});
+		const component = fixture.componentInstance;
 
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(App);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain(
-      'Welcome synapse'
-    );
-  });
+		expect(component).toBeTruthy();
+	});
 });

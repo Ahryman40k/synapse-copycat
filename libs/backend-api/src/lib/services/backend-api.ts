@@ -12,13 +12,12 @@ export class BackendApiService {
 		// if (!this.mock) return tauriInvoke<R>(cmd, args, options);
 
 		return new Promise<R>((resolve, reject) => {
-			const result = this.mock?.[cmd] as R;
-
-			if (result) {
+			if (this.mock && this.mock[cmd]) {
+				const result = this.mock[cmd] as R;
 				resolve(result);
 			}
 
-			reject('Mocked backend call failed');
+			reject(new Error('Mocked backend call failed'));
 		});
 	}
 }
