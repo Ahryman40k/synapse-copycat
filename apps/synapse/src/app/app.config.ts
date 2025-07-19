@@ -3,7 +3,7 @@ import {
   provideBrowserGlobalErrorListeners,
   provideZoneChangeDetection,
 } from '@angular/core';
-import { provideRouter, withDebugTracing } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import {
   provideBackendApi,
   withMock,
@@ -15,39 +15,39 @@ import type { ApplicationConfig as Config } from './models/config';
 export const baseProviders = [
   provideBrowserGlobalErrorListeners(),
   provideZoneChangeDetection({ eventCoalescing: true }),
-  provideRouter(appRoutes ),
+  provideRouter(appRoutes),
 ];
 
 export function makeAppConfig(config: Config) {
-  const mock =
-    config.envType === 'local'
-      ? ({
-          devices: [
-            {
-              __type: 'device',
-              kind: 'mouse',
-              name: 'Razer Basilisk Ultimate',
-              id: '5426-0136',
-              visual: 'asssets/devices/5436-0136.png',
-            },
-            {
-              __type: 'device',
-              kind: 'mousemat',
-              name: 'Goliatus Extended',
-              id: '5626-3074',
-              visual: 'assets/devices/5436-3074.png',
-            },
-          ],
-          modules: [
-            {
-              __type: 'module',
-              kind: 'twinkly',
-              name: 'Twinlky',
-              visual: 'asssets/modules/twinkly.png',
-            },
-          ],
-        } satisfies Mock)
-      : undefined;
+  const isTauri = (): boolean => !!(window as any).__TAURI_INTERNALS__;
+  const isTauriDetected = isTauri();
+
+  console.log('Tauri detected', isTauriDetected);
+  console.log('Use configuration', config);
+  const mock = !isTauriDetected
+    ? ({
+        devices: [
+          {
+            kind: 'mouse',
+            name: 'Razer Basilisk Ultimate',
+            vendor_id: 5426,
+            product_id: 136,
+          },
+          {
+            kind: 'mousemat',
+            name: 'Goliatus Extended',
+            vendor_id: 5426,
+            product_id: 3074,
+          },
+        ],
+        modules: [
+          {
+            kind: 'twinkly',
+            name: 'Twinlky',
+          },
+        ],
+      } satisfies Mock)
+    : undefined;
 
   return {
     providers: [

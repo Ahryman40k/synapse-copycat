@@ -10,11 +10,11 @@ import { ApplicationStore } from '../core/stores/application-store';
 export class DashboardPage implements OnInit {
   readonly #store = inject(ApplicationStore);
 
-  protected devices = this.#store.devices
+  protected devices = this.#store.devices;
   protected modules = this.#store.modules;
 
   ngOnInit(): void {
-    this.#store.getDevices()
-      this.#store.getModules();
+    this.#store.getDevices();
+    this.#store.getModules();
   }
 }

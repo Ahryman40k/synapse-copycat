@@ -51,6 +51,10 @@ export function provideBackendApi(
 	...features: MockFeatures[]
 ): EnvironmentProviders {
 	return makeEnvironmentProviders([
+		{
+			provide: BackendApi,
+			useValue: new BackendApiService(undefined),
+		},
 		features.map((feature) => feature.providers),
 	]);
 }

@@ -47,15 +47,11 @@ State management pattern prevents having decorellated states that aren't reprodu
 ### 4. UI library wrapper
 
 Whatever UI framework or vanilla CSS you're using, you need a UI library wrapper. We all doing code abstraction with third-party libraries, but nobody does UI abstraction. Despite, it can be super helpful:
-- Sometimes migrating UI library can be a bit tricky (like bootstrap ^^'). 
+
+- Sometimes migrating UI library can be a bit tricky (like bootstrap ^^').
 - You can even change UI library more easily
 - It reduces complexity of using components, specifically if you're UI library requires a lot of class or attributes.
 - It facilitates maintenance by affecting all components the same way.
-
-
-
-
-
 
 ## Finish your CI setup
 

@@ -5,11 +5,19 @@ export type BackendCommands = {
 	devices: {
 		args: Record<string, never>;
 		options: Record<string, never>;
-		returnType: Device[];
+		returnType: {
+			kind: Device['kind'];
+			vendor_id: number;
+			product_id: number;
+			name: string;
+		}[];
 	};
 	modules: {
 		args: Record<string, never>;
 		options: Record<string, never>;
-		returnType: Module[];
+		returnType: {
+			kind: Module['kind'];
+			name: string;
+		}[];
 	};
 };

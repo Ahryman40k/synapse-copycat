@@ -38,7 +38,13 @@
               "maximumError": "8kb"
             }
           ],
-          "outputHashing": "all"
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "apps/synapse/src/config/app.json",
+              "with": "apps/synapse/src/config/app.production.json"
+            }
+          ]
         },
         "development": {
           "optimization": false,
@@ -47,6 +53,12 @@
         }
       },
       "defaultConfiguration": "production"
+    },
+    "tauri": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "CARGO_TARGET_DIR=../../../dist/apps/.target pnpm exec tauri dev"
+      }
     },
     "serve": {
       "continuous": true,
