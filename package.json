@@ -8,6 +8,10 @@
     "docs:preview": "vitepress preview apps/docsite"
   },
   "private": true,
+  "engines": {
+    "pnpm": ">=10.13.0",
+    "node": ">=22.0.0"
+  },
   "dependencies": {
     "@angular/common": "~20.0.0",
     "@angular/compiler": "~20.0.0",

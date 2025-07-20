@@ -44,15 +44,15 @@
 pre-commit:
   jobs:
     - name: format & lint
-      glob: '*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}'
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
       run: pnpm exec biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
       stage_fixed: true
 
     - name: lint
-      run: pnpm exec nx run-many -t lint --all
+      run: pnpm exec nx affected -t lint
 
     - name: test
-      run: pnpm exec nx run-many -t test --all
+      run: pnpm exec nx affected -t test
 
     - name: build
-      run: pnpm exec nx run-many -t build --all
+      run: pnpm exec nx affected -t build

@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { DefaultLayout } from './core/layout/default-layout/default-layout';
+import { ApplicationStore } from './core/stores/application-store';
 
 @Component({
   imports: [DefaultLayout],
@@ -7,4 +8,11 @@ import { DefaultLayout } from './core/layout/default-layout/default-layout';
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App {}
+export class App implements OnInit {
+  readonly #store = inject(ApplicationStore);
+
+  ngOnInit(): void {
+    this.#store.getDevices();
+    this.#store.getModules();
+  }
+}

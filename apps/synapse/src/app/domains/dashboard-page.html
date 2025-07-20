@@ -1,12 +1,29 @@
 <h2>Devices</h2>
 <section>
-  @for( device of devices(); track device.id ) { {{device.id}} - {{ device.name
-  }} <br />
+  @for( device of devices(); track device.id ) {
+  <ng-container
+    [ngTemplateOutlet]="card"
+    [ngTemplateOutletContext]="{ $implicit: device}"
+  ></ng-container>
   } @empty { No device detected }
 </section>
 <h2>Modules</h2>
 <section>
-  @for( module of modules(); track module.kind ) { {{ module.name }}
-  <br />
+  @for( module of modules(); track module.kind ) {
+  <ng-container
+    [ngTemplateOutlet]="card"
+    [ngTemplateOutletContext]="{ $implicit: module}"
+  ></ng-container>
   } @empty { No module detected }
 </section>
+
+<ng-template #card let-device>
+  <div class="card">
+    <img [src]="device.visual" alt="mouse" />
+    <div class="container">
+      <h4>
+        <b>{{ device.name }}</b>
+      </h4>
+    </div>
+  </div>
+</ng-template>

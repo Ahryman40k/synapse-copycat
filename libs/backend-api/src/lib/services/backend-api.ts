@@ -19,6 +19,7 @@ export class BackendApiService {
 			if (this.mock?.[cmd]) {
 				const result = this.mock[cmd] as R;
 				resolve(result);
+				return;
 			}
 
 			reject(new Error('Mocked backend call failed'));

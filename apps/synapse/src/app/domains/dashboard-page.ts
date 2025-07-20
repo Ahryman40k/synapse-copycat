@@ -1,20 +1,16 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ApplicationStore } from '../core/stores/application-store';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'dashboard-page',
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.scss',
-  imports: [],
+  imports: [CommonModule],
 })
-export class DashboardPage implements OnInit {
+export class DashboardPage {
   readonly #store = inject(ApplicationStore);
 
   protected devices = this.#store.devices;
   protected modules = this.#store.modules;
-
-  ngOnInit(): void {
-    this.#store.getDevices();
-    this.#store.getModules();
-  }
 }

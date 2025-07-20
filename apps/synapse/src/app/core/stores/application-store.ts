@@ -16,25 +16,29 @@ export const ApplicationStore = signalStore(
   }),
 
   withMethods((store, backendApi = inject(BackendApi)) => ({
-    async getDevices(): Promise<void> {
+    async getDevices(): Promise<Device[]> {
       const result = await backendApi.invoke('devices', {});
 
-      const devices = result.map(
-        (r) =>
-          ({
-            __type: 'device',
-            kind: r.kind,
-            id: `${r.vendor_id}-${r.product_id}`,
-            name: r.name,
-            visual: `assets/devices/${r.vendor_id}-${r.product_id}.png`,
-          } satisfies Device)
-      ); // TODO: write wrapper here + validator
+      const devices = result.map((r) => {
+        const vendorId = r.vendor_id.toString().padStart(4, '0');
+        const productId = r.product_id.toString().padStart(4, '0');
+
+        return {
+          __type: 'device',
+          kind: r.kind,
+          id: `${vendorId}-${productId}`,
+          name: r.name,
+          visual: `assets/devices/${vendorId}-${productId}.png`,
+        } satisfies Device;
+      }); // TODO: write wrapper here + validator
 
       patchState(store, { devices });
+      return devices;
     },
-    async getModules(): Promise<void> {
+    async getModules(): Promise<Module[]> {
       const result = await backendApi.invoke('modules', {});
 
+      // TODO: add wrapper and validator
       const modules = result.map(
         (r) =>
           ({
@@ -45,6 +49,7 @@ export const ApplicationStore = signalStore(
           } satisfies Module)
       );
       patchState(store, { modules });
+      return modules;
     },
   }))
 );

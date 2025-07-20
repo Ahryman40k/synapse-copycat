@@ -20,7 +20,8 @@
             "glob": "**/public",
             "input": "apps/synapse/public"
           },
-          "apps/synapse/src/config"
+          "apps/synapse/src/config",
+          "apps/synapse/src/assets"
         ],
         "styles": ["apps/synapse/src/styles.scss"]
       },
