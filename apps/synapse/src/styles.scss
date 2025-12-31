@@ -1,1 +1,36 @@
 /* You can add global styles to this file, and also import other style files */
+@use 'sass:map';
+@use 'sass:color';
+
+@use '../../../libs/ui/src/styles/_theming.scss' as theme;
+@use '../src/app/domains/_dashboard-page.theme.scss' as dashboard;
+@use '../src/app/appbar/_appbar.theme.scss' as appbar;
+
+$primary-color : #00FF00;
+
+$theme-light: theme.create-theme-light(var(--synapse-primary-color));
+$background-color: color.adjust( map.get($theme-light, background), $lightness: 10% );
+$inverted-background: color.invert($background-color);
+
+:root {
+    --synapse-primary-color: #{$primary-color};
+
+    * {
+      margin: 0;
+    }
+
+    body {
+      background-color: $background-color;
+    }
+
+
+    h2 {
+      color: $inverted-background;
+    }
+
+    @include theme.apply($theme-light);
+    @include dashboard.apply($theme-light);
+    @include appbar.apply($theme-light);
+
+
+}

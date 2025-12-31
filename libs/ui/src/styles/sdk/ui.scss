@@ -1,0 +1,7 @@
+@use '../../lib/button/button.theme' as button;
+@use '../../lib/card/_card.theme' as card;
+
+@mixin apply($theme){
+  @include button.apply($theme);
+  @include card.apply($theme);
+}

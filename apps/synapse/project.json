@@ -114,7 +114,8 @@
           "json",
           "-d",
           "apps/synapse"
-        ]
+        ],
+        "styles": ["apps/synapse/src/styles.scss"]
       },
       "configurations": {
         "ci": {
@@ -137,7 +138,8 @@
           "json",
           "-d",
           "apps/synapse"
-        ]
+        ],
+        "styles": ["apps/synapse/src/styles.scss"]
       },
       "configurations": {
         "ci": {

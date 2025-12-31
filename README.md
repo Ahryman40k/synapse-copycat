@@ -18,6 +18,7 @@ The selected tools for this project are:
 - [biome](https://biomejs.dev/formatter/) for formatting
 - Runtime type checking: [Valibot](https://valibot.dev)
 - state management: [ngrx](https://ngrx.io)
+- Theming SDK with SASS
 
 Frontend component construction is achieved with [Atomic Design](https://img.storyblok.com/0P7BuKmoYLfS60wwpEBiEy3DzP8=/1600x0/f/88751/1958x1180/1b044ea27a/atomic-design-for-partners-graphic.jpg) method.
 [extra Ressoures](https://www.aubergine.co/insights/how-to-use-angular-and-atomic-design-to-create-web-applications-a-guide-for-new-developers)

@@ -12,6 +12,13 @@ type Story = StoryObj<Button>;
 export const ButtonPrimary: Story = {
 	name: 'Button primary',
 	render: () => ({
-		template: '<button synapse-button>Primary</button>',
+		template: '<syn-button synapse-button>Primary</syn-button>',
+	}),
+};
+
+export const SecondaryPrimary: Story = {
+	name: 'Button secondary',
+	render: () => ({
+		template: '<button synapse-button btn-secondary> Secondary 1</button>',
 	}),
 };

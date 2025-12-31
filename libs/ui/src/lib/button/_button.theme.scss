@@ -1,0 +1,23 @@
+@use 'sass:map';
+
+@mixin apply($theme){
+
+$primary: map.get($theme, primary);
+
+button[synapse-button], syn-button {
+  color: black;
+  background-color: $primary;
+
+  border: solid 1px #179e27;
+
+  &:hover{
+    color: white;
+  }
+
+  &[btn-secondary]{
+    border: solid 1px $primary;
+    background-color: transparent;
+    color: $primary;
+  }
+}
+}

@@ -4,17 +4,21 @@
 	"sourceRoot": "libs/ui/src",
 	"prefix": "syn",
 	"projectType": "library",
-	"tags": [],
+	"tags": ["ui"],
 	"targets": {
 		"test": {
 			"executor": "@nx/vite:test",
 			"outputs": ["{options.reportsDirectory}"],
 			"options": {
+				"passWithNoTests": "true",
 				"reportsDirectory": "../../coverage/libs/ui"
 			}
 		},
 		"lint": {
-			"executor": "@nx/eslint:lint"
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "biome check --write {projectRoot}"
+			}
 		}
 	}
 }

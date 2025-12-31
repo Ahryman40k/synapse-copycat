@@ -1,0 +1,48 @@
+@use 'sass:color';
+
+// Gentle reminder on how to use variables
+// $color-var-name: '--primary-color';
+//
+// :root {
+//   #{$color-var-name}: #007bff;
+// }
+//
+// .element {
+//   color: var(#{$color-var-name});
+// }
+//
+
+@function create-theme-v1($tone, $primary, $contrast, $accent, $background){
+  @return (
+    version: 1,
+    tone: $tone,
+    primary: $primary,
+    contrast: $contrast,
+    accent: $accent,
+    background: $background,
+    );
+  }
+
+//Création du thème light
+@function create-theme-light($base-color,
+  $base-contrast: $base-color,
+  $accent: $base-color){
+  $tone: 'light';
+  $background: #cac8c9;
+  @return create-theme-v1($tone,
+        $base-color,
+        $base-contrast,
+        $accent,
+        $background);
+}
+
+//Création du thème dark
+@function create-theme-dark($base-color, $base-contrast: $base-color, $accent: $base-color){
+  $tone: 'dark';
+  $background: #101010;
+  @return create-theme-v1($tone,
+        $base-color,
+        $base-contrast,
+        $accent,
+        $background);
+}

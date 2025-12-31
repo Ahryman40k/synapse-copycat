@@ -1,3 +1,5 @@
+<syn-bar [devices]="devices()" [modules]="modules()"></syn-bar>
+
 <h2>Devices</h2>
 <section>
   @for( device of devices(); track device.id ) {
@@ -27,3 +29,5 @@
     </div>
   </div>
 </ng-template>
+
+

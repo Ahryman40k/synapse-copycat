@@ -1,0 +1,33 @@
+@use 'sass:map';
+@use 'sass:color';
+
+@mixin apply($theme) {
+  $background-color: map.get($theme, background);
+  $color: color.invert($background-color);
+  $primary:  map.get($theme, primary);
+
+  syn-bar {
+    background-color: $background-color;
+
+    button[navbar] {
+      color: $color;
+
+      background: none;
+      cursor: pointer;
+    }
+
+    button[navbar]:hover {
+      color: white;
+      background: $color;
+    }
+
+    ng-icon {
+      color: $color;
+    }
+
+    ng-icon:hover {
+      color: white;
+      background: #111111;
+    }
+  }
+}
