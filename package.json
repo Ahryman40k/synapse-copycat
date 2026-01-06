@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "prepare": "lefthook install",
     "docs:dev": "vitepress dev apps/docsite",
     "docs:build": "vitepress build apps/docsite",
     "docs:preview": "vitepress preview apps/docsite",
@@ -80,7 +81,7 @@
     "glob": "^11.0.3",
     "jiti": "2.4.2",
     "jsdom": "~22.1.0",
-    "lefthook": "^1.12.2",
+    "lefthook": "^1.13.6",
     "nx": "22.3.3",
     "prettier": "^2.6.2",
     "storybook": "10.1.11",
