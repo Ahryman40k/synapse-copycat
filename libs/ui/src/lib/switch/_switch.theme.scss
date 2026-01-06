@@ -1,0 +1,33 @@
+@use 'sass:map';
+@use 'sass:color';
+
+@mixin apply($theme){
+
+  $primary: map.get($theme, primary);
+  $background: map.get($theme, background);
+
+  syn-switch, label[syn-switch] {
+
+    .slider {
+      background-color: $background;
+
+      &:before {
+        background-color: white;
+      }
+    }
+
+    & > input {
+
+      &:checked + .slider {
+        background-color: $primary;
+      }
+
+      &:focus + .slider {
+        box-shadow: 0 0 1px $primary;
+      }
+    }
+
+
+  }
+}
+
