@@ -1,2 +1,6 @@
 onlyBuiltDependencies:
+  - '@compodoc/compodoc'
+  - esbuild
   - lefthook
+  - lmdb
+  - nx
