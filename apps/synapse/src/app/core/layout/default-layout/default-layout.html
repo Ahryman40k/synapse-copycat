@@ -1,2 +1,8 @@
-toolbar goes here
+<syn-bar
+  [devices]="devices()"
+  [modules]="modules()"
+  (homeRequested)="goHome()"
+  (deviceActivated)="activateDevice($event)"
+  (moduleActivated)="activateModule($event)"
+></syn-bar>
 <router-outlet></router-outlet>
