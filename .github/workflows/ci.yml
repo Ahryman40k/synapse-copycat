@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - '**'
+      - "**"
   pull_request:
 
 permissions:
@@ -35,12 +35,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile
       - uses: nrwl/nx-set-shas@v4
         with:
-          main-branch-name: 'main'
+          main-branch-name: "main"
 
       - run: |
           echo "BASE: ${{ env.NX_BASE }}"
@@ -55,5 +55,5 @@ jobs:
       - run: pnpm exec nx affected -t lint test build
       - run: pnpm exec nx affected -t e2e
       # Nx Cloud recommends fixes for failures to help you get CI green faster. Learn more: https://nx.dev/ci/features/self-healing-ci
-      - run: pnpm exec nx fix-ci
-        if: always()
+      # - run: pnpm exec nx fix-ci
+      #   if: always()
