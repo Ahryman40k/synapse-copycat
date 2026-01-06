@@ -1,7 +1,11 @@
 @use '../../lib/button/button.theme' as button;
 @use '../../lib/card/_card.theme' as card;
+@use '../../lib/switch/_switch.theme.scss' as switch;
+@use '../../lib/checkbox/_checkbox.theme.scss' as checkbox;
 
 @mixin apply($theme){
   @include button.apply($theme);
   @include card.apply($theme);
+  @include switch.apply($theme);
+  @include checkbox.apply($theme);
 }
