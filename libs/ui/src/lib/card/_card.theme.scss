@@ -5,9 +5,12 @@
 
   $tone: map.get($theme, primary);
   $background: map.get($theme, background);
+  $inverted-background: color.invert($background);
 
   syn-card {
     background-color: $background;
-    color: color.invert($background);
+    color: $inverted-background;
+
+    border: 1px solid color.adjust($background, $lightness: -10%);
   }
 }
