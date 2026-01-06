@@ -1,0 +1,28 @@
+@use 'sass:map';
+
+@mixin apply($theme) {
+
+  $background: map.get($theme, background);
+  $primary: map.get($theme, primary);
+
+  syn-checkbox {
+
+  input {
+    &:checked ~ .checkmark {
+      background-color: $primary;
+    }
+  }
+
+  .checkmark {
+    background-color: #eee;
+
+    &:after {
+      border: solid white;
+    }
+  }
+
+  &:hover input ~ .checkmark {
+    background-color: #ccc;
+  }
+  }
+}
