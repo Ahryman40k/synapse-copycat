@@ -1,24 +1,24 @@
 {
-  "name": "ui",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/ui/src",
-  "prefix": "syn",
-  "projectType": "library",
-  "tags": ["ui"],
-  "targets": {
-    "test": {
-      "executor": "@nx/vitest:test",
-      "outputs": ["{options.reportsDirectory}"],
-      "options": {
-        "passWithNoTests": "true",
-        "reportsDirectory": "../../coverage/libs/ui"
-      }
-    },
-    "lint": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "biome check --write {projectRoot}"
-      }
-    }
-  }
+	"name": "ui",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "libs/ui/src",
+	"prefix": "syn",
+	"projectType": "library",
+	"tags": ["ui"],
+	"targets": {
+		"test": {
+			"executor": "@nx/vitest:test",
+			"outputs": ["{options.reportsDirectory}"],
+			"options": {
+				"passWithNoTests": "true",
+				"reportsDirectory": "../../coverage/libs/ui"
+			}
+		},
+		"lint": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "biome check --write {projectRoot}"
+			}
+		}
+	}
 }

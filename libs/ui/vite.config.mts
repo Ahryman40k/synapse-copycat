@@ -60,10 +60,10 @@ export default defineConfig(() => ({
 			reportsDirectory: '../../coverage/libs/ui',
 			provider: 'v8' as const,
 		},
-    server: {
-      deps: {
-        inline: true,
-      }
-    },
+		server: {
+			deps: {
+				inline: true,
+			},
+		},
 	},
 }));

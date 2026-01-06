@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { BrightnessPanelComponent } from 'apps/synapse/src/app/core/components/brightness-panel/brightness-panel';
-import { LightingSwitchOffPanelComponent } from 'apps/synapse/src/app/core/components/lighting-switch-off-panel/lighting-switch-off-panel';
+import { BrightnessPanelComponent } from '../../../../core/components/brightness-panel/brightness-panel';
+import { LightingSwitchOffPanelComponent } from '../../../../core/components/lighting-switch-off-panel/lighting-switch-off-panel';
 
 @Component({
   selector: 'mouse-lighting-panel',
