@@ -12,7 +12,7 @@ import { BackendApiService } from './services/backend-api';
 // Helper function to provide Feature object
 function mockFeature<FeatureKind extends MockFeatureKind>(
   kind: FeatureKind,
-  providers: (Provider | EnvironmentProviders)[]
+  providers: (Provider | EnvironmentProviders)[],
 ): MockFeature<FeatureKind> {
   return { kind, providers };
 }
@@ -55,6 +55,6 @@ export function provideBackendApi(
       provide: BackendApi,
       useValue: new BackendApiService(undefined),
     },
-    features.map((feature) => feature.providers),
+    ...features.map((feature) => feature.providers),
   ]);
 }

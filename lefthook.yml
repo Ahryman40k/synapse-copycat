@@ -9,13 +9,10 @@ pre-commit:
     #   stage_fixed: true
 
     lint:
-      run: pnpm nx run-many -t lint --outputStyle=stream --files {staged_files}
-      stage_fixed: true
+      run: pnpm nx run-many -t lint --outputStyle=stream
 
     test:
-      run: pnpm nx run-many -t test --parallel=1 --outputStyle=stream --files {staged_files}
-      stage_fixed: true
+      run: pnpm nx run-many -t test --outputStyle=stream
 
     build:
-      run: pnpm nx run-many -t build --parallel=1 --outputStyle=stream --staged_files {staged_files}
-      stage_fixed: true
+      run: pnpm nx run-many -t build --outputStyle=stream

@@ -50,10 +50,11 @@ export const ApplicationStore = signalStore(
             name: r.name,
             kind: r.kind,
             visual: `assets/modules/${r.kind}.png`,
-          } satisfies Module)
+          }) satisfies Module,
       );
       patchState(store, { modules });
       return modules;
     },
-  }))
+  })),
 );
+export type ApplicationStore = InstanceType<typeof ApplicationStore>;

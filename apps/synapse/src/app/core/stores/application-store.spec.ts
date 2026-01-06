@@ -1,9 +1,9 @@
-import { TestBed } from '@angular/core/testing';
+import { inject, TestBed } from '@angular/core/testing';
 import { provideBackendApi, withMock } from '@synapse-copycat/backend-api';
 import { ApplicationStore } from './application-store';
 
 describe('ApplicationStore', () => {
-  it('should verify that devices are available', async () => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
         provideBackendApi(
@@ -23,19 +23,23 @@ describe('ApplicationStore', () => {
               },
             ],
             modules: [],
-          })
+          }),
         ),
       ],
     });
-    const store = TestBed.inject(ApplicationStore);
-
-    await store.getDevices();
-    const devices = store.devices();
-
-    expect(devices).toHaveLength(2);
-
-    const firstItem = devices[0];
-    expect(firstItem.id).toBe('0002-0001');
-    expect(firstItem.visual).toBe(`assets/devices/0002-0001.png`);
   });
+
+  it('should verify that devices are available', inject(
+    [ApplicationStore],
+    async (store: ApplicationStore) => {
+      await store.getDevices();
+      const devices = store.devices();
+
+      expect(devices).toHaveLength(2);
+
+      const firstItem = devices[0];
+      expect(firstItem.id).toBe('0002-0001');
+      expect(firstItem.visual).toBe(`assets/devices/0002-0001.png`);
+    },
+  ));
 });
