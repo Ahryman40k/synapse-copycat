@@ -3,8 +3,9 @@
 @use 'sass:color';
 
 @use '../../../libs/ui/src/styles/_theming.scss' as theme;
-@use '../src/app/domains/_dashboard-page.theme.scss' as dashboard;
+@use '../src/app/domains/dashboard-page/_dashboard-page.theme.scss' as dashboard;
 @use '../src/app/appbar/_appbar.theme.scss' as appbar;
+@use '../src/app/domains/page-bar/_page-bar.theme.scss' as pagebar;
 
 $primary-color : #00FF00;
 
@@ -31,6 +32,6 @@ $inverted-background: color.invert($background-color);
     @include theme.apply($theme-light);
     @include dashboard.apply($theme-light);
     @include appbar.apply($theme-light);
-
+    @include pagebar.apply($theme-light);
 
 }
