@@ -1,5 +1,5 @@
-<syn-bar [devices]="devices()" [modules]="modules()"></syn-bar>
 
+@if( devices().length ) {
 <h2>Devices</h2>
 <section>
   @for( device of devices(); track device.id ) {
@@ -9,6 +9,11 @@
   ></ng-container>
   } @empty { No device detected }
 </section>
+} @else {
+    <h2>No Razer devices found</h2>
+  }
+
+@if( modules().length ) {
 <h2>Modules</h2>
 <section>
   @for( module of modules(); track module.kind ) {
@@ -18,6 +23,7 @@
   ></ng-container>
   } @empty { No module detected }
 </section>
+}
 
 <ng-template #card let-device>
   <div class="card">
