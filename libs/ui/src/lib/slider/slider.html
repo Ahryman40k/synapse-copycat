@@ -1,6 +1,11 @@
-<span #thumbLabel [style.left.px]="position() || '8'" >{{value()}}</span>
-<input #inputRange type="range" [value]="value()" [min]="min()" [max]="max()" (input)="onValueChanged($event)">
+<span #thumbLabel [style.left.px]="position() || '8'">{{value()}}</span>
+<input
+  #inputRange
+  type="range"
+  [value]="value()"
+  [min]="min()"
+  [max]="max()"
+  (input)="onValueChanged($event)"
+/>
 
-  <div class="box-minmax">
-  <span>{{min()}}</span><span>{{max()}}</span>
-  </div>
+<div class="box-minmax"><span>{{min()}}</span><span>{{max()}}</span></div>

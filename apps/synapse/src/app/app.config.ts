@@ -26,27 +26,27 @@ export function makeAppConfig(config: Config) {
   console.log('Use configuration', config);
   const mock = !isTauriDetected
     ? ({
-      devices: [
-        {
-          kind: 'mouse',
-          name: 'Razer Basilisk Ultimate',
-          vendor_id: 5426,
-          product_id: 136,
-        },
-        {
-          kind: 'mousemat',
-          name: 'Goliatus Extended',
-          vendor_id: 5426,
-          product_id: 3074,
-        },
-      ],
-      modules: [
-        {
-          kind: 'twinkly',
-          name: 'Twinlky',
-        },
-      ],
-    } satisfies Mock)
+        devices: [
+          {
+            kind: 'mouse',
+            name: 'Razer Basilisk Ultimate',
+            vendor_id: 5426,
+            product_id: 136,
+          },
+          {
+            kind: 'mousemat',
+            name: 'Goliatus Extended',
+            vendor_id: 5426,
+            product_id: 3074,
+          },
+        ],
+        modules: [
+          {
+            kind: 'twinkly',
+            name: 'Twinlky',
+          },
+        ],
+      } satisfies Mock)
     : undefined;
 
   return {

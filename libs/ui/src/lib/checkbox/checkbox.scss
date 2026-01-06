@@ -1,5 +1,4 @@
 :host {
-
   display: block;
   position: relative;
   padding-left: 35px;
@@ -11,11 +10,10 @@
   -ms-user-select: none;
   user-select: none;
 
-
   input {
     position: absolute;
     cursor: pointer;
-    display:none;
+    display: none;
 
     &:checked ~ .checkmark:after {
       display: block;
@@ -30,9 +28,9 @@
     width: 25px;
 
     &:after {
-      content: "";
+      content: '';
       position: absolute;
-       display: none;
+      display: none;
 
       left: 9px;
       top: 5px;

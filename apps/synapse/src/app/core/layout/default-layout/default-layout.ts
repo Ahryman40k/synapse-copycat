@@ -1,8 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
+import type { Device, Module } from '@synapse-copycat/backend-api';
 import { AppBar } from '../../../appbar/appbar';
 import { ApplicationStore } from '../../stores/application-store';
-import type { Device, Module } from '@synapse-copycat/backend-api';
 
 @Component({
   selector: 'default-layout',

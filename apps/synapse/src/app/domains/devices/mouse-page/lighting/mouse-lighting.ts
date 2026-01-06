@@ -8,4 +8,4 @@ import { LightingSwitchOffPanelComponent } from '../../../../core/components/lig
   templateUrl: './mouse-lighting.html',
   imports: [BrightnessPanelComponent, LightingSwitchOffPanelComponent],
 })
-export class MouseLightingPanelComponent { }
+export class MouseLightingPanelComponent {}

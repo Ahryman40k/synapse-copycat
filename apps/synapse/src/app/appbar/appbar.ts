@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { input, Component, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import type { Device, Module } from '@synapse-copycat/backend-api';
 
 @Component({

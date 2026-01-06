@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/angular';
-import { AppBar } from './appbar';
 import type { Device, Module } from '@synapse-copycat/backend-api';
 import { fn } from 'storybook/test';
+import { AppBar } from './appbar';
 
 const meta: Meta<AppBar> = {
   component: AppBar,

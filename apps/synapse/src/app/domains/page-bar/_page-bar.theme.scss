@@ -2,7 +2,7 @@
 @use 'sass:color';
 
 @mixin apply($theme) {
-    $primary: map.get($theme, 'primary');
+  $primary: map.get($theme, 'primary');
   $background-color: map.get($theme, background);
   $color: color.invert($background-color);
 

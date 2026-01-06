@@ -7,4 +7,4 @@ import { Card, SliderComponent, SwitchComponent } from '@synapse-copycat/ui';
   styleUrl: './brightness-panel.scss',
   imports: [Card, SwitchComponent, SliderComponent],
 })
-export class BrightnessPanelComponent { }
+export class BrightnessPanelComponent {}

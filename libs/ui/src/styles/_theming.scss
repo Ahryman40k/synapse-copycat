@@ -1,18 +1,23 @@
-
 @use './sdk/theme-maker';
 @use './sdk/ui';
 
-@function create-theme-light($base-color,
+@function create-theme-light(
+  $base-color,
   $base-contrast: $base-color,
-  $accent: $base-color){
-  @return theme-maker.create-theme-light(        $base-color,        $base-contrast,        $accent);
+  $accent: $base-color
+) {
+  @return theme-maker.create-theme-light($base-color, $base-contrast, $accent);
 }
 
-@function create-theme-dark($base-color, $base-contrast: $base-color, $accent: $base-color){
-  @return theme-maker.create-theme-dark(        $base-color,        $base-contrast,        $accent);
+@function create-theme-dark(
+  $base-color,
+  $base-contrast: $base-color,
+  $accent: $base-color
+) {
+  @return theme-maker.create-theme-dark($base-color, $base-contrast, $accent);
 }
 
-@mixin apply($theme){
+@mixin apply($theme) {
   @debug $theme;
   @include ui.apply($theme);
 }

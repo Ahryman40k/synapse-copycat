@@ -5,4 +5,4 @@ import { Component } from '@angular/core';
   templateUrl: './mousemat-page.html',
   styleUrl: './mousemat-page.scss',
 })
-export class MousematPageComponent { }
+export class MousematPageComponent {}

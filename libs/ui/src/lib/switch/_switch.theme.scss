@@ -1,13 +1,12 @@
 @use 'sass:map';
 @use 'sass:color';
 
-@mixin apply($theme){
-
+@mixin apply($theme) {
   $primary: map.get($theme, primary);
   $background: map.get($theme, background);
 
-  syn-switch, label[syn-switch] {
-
+  syn-switch,
+  label[syn-switch] {
     .slider {
       background-color: $background;
 
@@ -17,7 +16,6 @@
     }
 
     & > input {
-
       &:checked + .slider {
         background-color: $primary;
       }
@@ -26,8 +24,5 @@
         box-shadow: 0 0 1px $primary;
       }
     }
-
-
   }
 }
-

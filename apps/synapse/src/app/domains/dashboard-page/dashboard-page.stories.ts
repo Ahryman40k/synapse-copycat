@@ -63,7 +63,7 @@ const MockedStore = signalStore(
         visual: 'assets/modules/goove.png',
       },
     ],
-  }),
+  })
 );
 
 const meta: Meta<DashboardPage> = {

@@ -1,8 +1,8 @@
-import type { ResolveFn, Route } from '@angular/router';
-import { DashboardPage } from './domains/dashboard-page/dashboard-page';
-import { ApplicationStore } from './core/stores/application-store';
 import { inject } from '@angular/core';
+import type { ResolveFn, Route } from '@angular/router';
 import type { Device, Module } from '@synapse-copycat/backend-api';
+import { ApplicationStore } from './core/stores/application-store';
+import { DashboardPage } from './domains/dashboard-page/dashboard-page';
 import { MousePageComponent } from './domains/devices/mouse-page/mouse-page';
 import { MousematPageComponent } from './domains/devices/mousemat-page/mousemat-page';
 

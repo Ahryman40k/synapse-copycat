@@ -1,22 +1,18 @@
-import { moduleMetadata, type Meta, type StoryObj } from '@storybook/angular';
-import { PageBarComponent, PageBarDescriptor } from './page-bar';
 import { Component } from '@angular/core';
+import { type Meta, moduleMetadata, type StoryObj } from '@storybook/angular';
+import { PageBarComponent, type PageBarDescriptor } from './page-bar';
 
 @Component({
   selector: 'test1-component',
-  template: `
-  <span>test 1</span>
-`,
+  template: ` <span>test 1</span> `,
 })
-export class TestComponent1 { }
+export class TestComponent1 {}
 
 @Component({
   selector: 'test2-component',
-  template: `
-  <span>test 2/span>
-`,
+  template: ` <span>test 2/span> </span> `,
 })
-export class TestComponent2 { }
+export class TestComponent2 {}
 
 const meta: Meta<PageBarComponent> = {
   component: PageBarComponent,

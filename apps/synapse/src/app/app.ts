@@ -7,4 +7,4 @@ import { DefaultLayout } from './core/layout/default-layout/default-layout';
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App { }
+export class App {}

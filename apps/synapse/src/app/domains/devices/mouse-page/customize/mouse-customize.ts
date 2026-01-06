@@ -4,4 +4,4 @@ import { Component } from '@angular/core';
   selector: 'mouse-customise-panel',
   template: 'mouse customize',
 })
-export class MouseCustomizePanelComponent { }
+export class MouseCustomizePanelComponent {}

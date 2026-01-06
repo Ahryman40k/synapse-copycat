@@ -1,26 +1,25 @@
 :host {
- height: 2.5em;
- display: flex;
- align-items:  center;
+  height: 2.5em;
+  display: flex;
+  align-items: center;
 
- gap: 2em;
+  gap: 2em;
 
- .spacer {
-   flex-grow: 1;
- }
+  .spacer {
+    flex-grow: 1;
+  }
 
- img {
-   margin-left: 1rem;
-   padding:0 0.25em;
-   max-height: 1.5em;
- }
+  img {
+    margin-left: 1rem;
+    padding: 0 0.25em;
+    max-height: 1.5em;
+  }
 
- button {
-   background: none;
-   border: none;
-   height: 100%;
-   text-transform: uppercase;
-   font-weight: 900;
- }
-
+  button {
+    background: none;
+    border: none;
+    height: 100%;
+    text-transform: uppercase;
+    font-weight: 900;
+  }
 }

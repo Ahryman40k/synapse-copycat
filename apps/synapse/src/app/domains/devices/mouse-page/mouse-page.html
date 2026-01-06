@@ -1,5 +1,6 @@
-<page-bar [descriptor]="descriptor" (panelChanging)="onPanelChanging($event)"></page-bar>
+<page-bar
+  [descriptor]="descriptor"
+  (panelChanging)="onPanelChanging($event)"
+></page-bar>
 
-<ng-container
-  *ngComponentOutlet="selectedPanel.component"
-></ng-container>
+<ng-container *ngComponentOutlet="selectedPanel.component"></ng-container>

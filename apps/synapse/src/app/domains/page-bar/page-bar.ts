@@ -3,7 +3,7 @@ import {
   Component,
   input,
   output,
-  Type,
+  type Type,
 } from '@angular/core';
 
 export type DescriptorItem = {

@@ -1,12 +1,12 @@
+import { NgComponentOutlet } from '@angular/common';
 import { Component } from '@angular/core';
 import {
   type DescriptorItem,
   PageBarComponent,
   type PageBarDescriptor,
 } from '../../page-bar/page-bar';
-import { MouseLightingPanelComponent } from './lighting/mouse-lighting';
-import { NgComponentOutlet } from '@angular/common';
 import { MouseCustomizePanelComponent } from './customize/mouse-customize';
+import { MouseLightingPanelComponent } from './lighting/mouse-lighting';
 
 @Component({
   selector: 'mouse-page',

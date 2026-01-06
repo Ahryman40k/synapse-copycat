@@ -7,4 +7,4 @@ import { Card, CheckboxComponent } from '@synapse-copycat/ui';
   styleUrl: './lighting-switch-off-panel.scss',
   imports: [CheckboxComponent, Card],
 })
-export class LightingSwitchOffPanelComponent { }
+export class LightingSwitchOffPanelComponent {}

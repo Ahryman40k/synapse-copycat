@@ -1,21 +1,15 @@
- <img src="assets/razer-logo.svg" alt="razer logo"/>
-  <button navbar (click)="goHome()">Synapse</button>
+<img src="assets/razer-logo.svg" alt="razer logo" />
+<button navbar (click)="goHome()">Synapse</button>
 
 @for ( device of devices(); track device ) {
- <button navbar (click)="activateDevice(device)">
-    {{ device.kind  }}
-   </button>
+<button navbar (click)="activateDevice(device)">{{ device.kind }}</button>
+} @for ( module of modules(); track module ) {
+<button navbar (click)="activateModule(module)">{{ module.kind }}</button>
 }
 
-@for ( module of modules(); track module ) {
- <button navbar (click)="activateModule(module)">
-   {{ module.kind  }}
-   </button>
-}
+<div class="spacer"></div>
 
-  <div class="spacer"></div>
-
-  <!-- <ng-icon name="featherSettings"></ng-icon> -->
-  <!-- <ng-icon name="featherMinimize2"></ng-icon> -->
-  <!-- <ng-icon name="featherSquare"></ng-icon> -->
-  <!-- <ng-icon name="featherX"></ng-icon> -->
+<!-- <ng-icon name="featherSettings"></ng-icon> -->
+<!-- <ng-icon name="featherMinimize2"></ng-icon> -->
+<!-- <ng-icon name="featherSquare"></ng-icon> -->
+<!-- <ng-icon name="featherX"></ng-icon> -->

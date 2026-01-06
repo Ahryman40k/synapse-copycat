@@ -1,8 +1,7 @@
 @use 'sass:map';
 @use 'sass:color';
 
-@mixin apply($theme){
-
+@mixin apply($theme) {
   $tone: map.get($theme, primary);
   $background: map.get($theme, background);
   $inverted-background: color.invert($background);
