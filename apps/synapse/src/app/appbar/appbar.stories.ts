@@ -1,11 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { AppBar } from './appbar';
-import { Device, Module } from '@synapse-copycat/backend-api';
-import { expect, fireEvent, fn, within } from 'storybook/test';
+import type { Device, Module } from '@synapse-copycat/backend-api';
+import { fn } from 'storybook/test';
 
 const meta: Meta<AppBar> = {
   component: AppBar,
   title: 'Synapse application / Components / Application Bar',
+  args: {
+    deviceActivated: fn(),
+    moduleActivated: fn(),
+    homeRequested: fn(),
+  },
 };
 
 export default meta;
@@ -47,7 +52,7 @@ const devices = [
     id: '5426-3587',
     visual: 'assets/devices/5426-3587.png',
   },
-] satisfies Device[]
+] satisfies Device[];
 
 const modules = [
   {
@@ -62,17 +67,14 @@ const modules = [
     kind: 'goove',
     visual: 'assets/modules/goove.png',
   },
-] satisfies Module[]
-
+] satisfies Module[];
 
 export const Default: Story = {
   name: 'Default Bar',
   args: {
     devices: [],
     modules: [],
-    activateDevice: fn(),
-    activateModule: fn()
-  }
+  },
 };
 
 export const DeviceOnly = {
@@ -80,8 +82,6 @@ export const DeviceOnly = {
   args: {
     devices,
     modules: [],
-    activateDevice: fn(),
-    activateModule: fn()
   },
 };
 
@@ -90,8 +90,6 @@ export const moduleOnly = {
   args: {
     devices: [],
     modules,
-    activateDevice: fn(),
-    activateModule: fn()
   },
 };
 
@@ -100,7 +98,5 @@ export const All = {
   args: {
     devices,
     modules,
-    activateDevice: fn(),
-    activateModule: fn()
   },
 };
