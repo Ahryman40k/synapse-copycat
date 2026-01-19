@@ -8,7 +8,7 @@
   syn-switch,
   label[syn-switch] {
     .slider {
-      background-color: $background;
+      background-color: hsl(from $background h s 55%);
 
       &:before {
         background-color: white;

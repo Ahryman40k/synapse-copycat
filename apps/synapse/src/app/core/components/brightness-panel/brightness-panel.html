@@ -1,4 +1,4 @@
 <syn-card>
-  <span>brightness</span><syn-switch></syn-switch>
-  <syn-slider></syn-slider>
+  <span>brightness</span><syn-switch (stateChange)="onStateChange($event)"></syn-switch>
+  <syn-slider (valueChange)="onValueChange($event)"></syn-slider>
 </syn-card>
