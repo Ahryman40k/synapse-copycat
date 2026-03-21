@@ -1,37 +1,45 @@
 {
-  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "synapse-copycat",
-  "version": "0.1.0",
-  "identifier": "com.tauri.dev",
-  "build": {
-    "frontendDist": "../../../../dist/apps/synapse",
-    "devUrl": "http://localhost:4200",
-    "beforeDevCommand": "pnpm exec nx run synapse:serve",
-    "beforeBuildCommand": "pnpm exec nx run synapse:build:production"
-  },
-  "app": {
-    "windows": [
-      {
-        "title": "Synapse",
-        "width": 1280,
-        "height": 1024,
-        "resizable": true,
-        "fullscreen": false
-      }
-    ],
-    "security": {
-      "csp": null
-    }
-  },
-  "bundle": {
-    "active": true,
-    "targets": "all",
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ]
-  }
+	"$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+	"productName": "synapse-copycat",
+	"version": "0.1.0",
+	"identifier": "com.tauri.dev",
+	"build": {
+		"frontendDist": "../../../../dist/apps/synapse",
+		"devUrl": "http://localhost:4200",
+		"beforeDevCommand": "pnpm exec nx run synapse:serve",
+		"beforeBuildCommand": "pnpm exec nx run synapse:build:production"
+	},
+	"app": {
+		"windows": [
+			{
+				"title": "Synapse",
+				"width": 1280,
+				"height": 1024,
+				"resizable": true,
+				"fullscreen": false
+			}
+		],
+		"security": {
+			"csp": null
+		}
+	},
+	"bundle": {
+		"active": true,
+		"targets": "all",
+		"icon": [
+			"icons/32x32.png",
+			"icons/128x128.png",
+			"icons/128x128@2x.png",
+			"icons/icon.icns",
+			"icons/icon.ico"
+		]
+	},
+	"plugins": {
+		"tauri-typegen": {
+			"project_path": "../../../libs/backend-api/src/lib/",
+			"output_path": "../src/generated",
+			"validation_library": "none",
+			"verbose": true
+		}
+	}
 }
