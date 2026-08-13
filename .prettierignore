@@ -1,6 +1,33 @@
-# Add files here to ignore them from prettier formatting
+# Prettier owns .scss / .html / .md / .mdx / .yml.
+# Biome owns .ts / .js / .json — see biome.json. The two scopes MUST stay
+# disjoint: `nx format` is hardcoded to Prettier and cannot be pointed at
+# Biome, so the only way to stop the two formatters fighting over libs/ui
+# (tabs vs spaces, import sorting) is to keep them off each other's files.
+*.ts
+*.tsx
+*.js
+*.jsx
+*.mjs
+*.cjs
+*.mts
+*.cts
+*.json
+*.jsonc
+
+# Symlink to AGENTS.md — formatting it would write through to the same file
+/CLAUDE.md
+
+# Generated — never reformat
+pnpm-lock.yaml
+/apps/synapse/src-tauri/Cargo.lock
+
+# Build output and caches
 /dist
 /coverage
 /.nx/cache
 /.nx/workspace-data
 .angular
+storybook-static
+
+# Rust
+**/src-tauri

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'device-layout',
-  template: 'device layout',
+	selector: 'device-layout',
+	template: 'device layout',
 })
-export class DeviceLayout { }
+export class DeviceLayout {}

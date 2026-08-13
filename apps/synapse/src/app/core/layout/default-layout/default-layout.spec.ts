@@ -3,33 +3,33 @@ import { DefaultLayout } from './default-layout';
 import { provideBackendApi, withMock } from '@synapse-copycat/backend-api';
 
 const providers = [
-  provideBackendApi(
-    withMock({
-      devices: [
-        {
-          product_id: 1,
-          vendor_id: 2,
-          kind: 'mouse',
-          name: 'Test mouse',
-        },
-        {
-          product_id: 5432,
-          vendor_id: 1236,
-          kind: 'keyboard',
-          name: 'Test keyboard',
-        },
-      ],
-      modules: [],
-    }),
-  ),
+	provideBackendApi(
+		withMock({
+			devices: [
+				{
+					product_id: 1,
+					vendor_id: 2,
+					kind: 'mouse',
+					name: 'Test mouse',
+				},
+				{
+					product_id: 5432,
+					vendor_id: 1236,
+					kind: 'keyboard',
+					name: 'Test keyboard',
+				},
+			],
+			modules: [],
+		}),
+	),
 ];
 
 describe('Default Layout Template', () => {
-  it('should create', async () => {
-    const { fixture } = await render(DefaultLayout, { providers });
+	it('should create', async () => {
+		const { fixture } = await render(DefaultLayout, { providers });
 
-    const component = fixture.componentInstance;
+		const component = fixture.componentInstance;
 
-    expect(component).toBeTruthy();
-  });
+		expect(component).toBeTruthy();
+	});
 });

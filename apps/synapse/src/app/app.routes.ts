@@ -7,50 +7,50 @@ import { MousePageComponent } from './domains/devices/mouse-page/mouse-page';
 import { MousematPageComponent } from './domains/devices/mousemat-page/mousemat-page';
 
 export const devicesResolver: ResolveFn<Device[]> = () => {
-  const store = inject(ApplicationStore);
-  store.getDevices();
-  return store.devices();
+	const store = inject(ApplicationStore);
+	store.getDevices();
+	return store.devices();
 };
 
 export const modulesResolver: ResolveFn<Module[]> = () => {
-  const store = inject(ApplicationStore);
-  store.getModules();
-  return store.modules();
+	const store = inject(ApplicationStore);
+	store.getModules();
+	return store.modules();
 };
 
 export const appRoutes: Route[] = [
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  {
-    path: 'dashboard',
-    component: DashboardPage,
-    resolve: {
-      devices: devicesResolver,
-      modules: modulesResolver,
-    },
-  },
-  {
-    path: 'device',
-    children: [
-      {
-        path: 'mousemat',
-        component: MousematPageComponent,
-      },
-      {
-        path: 'mouse',
-        component: MousePageComponent,
-      },
-      // {
-      //   path: 'keyboard',
-      //   component: KeyboardPageComponent,
-      // },
-      // {
-      //   path: 'accessory',
-      //   component: AccessoryPageComponent,
-      // },
-      // {
-      //   path: 'streaming',
-      //   component: StreamingPageComponent,
-      // },
-    ],
-  },
+	{ path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+	{
+		path: 'dashboard',
+		component: DashboardPage,
+		resolve: {
+			devices: devicesResolver,
+			modules: modulesResolver,
+		},
+	},
+	{
+		path: 'device',
+		children: [
+			{
+				path: 'mousemat',
+				component: MousematPageComponent,
+			},
+			{
+				path: 'mouse',
+				component: MousePageComponent,
+			},
+			// {
+			//   path: 'keyboard',
+			//   component: KeyboardPageComponent,
+			// },
+			// {
+			//   path: 'accessory',
+			//   component: AccessoryPageComponent,
+			// },
+			// {
+			//   path: 'streaming',
+			//   component: StreamingPageComponent,
+			// },
+		],
+	},
 ];

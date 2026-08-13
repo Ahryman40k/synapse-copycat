@@ -1,12 +1,18 @@
+# Two formatters with strictly disjoint scopes — see .prettierignore.
+# `nx format` is hardcoded to Prettier and cannot be pointed at Biome, so the
+# split is enforced by ignore files rather than by configuration.
 pre-commit:
   parallel: true
   commands:
-    # affected:
-    #   run: pnpm nx show projects --affected
+    format-code:
+      glob: '*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc}'
+      run: pnpm exec biome format --write {staged_files}
+      stage_fixed: true
 
-    # format:
-    #   run: pnpm nx format:write --files {staged_files}
-    #   stage_fixed: true
+    format-markup:
+      glob: '*.{scss,css,html,md,mdx,yml,yaml}'
+      run: pnpm exec prettier --write --ignore-unknown {staged_files}
+      stage_fixed: true
 
     lint:
       run: pnpm nx run-many -t lint --outputStyle=stream

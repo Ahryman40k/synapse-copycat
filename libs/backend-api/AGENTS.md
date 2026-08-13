@@ -78,11 +78,11 @@ anything mock-related.
 
 Keep these straight — mixing them is the most common mistake here.
 
-| | Wire shape | Domain shape |
-|---|---|---|
-| Defined in | `BackendCommands[…]['returnType']` | `Device`, `Module` |
-| Looks like | `{ kind, vendor_id: 5426, product_id: 136, name }` | `{ __type, kind, id: '5426-0136', name, visual }` |
-| Who produces it | Rust, and therefore **the mock** | the store's mapping step |
+|                 | Wire shape                                         | Domain shape                                      |
+| --------------- | -------------------------------------------------- | ------------------------------------------------- |
+| Defined in      | `BackendCommands[…]['returnType']`                 | `Device`, `Module`                                |
+| Looks like      | `{ kind, vendor_id: 5426, product_id: 136, name }` | `{ __type, kind, id: '5426-0136', name, visual }` |
+| Who produces it | Rust, and therefore **the mock**                   | the store's mapping step                          |
 
 `withMock()` takes **wire** shapes. It stands in for the Rust backend, so it must
 lie in exactly the same language the backend speaks. The conversion to `Device` /
@@ -105,11 +105,11 @@ Three steps, in this order:
 
 ```ts
 export type BackendCommands = {
-	my_command: {
-		args: { serial: string };
-		options: Record<string, never>;
-		returnType: { some_field: number }[];
-	};
+  my_command: {
+    args: { serial: string };
+    options: Record<string, never>;
+    returnType: { some_field: number }[];
+  };
 };
 ```
 
@@ -126,8 +126,8 @@ do not copy that pattern into new code.
 
 ## Known gaps
 
-*Snapshot 2026-08-11. These are design limits to be aware of, not bugs to fix
-en masse. Fix one when a feature actually needs it.*
+_Snapshot 2026-08-11. These are design limits to be aware of, not bugs to fix
+en masse. Fix one when a feature actually needs it._
 
 1. **The fixture is duplicated five times** — inline in
    `apps/synapse/src/app/app.config.ts`, and again in `application-store.spec.ts`,

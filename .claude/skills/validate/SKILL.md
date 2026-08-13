@@ -25,15 +25,15 @@ work around it by editing code.
 
 ## 1. Pick the scope
 
-| You changed… | Run |
-|---|---|
-| Angular / TS anywhere | `pnpm exec nx affected -t lint test` |
-| `libs/ui` | `pnpm exec nx test ui` + `pnpm exec nx lint ui` + Storybook |
-| `libs/backend-api` | `pnpm exec nx affected -t lint test` (the app depends on it) |
-| Anything in `src-tauri/` | the Rust block below — **Nx will not run it** |
-| A backend contract (either side) | Rust block **and** TS block **and** both run modes |
-| SCSS / theming | Storybook — tests will not catch an unthemed component |
-| Routing, bootstrap, config | `pnpm exec nx serve synapse` and load the page |
+| You changed…                     | Run                                                          |
+| -------------------------------- | ------------------------------------------------------------ |
+| Angular / TS anywhere            | `pnpm exec nx affected -t lint test`                         |
+| `libs/ui`                        | `pnpm exec nx test ui` + `pnpm exec nx lint ui` + Storybook  |
+| `libs/backend-api`               | `pnpm exec nx affected -t lint test` (the app depends on it) |
+| Anything in `src-tauri/`         | the Rust block below — **Nx will not run it**                |
+| A backend contract (either side) | Rust block **and** TS block **and** both run modes           |
+| SCSS / theming                   | Storybook — tests will not catch an unthemed component       |
+| Routing, bootstrap, config       | `pnpm exec nx serve synapse` and load the page               |
 
 `affected` compares against the base branch. On a branch with no upstream yet it
 can behave oddly — fall back to `run-many` if the affected set looks empty when

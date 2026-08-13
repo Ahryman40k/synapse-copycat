@@ -1,29 +1,29 @@
 import {
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  output,
-  type Type,
+	ChangeDetectionStrategy,
+	Component,
+	input,
+	output,
+	type Type,
 } from '@angular/core';
 
 export type DescriptorItem = {
-  title: string;
-  component: Type<any>;
+	title: string;
+	component: Type<any>;
 };
 export type PageBarDescriptor = DescriptorItem[];
 
 @Component({
-  selector: 'page-bar',
-  styleUrl: './page-bar.scss',
-  templateUrl: './page-bar.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+	selector: 'page-bar',
+	styleUrl: './page-bar.scss',
+	templateUrl: './page-bar.html',
+	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PageBarComponent {
-  descriptor = input.required<PageBarDescriptor>();
+	descriptor = input.required<PageBarDescriptor>();
 
-  panelChanging = output<DescriptorItem>();
+	panelChanging = output<DescriptorItem>();
 
-  selectItem(item: DescriptorItem): void {
-    this.panelChanging.emit(item);
-  }
+	selectItem(item: DescriptorItem): void {
+		this.panelChanging.emit(item);
+	}
 }

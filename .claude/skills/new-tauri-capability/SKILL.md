@@ -137,11 +137,11 @@ shape — snake_case, raw numbers — not the app-facing domain type:
 
 ```ts
 export type BackendCommands = {
-	run_capability: {
-		args: { serial: string; request: CapabilityRequest };
-		options: Record<string, never>;
-		returnType: CapabilityResponse;
-	};
+  run_capability: {
+    args: { serial: string; request: CapabilityRequest };
+    options: Record<string, never>;
+    returnType: CapabilityResponse;
+  };
 };
 ```
 

@@ -2,40 +2,38 @@
 @use 'sass:color';
 
 @mixin apply($theme) {
-  $primary : map.get($theme, primary);
+  $primary: map.get($theme, primary);
   $background: map.get($theme, background);
   $inverted-background: color.invert($background);
 
-  syn-slider, input[type=range] {
+  syn-slider,
+  input[type='range'] {
+    & > input {
+      &::-webkit-slider-runnable-track {
+        background: $primary;
+      }
 
-  & > input {
-    &::-webkit-slider-runnable-track {
-      background: $primary;
+      &::-moz-range-track {
+        background: $primary;
+      }
+
+      &::-webkit-slider-thumb {
+        box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.25);
+        background: $primary;
+      }
+      &::-moz-range-thumb {
+        box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.25);
+        background: $primary;
+      }
     }
 
-    &::-moz-range-track {
-      background: $primary;
+    & > span {
+      background-color: hsl(from $primary h s l / 0.5);
+      color: $inverted-background;
     }
 
-    &::-webkit-slider-thumb {
-      box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.25);
-      background: $primary;
+    .box-minmax {
+      color: $inverted-background;
     }
-    &::-moz-range-thumb {
-      box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.25);
-      background: $primary;
-    }
-  }
-
-  & > span {
-    background-color: hsl( from $primary h s l / 0.5 );
-    color: $inverted-background;
-  }
-
-  .box-minmax {
-    color: $inverted-background;
-  }
-
   }
 }
-

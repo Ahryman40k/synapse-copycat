@@ -24,11 +24,11 @@ underlying UI implementation without touching feature code.
 
 ## Local conventions that differ from the rest of the repo
 
-| | `libs/ui` | Everywhere else |
-|---|---|---|
-| Indentation | **tabs** | 2 spaces |
+|                    | `libs/ui`                         | Everywhere else   |
+| ------------------ | --------------------------------- | ----------------- |
+| Indentation        | **tabs**                          | 2 spaces          |
 | Formatter / linter | **Biome** (`biome check --write`) | Prettier + ESLint |
-| Selector prefix | `syn-` | none / `app-` |
+| Selector prefix    | `syn-`                            | none / `app-`     |
 
 The `lint` target in `project.json` is `nx:run-commands` running
 `biome check --write {projectRoot}` — **it rewrites files**, unlike the ESLint
@@ -75,21 +75,21 @@ renders unthemed — no error, just wrong colours.
 import { ChangeDetectionStrategy, Component, model } from '@angular/core';
 
 @Component({
-	selector: 'syn-switch, label[syn-switch]',
-	styleUrl: './switch.scss',
-	templateUrl: './switch.html',
-	host: {
-		'[class.switch]': 'true',
-		'(click)': 'toggleState()',
-	},
-	changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'syn-switch, label[syn-switch]',
+  styleUrl: './switch.scss',
+  templateUrl: './switch.html',
+  host: {
+    '[class.switch]': 'true',
+    '(click)': 'toggleState()',
+  },
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SwitchComponent {
-	state = model(false);
+  state = model(false);
 
-	toggleState() {
-		this.state.set(!this.state());
-	}
+  toggleState() {
+    this.state.set(!this.state());
+  }
 }
 ```
 
@@ -119,31 +119,31 @@ Layout, spacing, sizing, radius, font-weight. **Never a colour.**
 
 ```scss
 :host {
-	border-radius: 0.5rem;
-	padding: 0.5rem;
-	font-weight: 500;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  font-weight: 500;
 }
 ```
 
 **`_<name>.theme.scss` — colour.** A single mixin taking the theme map. It is
-included *globally*, so it selects on the component's selectors, not `:host`.
+included _globally_, so it selects on the component's selectors, not `:host`.
 
 ```scss
 @use 'sass:map';
 
 @mixin apply($theme) {
-	$primary: map.get($theme, primary);
+  $primary: map.get($theme, primary);
 
-	syn-button,
-	button[synapse-button] {
-		background-color: $primary;
-		color: black;
+  syn-button,
+  button[synapse-button] {
+    background-color: $primary;
+    color: black;
 
-		&[btn-secondary] {
-			background-color: transparent;
-			color: $primary;
-		}
-	}
+    &[btn-secondary] {
+      background-color: transparent;
+      color: $primary;
+    }
+  }
 }
 ```
 
@@ -169,18 +169,18 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { Button } from './button';
 
 const meta: Meta<Button> = {
-	component: Button,
-	title: 'UI library / Button',
+  component: Button,
+  title: 'UI library / Button',
 };
 export default meta;
 
 type Story = StoryObj<Button>;
 
 export const ButtonPrimary: Story = {
-	name: 'Button primary',
-	render: () => ({
-		template: '<syn-button synapse-button>Primary</syn-button>',
-	}),
+  name: 'Button primary',
+  render: () => ({
+    template: '<syn-button synapse-button>Primary</syn-button>',
+  }),
 };
 ```
 

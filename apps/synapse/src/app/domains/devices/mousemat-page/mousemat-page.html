@@ -1,8 +1,7 @@
-
-<page-bar #mousematPageBar
+<page-bar
+  #mousematPageBar
   [descriptor]="descriptor"
   (panelChanging)="onPanelChanging($event)"
 ></page-bar>
 
 <ng-container *ngComponentOutlet="selectedPanel.component"></ng-container>
-

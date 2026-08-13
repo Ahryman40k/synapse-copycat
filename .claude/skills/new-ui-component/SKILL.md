@@ -59,7 +59,7 @@ export class <Name> {
 
 Non-negotiable in this library:
 
-- **Dual selector** — element form *and* attribute form on a sensible native
+- **Dual selector** — element form _and_ attribute form on a sensible native
   element, so consumers keep native semantics and accessibility
   (`'syn-button, button[synapse-button]'`, `'syn-switch, label[syn-switch]'`).
 - **`model()`** for two-way state, `input()` / `output()` otherwise. No
@@ -77,9 +77,9 @@ colour**:
 
 ```scss
 :host {
-	display: inline-flex;
-	padding: 0.5rem;
-	border-radius: 0.5rem;
+  display: inline-flex;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
 }
 ```
 
@@ -90,17 +90,17 @@ selectors rather than `:host`, and reads every colour from the theme map:
 @use 'sass:map';
 
 @mixin apply($theme) {
-	$primary: map.get($theme, primary);
+  $primary: map.get($theme, primary);
 
-	syn-<name>,
-	<native-el>[syn-<name>] {
-		background-color: $primary;
+  syn-<name >,
+  <native-el > [syn-<name>] {
+    background-color: $primary;
 
-		&[<variant-attr>] {
-			background-color: transparent;
-			color: $primary;
-		}
-	}
+    &[<variant-attr>] {
+      background-color: transparent;
+      color: $primary;
+    }
+  }
 }
 ```
 
@@ -124,8 +124,8 @@ export * from './lib/<name>/<name>';
 @use '../../lib/<name>/<name>.theme' as <name>;
 
 @mixin apply($theme) {
-	// …existing includes…
-	@include <name>.apply($theme);
+  // …existing includes…
+  @include <name>.apply($theme);
 }
 ```
 

@@ -15,10 +15,7 @@
 			}
 		},
 		"lint": {
-			"executor": "nx:run-commands",
-			"options": {
-				"command": "biome check --write {projectRoot}"
-			}
+			"executor": "@nx/eslint:lint"
 		}
 	}
 }

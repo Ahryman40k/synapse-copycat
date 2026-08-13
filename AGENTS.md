@@ -19,10 +19,10 @@ manages RGB lighting and settings for Razer peripherals.
 
 The app runs in two modes and both must keep working:
 
-| Mode | How it is detected | Backend used |
-|---|---|---|
-| Tauri desktop | `window.__TAURI_INTERNALS__` is present | real Rust backend via `invoke` |
-| Browser (dev / Storybook / tests) | it is absent | in-memory mock (`withMock`) |
+| Mode                              | How it is detected                      | Backend used                   |
+| --------------------------------- | --------------------------------------- | ------------------------------ |
+| Tauri desktop                     | `window.__TAURI_INTERNALS__` is present | real Rust backend via `invoke` |
+| Browser (dev / Storybook / tests) | it is absent                            | in-memory mock (`withMock`)    |
 
 The detection lives in `apps/synapse/src/app/app.config.ts`. **Never break the
 browser path** — it is what makes the UI developable and testable without a
@@ -62,14 +62,14 @@ without a reason.
 
 ### Where does my new code go?
 
-| I am adding… | Location |
-|---|---|
-| A generic, product-agnostic widget (button, slider, card) | `libs/ui/src/lib/<name>/` |
-| A component that knows about Razer devices | `apps/synapse/src/app/core/components/` |
-| A whole page / feature | `apps/synapse/src/app/domains/<name>/` |
-| A layout shell | `apps/synapse/src/app/core/layout/` |
-| Application state | `apps/synapse/src/app/core/stores/` |
-| A new backend call | `libs/backend-api` **and** `src-tauri` (see §7) |
+| I am adding…                                              | Location                                        |
+| --------------------------------------------------------- | ----------------------------------------------- |
+| A generic, product-agnostic widget (button, slider, card) | `libs/ui/src/lib/<name>/`                       |
+| A component that knows about Razer devices                | `apps/synapse/src/app/core/components/`         |
+| A whole page / feature                                    | `apps/synapse/src/app/domains/<name>/`          |
+| A layout shell                                            | `apps/synapse/src/app/core/layout/`             |
+| Application state                                         | `apps/synapse/src/app/core/stores/`             |
+| A new backend call                                        | `libs/backend-api` **and** `src-tauri` (see §7) |
 
 Rule of thumb: if it would still make sense in a project that has nothing to do
 with Razer, it belongs in `libs/ui`.
@@ -145,9 +145,9 @@ dependencies in `imports: [...]`.
   imports: [CommonModule],
 })
 export class DashboardPage {
-  readonly #store = inject(ApplicationStore);   // #private for injected deps
+  readonly #store = inject(ApplicationStore); // #private for injected deps
 
-  protected devices = this.#store.devices;      // protected for template-only members
+  protected devices = this.#store.devices; // protected for template-only members
 }
 ```
 
@@ -218,14 +218,16 @@ The canonical example is `apps/synapse/src/main.ts`:
 
 ```ts
 const validation = safeParse(ApplicationConfig, maybeConfig);
-if (validation.success) { bootstrapApplication(App, makeAppConfig(validation.output)); }
+if (validation.success) {
+  bootstrapApplication(App, makeAppConfig(validation.output));
+}
 ```
 
 Schema and inferred type share one name, which is the house style:
 
 ```ts
 export const ApplicationConfig = object({ envName: string() });
-export type  ApplicationConfig = InferOutput<typeof ApplicationConfig>;
+export type ApplicationConfig = InferOutput<typeof ApplicationConfig>;
 ```
 
 ⚠️ **This rule is currently violated** in `application-store.ts`, where two
@@ -254,7 +256,7 @@ the browser/mock mode possible.
 
 ```ts
 const store = inject(BackendApi);
-const devices = await backendApi.invoke('devices', {});   // fully typed
+const devices = await backendApi.invoke('devices', {}); // fully typed
 ```
 
 The contract is the `BackendCommands` type in
@@ -271,7 +273,7 @@ Adding a backend call means touching **three** places, in this order:
 3. **Mapping + validation** — convert the wire shape into the domain type
    (`Device`, `Module`) in the store, with a valibot schema.
 
-`Mock` is derived from `BackendCommands`, so step 2 is *meant* to keep every
+`Mock` is derived from `BackendCommands`, so step 2 is _meant_ to keep every
 mock honest: add a command and TypeScript points at each mock that is now
 incomplete.
 
@@ -293,10 +295,10 @@ SCSS, with a hand-rolled theming SDK in `libs/ui/src/styles/`.
 **The split matters:** a component ships two stylesheets and they have different
 jobs.
 
-| File | Contains | Never contains |
-|---|---|---|
-| `button.scss` | structure — layout, spacing, radius, font-weight | colours |
-| `_button.theme.scss` | colours, derived from the `$theme` map | layout |
+| File                 | Contains                                         | Never contains |
+| -------------------- | ------------------------------------------------ | -------------- |
+| `button.scss`        | structure — layout, spacing, radius, font-weight | colours        |
+| `_button.theme.scss` | colours, derived from the `$theme` map           | layout         |
 
 `_<name>.theme.scss` exports a single mixin:
 
@@ -306,7 +308,8 @@ jobs.
 @mixin apply($theme) {
   $primary: map.get($theme, primary);
 
-  syn-button, button[synapse-button] {
+  syn-button,
+  button[synapse-button] {
     background-color: $primary;
   }
 }
@@ -371,10 +374,10 @@ E2E is Playwright in `apps/synapse-e2e`, currently the generated example only.
 ⚠️ **The workspace is currently inconsistent.** Two formatters coexist and the
 two libraries are linted by different tools:
 
-| Scope | Indentation | `lint` target runs |
-|---|---|---|
-| `libs/ui/**` | **tabs**, single quotes (Biome) | `biome check --write` |
-| `apps/synapse/**`, `libs/backend-api/**`, `apps/docsite/**` | **2 spaces** (Prettier) | `@nx/eslint:lint` |
+| Scope                                                       | Indentation                     | `lint` target runs    |
+| ----------------------------------------------------------- | ------------------------------- | --------------------- |
+| `libs/ui/**`                                                | **tabs**, single quotes (Biome) | `biome check --write` |
+| `apps/synapse/**`, `libs/backend-api/**`, `apps/docsite/**` | **2 spaces** (Prettier)         | `@nx/eslint:lint`     |
 
 Both `biome.json` (tabs) and `.prettierrc` + Prettier 2.6.2 are installed, and
 `.vscode/extensions.json` still recommends the Prettier extension.
@@ -413,8 +416,8 @@ ESLint entirely (Rust is linted by clippy).
 
 ## 13. Known issues — do not be surprised by these
 
-*Snapshot taken 2026-08-11 on branch `09-add-contents`. Fix them deliberately,
-not as drive-by changes.*
+_Snapshot taken 2026-08-11 on branch `09-add-contents`. Fix them deliberately,
+not as drive-by changes._
 
 1. **`pnpm install` fails** with `ERR_PNPM_IGNORED_BUILDS`, and
    `pnpm-workspace.yaml` contains literal placeholders
@@ -459,12 +462,13 @@ not as drive-by changes.*
 - **Prefer the skill.** `.claude/skills/` holds recipes for the flows where a
   missed step produces **no error message**:
 
-  | Skill | Use it when |
-  |---|---|
-  | `validate` | before reporting work done — what to run for what you changed, TS **and** Rust |
-  | `new-ui-component` | adding a widget to `libs/ui` (7 files, 2 silent registrations) |
-  | `new-tauri-capability` | any new device read/write (6 files across Rust and TS) |
-  | `package-desktop` | producing the distributable bundle (there is no Docker here) |
+  | Skill                  | Use it when                                                                    |
+  | ---------------------- | ------------------------------------------------------------------------------ |
+  | `validate`             | before reporting work done — what to run for what you changed, TS **and** Rust |
+  | `new-ui-component`     | adding a widget to `libs/ui` (7 files, 2 silent registrations)                 |
+  | `new-tauri-capability` | any new device read/write (6 files across Rust and TS)                         |
+  | `package-desktop`      | producing the distributable bundle (there is no Docker here)                   |
+
 - **Mock first.** The browser/mock path is the primary development mode (§7).
   Build and verify there. Extending the mock is part of the feature, never a
   follow-up. A change that only works in Tauri mode is not done.

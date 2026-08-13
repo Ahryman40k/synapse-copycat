@@ -1,0 +1,21 @@
+{
+	// Formatter ownership is split by file type and must match .prettierignore
+	// and biome.json. Biome: .ts/.js/.json — Prettier: everything else.
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.organizeImports.biome": "explicit"
+	},
+
+	"[typescript]": { "editor.defaultFormatter": "biomejs.biome" },
+	"[javascript]": { "editor.defaultFormatter": "biomejs.biome" },
+	"[json]": { "editor.defaultFormatter": "biomejs.biome" },
+	"[jsonc]": { "editor.defaultFormatter": "biomejs.biome" },
+
+	"[scss]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+	"[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+	"[html]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+	"[markdown]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+	"[yaml]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+
+	"eslint.useFlatConfig": true
+}
