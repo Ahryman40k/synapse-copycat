@@ -1,4 +1,4 @@
-<span #thumbLabel [style.left.px]="position() || '8'">{{value()}}</span>
+<span #thumbLabel [style.left.px]="position() || '8'">{{ value() }}</span>
 <input
   #inputRange
   type="range"
@@ -8,4 +8,7 @@
   (input)="onValueChanged($event)"
 />
 
-<div class="box-minmax"><span>{{min()}}</span><span>{{max()}}</span></div>
+<div class="box-minmax">
+  <span>{{ min() }}</span
+  ><span>{{ max() }}</span>
+</div>
