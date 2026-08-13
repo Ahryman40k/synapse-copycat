@@ -43,6 +43,10 @@ Thumbs.db
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 
+# Agent tooling: share AGENTS.md, .claude/skills and .claude/settings.json,
+# keep per-developer overrides local.
+.claude/settings.local.json
+
 .angular
 
 vite.config.*.timestamp*
