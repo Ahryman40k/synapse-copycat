@@ -109,15 +109,22 @@ cargo clippy --all-targets
 cargo test
 ```
 
-There is **no `typecheck` target** and **no `format` target**. Until one exists,
-typecheck with:
+Formatting is two tools with disjoint scopes (§11):
+
+```sh
+pnpm format         # biome (.ts/.js/.json) + prettier (.scss/.html/.md/.yml)
+pnpm format:check   # same, read-only
+```
+
+`nx format:write` is Prettier-only and therefore covers just half the repo. It
+is now harmless — `.prettierignore` keeps it off Biome's files — but prefer
+`pnpm format`, which does both.
+
+There is **no `typecheck` target**. Until one exists, typecheck with:
 
 ```sh
 pnpm exec tsc -p apps/synapse/tsconfig.app.json --noEmit
 ```
-
-⚠️ **Do not run `nx format:write`** — see §11. It fights Biome and will
-ping-pong `libs/ui` between tabs and spaces.
 
 Targets are not uniform across projects. `ui` and `backend-api` are
 non-buildable and expose only `test` and `lint`; `synapse-e2e` declares none at
@@ -371,35 +378,52 @@ E2E is Playwright in `apps/synapse-e2e`, currently the generated example only.
 
 ## 11. Formatting and linting — read this before writing code
 
-⚠️ **The workspace is currently inconsistent.** Two formatters coexist and the
-two libraries are linted by different tools:
+**Two formatters, one linter.** Each tool owns a set of extensions and they must
+never overlap.
 
-| Scope                                                       | Indentation                     | `lint` target runs    |
-| ----------------------------------------------------------- | ------------------------------- | --------------------- |
-| `libs/ui/**`                                                | **tabs**, single quotes (Biome) | `biome check --write` |
-| `apps/synapse/**`, `libs/backend-api/**`, `apps/docsite/**` | **2 spaces** (Prettier)         | `@nx/eslint:lint`     |
+| Tool         | Owns                                                   | Indentation             |
+| ------------ | ------------------------------------------------------ | ----------------------- |
+| **Biome**    | `.ts` `.tsx` `.js` `.mjs` `.cjs` `.mts` `.cts` `.json` | **tabs**, single quotes |
+| **Prettier** | `.scss` `.css` `.html` `.md` `.mdx` `.yml`             | **2 spaces**            |
+| **ESLint**   | linting only, all five projects                        | —                       |
 
-Both `biome.json` (tabs) and `.prettierrc` + Prettier 2.6.2 are installed, and
-`.vscode/extensions.json` still recommends the Prettier extension.
+### Why two formatters
 
-**Until this is unified: match the file you are editing.** Do not reformat a
-file wholesale, and do not "fix" the indentation of a file you are only
-partially touching — it produces unreviewable diffs and the other tool will
-revert it on the next run.
+Biome cannot format SCSS (it does CSS; Sass is a different language) and its
+HTML support is still experimental — that is 46 of ~108 source files. Prettier
+is therefore not removable. And `nx format` is **hardcoded to Prettier**:
+`nx/src/command-line/format/format.js` does a bare `require('prettier')`, and
+`nx-schema.json` exposes no formatter option, so Biome cannot be substituted.
 
-Two consequences worth knowing before you run anything:
+The split is enforced by ignore files, not by configuration:
 
-- **`nx lint ui` rewrites files.** That target is
-  `nx:run-commands → biome check --write`, not a read-only check like the
-  ESLint targets elsewhere. Expect a dirty tree after it runs.
-- **`nx format:write` must not be used.** Nx's format command is Prettier-based
-  (Prettier 2.8.8; `.prettierrc` sets no indentation, so 2 spaces), while
-  `libs/ui` is Biome-formatted with tabs. Running it converts `libs/ui` to
-  spaces and the next `nx lint ui` converts it back. This is almost certainly
-  why the `format` step in `lefthook.yml` is commented out.
+- `.prettierignore` cedes the TypeScript/JSON families to Biome
+- `biome.json` `files.includes` lists only the extensions Biome owns
 
-ESLint enforces `@nx/enforce-module-boundaries`; `**/src-tauri` is excluded from
-ESLint entirely (Rust is linted by clippy).
+**Never let the two scopes overlap.** Before, both formatted `.ts`:
+`nx format:write` rewrote `libs/ui` to spaces and the next lint run put the tabs
+back. Widening either scope brings that back.
+
+`.editorconfig` carries a per-extension override so your editor agrees with
+whichever formatter owns the file, and `.vscode/settings.json` binds the right
+formatter per language.
+
+### Linting
+
+ESLint runs on all five projects via `@nx/eslint:lint`. Biome's linter is
+**disabled** (`"linter": { "enabled": false }`) so there is exactly one linter.
+
+ESLint is not a fallback — it is the only tool that can do three things Biome
+structurally cannot: read the Nx project graph
+(`@nx/enforce-module-boundaries`), understand Angular (`@angular-eslint`
+selectors and template rules), and use the TypeScript type checker. Biome is a
+file-level formatter; it has no view of the dependency graph.
+
+`**/src-tauri` is excluded from ESLint (Rust is linted by clippy).
+
+⚠️ Type-aware linting is **not** enabled: the Nx preset sets only
+`parserOptions.tsconfigRootDir`, with no `project` / `projectService`. Rules like
+`no-floating-promises` are therefore unavailable.
 
 ---
 
@@ -416,18 +440,23 @@ ESLint entirely (Rust is linted by clippy).
 
 ## 13. Known issues — do not be surprised by these
 
-_Snapshot taken 2026-08-11 on branch `09-add-contents`. Fix them deliberately,
-not as drive-by changes._
+_Snapshot taken 2026-08-13 on branch `10-integrate-ai`. Fix them deliberately,
+not as drive-by changes. Delete an entry once it is resolved — a stale list is
+worse than no list._
 
-1. **`pnpm install` fails** with `ERR_PNPM_IGNORED_BUILDS`, and
-   `pnpm-workspace.yaml` contains literal placeholders
-   (`'@swc/core': set this to true or false`) under `allowBuilds`. Because Nx
-   runs a dependency check before every command, **all `nx` commands currently
-   fail.** This must be fixed before anything else works.
-2. **Node version is not pinned** — local `v26`, `engines` says `>=22`, CI uses
-   `24`, and `@types/node` is `18.16.9`. No `.nvmrc`, no `packageManager` field.
-3. **Two formatters** — see §11.
+1. **Node and pnpm versions are not pinned** — local Node `v26` / pnpm `v11`,
+   `engines` says node `>=22` and pnpm `>=10.13.0`, CI pins node `24` and
+   pnpm `10`, and `@types/node` is `18.16.9`. No `.nvmrc`, no `packageManager`
+   field.
+2. **Prettier is 2.8.8 and predates Angular control flow.** Three templates use
+   `@if` / `@for` (`dashboard-page.html`, `appbar.html`, `page-bar.html`).
+   Prettier parses those blocks as plain text, so it leaves their contents
+   unindented and cannot format them. It is idempotent, so nothing breaks —
+   but upgrading to Prettier 3 will reformat them. Do it in its own commit.
+3. **Type-aware linting is off** — see §11.
 4. **Leftover `.husky/`** directory although lefthook is the real hook manager.
+   `core.hooksPath` points at `.husky/_`, where lefthook has installed its own
+   shim over husky's (the original is kept as `pre-commit.old`).
 5. **`apps/synapse/src-tauri/src/__commands.zip`** is committed inside the Rust
    sources.
 6. **Empty CSS custom properties** in `apps/synapse/src/styles.scss`:

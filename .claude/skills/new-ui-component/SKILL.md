@@ -18,8 +18,12 @@ it knows what a `Device`, a DPI value or a Razer peripheral is, it belongs in
 
 Read `libs/ui/AGENTS.md` if you have not already.
 
-**Indentation in this library is tabs, not spaces.** The `lint` target runs
-`biome check --write` and will rewrite what you produce.
+**Indentation follows the file type**, not the directory: `.ts` is tabs (Biome),
+`.scss` and `.html` are 2 spaces (Prettier). `pnpm format` applies both.
+
+**The `syn-` selector prefix is enforced by ESLint** here — including on any
+Storybook helper component you declare inside a `.stories.ts`. Name those
+`syn-<component>-story-host`.
 
 ## Steps
 

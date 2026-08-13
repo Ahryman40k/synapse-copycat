@@ -19,9 +19,9 @@ with your change. Check that first:
 pnpm install
 ```
 
-If it fails with `ERR_PNPM_IGNORED_BUILDS`, stop and fix
-`pnpm-workspace.yaml` — nothing else can be validated until it passes. Do not
-work around it by editing code.
+If it fails, stop and fix the install — nothing else can be validated until it
+passes, and the error you see from `nx` will have nothing to do with your
+change. Do not work around it by editing code.
 
 ## 1. Pick the scope
 
@@ -96,23 +96,22 @@ proves nothing about the other.
 
 ## 5. Traps
 
-**`nx lint ui` rewrites your files.** Unlike the other projects, `libs/ui` has
-`"lint": nx:run-commands → biome check --write`. It is a formatter run, not a
-read-only check. Expect a dirty working tree afterwards.
+**Use `pnpm format`, not `nx format`.** `nx format` is hardcoded to Prettier, so
+it only covers half the repo (`.scss` `.html` `.md` `.yml`). `pnpm format` runs
+both Biome and Prettier over their respective scopes.
 
-**Do not run `nx format:write`.** It is Prettier-based (Prettier 2.8.8,
-`.prettierrc` with no indentation setting → 2 spaces), while `libs/ui` is
-Biome-formatted with tabs. Running it converts `libs/ui` to spaces, and the next
-`nx lint ui` converts it straight back. This is why the `format` step in
-`lefthook.yml` is commented out. Leave it alone until the workspace settles on
-one formatter.
+**Indentation depends on the file type, not the directory.** Biome owns `.ts` /
+`.js` / `.json` (tabs); Prettier owns `.scss` / `.html` / `.md` (2 spaces). The
+two scopes are kept disjoint by `.prettierignore` and `biome.json` — never
+widen one so they overlap, or the formatters will start undoing each other.
 
-**Match the file you are editing.** `libs/ui` is tabs, everything else is
-2 spaces. Never reformat a file wholesale as a side effect of a small change.
+**Do not reformat a file wholesale** as a side effect of a small change; it
+makes the diff unreviewable.
 
-**The pre-commit hook is slow.** `lefthook.yml` runs lint + test + **build**
-over all projects, not `affected`. Run the checks yourself first so the hook is
-a confirmation rather than a discovery. Do not bypass it with `--no-verify`.
+**The pre-commit hook works and is fast** (~3 s thanks to Nx caching). It runs
+formatting per glob with `stage_fixed`, then lint + test + build. Run the checks
+yourself first so the hook is a confirmation rather than a discovery, and do not
+bypass it with `--no-verify`.
 
 **A green test run means very little here.** There are 5 spec files in the whole
 workspace, `libs/ui/src/lib/button/button.spec.ts` asserts

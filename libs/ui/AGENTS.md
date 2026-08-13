@@ -24,18 +24,19 @@ underlying UI implementation without touching feature code.
 
 ## Local conventions that differ from the rest of the repo
 
-|                    | `libs/ui`                         | Everywhere else   |
-| ------------------ | --------------------------------- | ----------------- |
-| Indentation        | **tabs**                          | 2 spaces          |
-| Formatter / linter | **Biome** (`biome check --write`) | Prettier + ESLint |
-| Selector prefix    | `syn-`                            | none / `app-`     |
+Only the selector prefix is specific to this library — `syn-`, enforced by
+`@angular-eslint/component-selector` in `libs/ui/eslint.config.mjs`. Tooling is
+now identical to the other four projects: `@nx/eslint:lint` for linting, and
+the repo-wide formatter split (Biome owns `.ts`, Prettier owns `.scss` and
+`.html` — root `AGENTS.md` §11).
 
-The `lint` target in `project.json` is `nx:run-commands` running
-`biome check --write {projectRoot}` — **it rewrites files**, unlike the ESLint
-target used by the other projects. Expect `nx lint ui` to modify your working
-tree.
+That prefix rule applies to **every** component declared in this directory,
+including Storybook helper components declared inside a `.stories.ts`. Name
+them `syn-<component>-story-host`.
 
-Write tabs in this directory. Do not convert existing files to spaces.
+> Historical note: `libs/ui` used to run `biome check --write` as its `lint`
+> target, which meant its ESLint config never ran. If you find advice about
+> `libs/ui` being "the Biome project", it is out of date.
 
 ---
 
