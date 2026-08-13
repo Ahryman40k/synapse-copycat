@@ -429,12 +429,29 @@ file-level formatter; it has no view of the dependency graph.
 
 ## 12. Git workflow
 
-- Branch naming follows `NN-short-description` (`09-add-contents`).
-- Commits are conventional-commit style: `feat(synapse): …`, `ci: …`, `chore(lefthook): …`.
-- `lefthook.yml` installs a `pre-commit` hook that runs lint + test + build over
-  **all** projects. It is slow. Do not bypass it with `--no-verify` to work
-  around a failure — fix the failure.
-- **Never commit** unless explicitly asked.
+### 🛑 The maintainer reviews every change before it is committed
+
+**Never commit on your own initiative.** When work is finished:
+
+1. Run the checks (§3, or the `validate` skill) and report what they returned.
+2. **Present the change for review** — the list of touched files and the diffs
+   that matter, so it can be read without running `git diff`.
+3. **Wait for explicit approval**, then commit.
+
+"Do the task" is **not** approval to commit; neither is approval of an earlier
+commit. Each one is asked for separately. This is a standing rule — the
+maintainer should not have to repeat it.
+
+### Conventions
+
+- Branch naming follows `NN-short-description` (`10-integrate-ai`).
+- Conventional commits: `feat(synapse): …`, `fix(pnpm): …`, `docs(agents): …`.
+- `lefthook.yml` installs a `pre-commit` hook running format, lint, test and
+  build (~3-5 s, Nx caches). Do not bypass it with `--no-verify` to work around
+  a failure — fix the failure. If bypassing is genuinely warranted, say so and
+  record the reason in the commit message.
+- Keep unrelated concerns in separate commits. A reformat and a behaviour change
+  in the same diff cannot be reviewed.
 
 ---
 
@@ -448,35 +465,30 @@ worse than no list._
    `engines` says node `>=22` and pnpm `>=10.13.0`, CI pins node `24` and
    pnpm `10`, and `@types/node` is `18.16.9`. No `.nvmrc`, no `packageManager`
    field.
-2. **Prettier is 2.8.8 and predates Angular control flow.** Three templates use
-   `@if` / `@for` (`dashboard-page.html`, `appbar.html`, `page-bar.html`).
-   Prettier parses those blocks as plain text, so it leaves their contents
-   unindented and cannot format them. It is idempotent, so nothing breaks —
-   but upgrading to Prettier 3 will reformat them. Do it in its own commit.
-3. **Type-aware linting is off** — see §11.
-4. **Leftover `.husky/`** directory although lefthook is the real hook manager.
+2. **Type-aware linting is off** — see §11.
+3. **Leftover `.husky/`** directory although lefthook is the real hook manager.
    `core.hooksPath` points at `.husky/_`, where lefthook has installed its own
    shim over husky's (the original is kept as `pre-commit.old`).
-5. **`apps/synapse/src-tauri/src/__commands.zip`** is committed inside the Rust
+4. **`apps/synapse/src-tauri/src/__commands.zip`** is committed inside the Rust
    sources.
-6. **Empty CSS custom properties** in `apps/synapse/src/styles.scss`:
+5. **Empty CSS custom properties** in `apps/synapse/src/styles.scss`:
    `--synapse-background-color: ;` and `--synapse-foreground-color: ;`.
-7. **Commented-out code** left in `app.routes.ts` (keyboard / accessory /
+6. **Commented-out code** left in `app.routes.ts` (keyboard / accessory /
    streaming routes) and `src-tauri/src/lib.rs` (`devices`, `modules` commands).
    They are intent, not dead code — ask before deleting.
-8. **`docs/` is empty** while `deepdocs.yml` targets it.
-9. **The TS ↔ Rust contract has diverged.** `libs/backend-api` declares commands
+7. **`docs/` is empty** while `deepdocs.yml` targets it.
+8. **The TS ↔ Rust contract has diverged.** `libs/backend-api` declares commands
    `devices` and `modules` and the store calls `invoke('devices', {})`, but
    `src-tauri/src/lib.rs` registers only `run_capability` and `list_devices` —
    the other two are commented out. Only the browser/mock path works today.
    `BackendCommands` is hand-written and nothing verifies it against Rust,
    so the type system cannot catch this. See `src-tauri/AGENTS.md`.
-10. **`tauri.conf.json` `frontendDist` looks wrong** —
-    `"../../../../dist/apps/synapse"` resolves one level above the repo root and
-    omits the `browser/` subdirectory that `@angular/build:application` emits
-    (compare the `serve-static` target, which uses `dist/apps/synapse/browser`).
-    Unverified by an actual build. See the `package-desktop` skill.
-11. **`tauri.conf.json` `identifier` is the template default** —
+9. **`tauri.conf.json` `frontendDist` looks wrong** —
+   `"../../../../dist/apps/synapse"` resolves one level above the repo root and
+   omits the `browser/` subdirectory that `@angular/build:application` emits
+   (compare the `serve-static` target, which uses `dist/apps/synapse/browser`).
+   Unverified by an actual build. See the `package-desktop` skill.
+10. **`tauri.conf.json` `identifier` is the template default** —
     `"com.tauri.dev"`. Must change before any public distribution.
 
 ---
