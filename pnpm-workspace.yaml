@@ -1,3 +1,12 @@
+allowBuilds:
+  '@compodoc/compodoc': true
+  '@parcel/watcher': false
+  '@swc/core': false
+  esbuild: true
+  lefthook: true
+  lmdb: false
+  msgpackr-extract: false
+  nx: true
 onlyBuiltDependencies:
   - '@compodoc/compodoc'
   - esbuild
