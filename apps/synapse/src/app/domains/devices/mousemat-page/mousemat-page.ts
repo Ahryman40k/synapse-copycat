@@ -1,9 +1,8 @@
 import { Component, input } from '@angular/core';
 import type { Device } from '@synapse-copycat/backend-api';
 import {
-	DescriptorItem,
 	PageBarComponent,
-	PageBarDescriptor,
+	type PageBarDescriptor,
 } from '../../page-bar/page-bar';
 import { MousematLightingPanelComponent } from './lighting/mousemat-lighting';
 import { CommonModule } from '@angular/common';
@@ -23,10 +22,4 @@ export class MousematPageComponent {
 	];
 
 	device = input.required<Device>();
-
-	selectedPanel = this.descriptor[0];
-
-	onPanelChanging(item: DescriptorItem): void {
-		this.selectedPanel = item;
-	}
 }

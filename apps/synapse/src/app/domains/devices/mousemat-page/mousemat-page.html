@@ -1,7 +1,13 @@
 <page-bar
-  #mousematPageBar
+  #bar
   [descriptor]="descriptor"
-  (panelChanging)="onPanelChanging($event)"
+  ariaLabel="Mousemat sections"
 ></page-bar>
 
-<ng-container *ngComponentOutlet="selectedPanel.component"></ng-container>
+<div
+  role="tabpanel"
+  [id]="bar.activePanelId()"
+  [attr.aria-labelledby]="bar.activeTabId()"
+>
+  <ng-container *ngComponentOutlet="bar.activeItem().component"></ng-container>
+</div>

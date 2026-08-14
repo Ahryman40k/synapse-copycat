@@ -1,7 +1,6 @@
 import { NgComponentOutlet } from '@angular/common';
 import { Component } from '@angular/core';
 import {
-	type DescriptorItem,
 	PageBarComponent,
 	type PageBarDescriptor,
 } from '../../page-bar/page-bar';
@@ -37,10 +36,4 @@ export class MousePageComponent {
 			component: MouseLightingPanelComponent,
 		},
 	];
-
-	selectedPanel = this.descriptor[0];
-
-	onPanelChanging(item: DescriptorItem): void {
-		this.selectedPanel = item;
-	}
 }

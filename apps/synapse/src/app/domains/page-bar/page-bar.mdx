@@ -1,0 +1,133 @@
+{/* page-bar.mdx */}
+
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as stories from './page-bar.stories.ts';
+
+<Meta of={stories} />
+
+# Page bar
+
+The section switcher of a device page — a WAI-ARIA **tablist**, not a row of
+buttons.
+
+<Canvas of={stories.Default} />
+
+<Controls of={stories.Default} />
+
+## It owns the selection
+
+The bar used only to emit `panelChanging`, and each page kept its own
+`selectedPanel` in sync by hand. The bar therefore never knew which section was
+current, so **nothing on screen said where you were**.
+
+It now holds the selection, marks the active tab, and exposes it so the page can
+render the matching panel from a single source of truth:
+
+```html
+<page-bar #bar [descriptor]="descriptor" ariaLabel="Mouse sections" />
+
+<div
+  role="tabpanel"
+  [id]="bar.activePanelId()"
+  [attr.aria-labelledby]="bar.activeTabId()"
+>
+  <ng-container *ngComponentOutlet="bar.activeItem().component" />
+</div>
+```
+
+<Canvas of={stories.WithPanel} />
+
+`selected` is a `model()`, so a page that needs to drive the section — restoring
+it from a route, say — can bind `[(selected)]`. `panelChanging` is still emitted
+for one-way consumers.
+
+**The page has to close the loop.** The bar owns the tab ids; the panel is
+rendered by the page. Without `role="tabpanel"` and `aria-labelledby`, each
+tab's `aria-controls` points at nothing.
+
+## Keyboard
+
+<Canvas of={stories.Keyboard} />
+
+| Key          | Effect                            |
+| ------------ | --------------------------------- |
+| `Tab`        | enters the bar — **once**         |
+| `←` `→`      | previous / next section, wrapping |
+| `Home` `End` | first / last section              |
+
+The bar is a **single tab stop**: only the active tab has `tabindex="0"`, the
+others `-1`, and the arrows move between them. A plain row of buttons costs one
+`Tab` press per section and tells a screen-reader user neither how many
+sections there are nor which one is current.
+
+Selection follows focus — the pattern's automatic activation mode, which suits
+panels that are cheap to render.
+
+## Layout
+
+<Canvas of={stories.ManySections} />
+<Canvas of={stories.SingleSection} />
+
+The mouse page carries five sections, so the bar wraps rather than overflowing.
+
+The active section is marked by a **filled pill** — `border-radius: 999px`, and
+horizontal padding larger than the vertical so short labels read as oblong
+rather than round. The bar carries a small padding of its own so the pill never
+touches its edges, and a gap so the pills stay apart once the row wraps.
+
+Only the fill changes between states; no tab ever changes size, so selecting one
+never shifts the row.
+
+## The pill slides
+
+Changing section is wrapped in `document.startViewTransition()`, with the active
+tab carrying a `view-transition-name`. The browser morphs the old pill into the
+new one — position, size and the label's colour change together.
+
+A view transition rather than an absolutely positioned indicator moved by hand:
+the bar **wraps** onto a second row, and a single translated element cannot
+follow the pill across a line break.
+
+It degrades cleanly. Where `startViewTransition` is missing — Tauri's WebKitGTK
+may be behind the desktop browsers — or where the user has asked for reduced
+motion, the component skips it and the change is instant.
+
+> Its timing is the browser default on purpose. A `::view-transition-group()`
+> rule **cannot** live in a component stylesheet: emulated encapsulation
+> rewrites it to `[_ngcontent-%COMP%]::view-transition-group(…)`, and those
+> pseudo-elements hang off the document root, so the rule silently never
+> matches. Tuning it means a rule in the global stylesheet.
+
+## Theming
+
+Only the **selected** tab carries the primary colour; the bar itself is a
+neutral surface, and the fill is what marks the active section.
+
+| Part          | Fill                | Label                |
+| ------------- | ------------------- | -------------------- |
+| bar           | `surface-container` | —                    |
+| tab, inactive | transparent         | `on-surface-variant` |
+| tab, active   | `primary`           | `on-primary`         |
+| tab, hover    | 10% `primary` tint  | `on-surface`         |
+| focus ring    | —                   | `primary`            |
+
+Inactive tabs recede through a **dedicated text role, not through opacity**.
+Dimming a label lowers its contrast ratio, which is the opposite of what "less
+prominent but still readable" should mean. Measured, whatever the device
+reports:
+
+| Source    | inactive tab | active tab |
+| --------- | ------------ | ---------- |
+| `#00ff00` | 8.5:1        | 8.1:1      |
+| `#facc15` | 8.5:1        | 7.6:1      |
+| `#1d4ed8` | 8.4:1        | 7.4:1      |
+
+Both pairs are asserted for nine hostile source colours and both tones in
+`libs/ui/src/lib/theming/palette.spec.ts`, so the guarantee survives a change to
+the tone ladder.
+
+The active tab's label is `--syn-on-primary`, derived by **measuring** contrast
+against `--syn-primary` — the same rule as the slider's value bubble, the
+button's label and the switch's knob. The previous file used
+`color.invert($background-color)`, the inverse of the _page_ background, which
+has nothing to do with the bar the text is drawn on.

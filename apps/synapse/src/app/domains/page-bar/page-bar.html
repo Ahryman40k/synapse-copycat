@@ -1,3 +1,24 @@
-@for (menuItem of descriptor(); track menuItem) {
-  <button (click)="selectItem(menuItem)">{{ menuItem.title }}</button>
+@for (menuItem of descriptor(); track menuItem.title; let i = $index) {
+  <!--
+    tabIndex is a roving one: a single tab stop for the whole bar, and the arrow
+    keys move within it. That is the WAI-ARIA tabs pattern.
+  -->
+  <button
+    #tabButton
+    type="button"
+    role="tab"
+    class="page-bar__tab"
+    [id]="tabId(i)"
+    [attr.aria-controls]="panelId(i)"
+    [attr.aria-selected]="menuItem === activeItem()"
+    [class.page-bar__tab--active]="menuItem === activeItem()"
+    [style.view-transition-name]="
+      menuItem === activeItem() ? transitionName : null
+    "
+    [tabIndex]="menuItem === activeItem() ? 0 : -1"
+    (click)="select(menuItem)"
+    (keydown)="onKeydown($event, i)"
+  >
+    {{ menuItem.title }}
+  </button>
 }

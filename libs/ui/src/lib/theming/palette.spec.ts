@@ -14,6 +14,10 @@ const TEXT_PAIRS = [
 	['on-surface', 'surface'],
 	['on-surface-variant', 'surface'],
 	['on-surface', 'surface-container'],
+	// Secondary text on a raised surface — the page bar's inactive tabs. They
+	// recede through this role rather than through opacity, precisely so the
+	// ratio stays guaranteed.
+	['on-surface-variant', 'surface-container'],
 	['on-primary', 'primary'],
 	['on-primary-container', 'primary-container'],
 	['on-error', 'error'],

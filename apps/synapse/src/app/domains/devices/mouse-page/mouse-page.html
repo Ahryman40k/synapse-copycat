@@ -1,6 +1,13 @@
-<page-bar
-  [descriptor]="descriptor"
-  (panelChanging)="onPanelChanging($event)"
-></page-bar>
+<page-bar #bar [descriptor]="descriptor" ariaLabel="Mouse sections"></page-bar>
 
-<ng-container *ngComponentOutlet="selectedPanel.component"></ng-container>
+<!--
+  Closes the tabs pattern: the bar owns the tab ids and the selection, the page
+  owns the panel. Without these the tabs' aria-controls point at nothing.
+-->
+<div
+  role="tabpanel"
+  [id]="bar.activePanelId()"
+  [attr.aria-labelledby]="bar.activeTabId()"
+>
+  <ng-container *ngComponentOutlet="bar.activeItem().component"></ng-container>
+</div>

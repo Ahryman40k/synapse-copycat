@@ -1,20 +1,50 @@
-@use 'sass:map';
-@use 'sass:color';
+// Colour only — every dimension lives in page-bar.scss.
+//
+// MIGRATED to the theme roles. This component no longer reads the `$theme`
+// Sass map: it consumes `--syn-<role>` custom properties, which `ThemeService`
+// rewrites whenever the connected device reports a new colour.
+//
+// Only the SELECTED tab carries the primary colour; the bar itself is a neutral
+// surface. Inactive tabs recede through a dedicated text role rather than
+// through opacity — dimming a label lowers its contrast ratio, which is the
+// opposite of what "less prominent but readable" should mean.
+// `on-surface-variant` is guaranteed above 4.5:1 on both surfaces for every
+// source colour, asserted in libs/ui/src/lib/theming/palette.spec.ts.
+//
+// The selected tab's label is `--syn-on-primary`, derived by MEASURING contrast
+// against `--syn-primary` — the same rule as the slider's value bubble, the
+// button's label and the switch's knob.
 
-@mixin apply($theme) {
-  $primary: map.get($theme, 'primary');
-  $background-color: map.get($theme, background);
-  $color: color.invert($background-color);
-
+/// $theme is accepted for compatibility with the call in styles.scss, which
+/// still passes the legacy map. Unused here.
+@mixin apply($theme: null) {
   page-bar {
-    background-color: $primary;
+    background-color: var(--syn-surface-container);
+  }
 
-    & button {
-      color: $color;
+  page-bar .page-bar__tab {
+    background-color: transparent;
+    // Readable, not dimmed.
+    color: var(--syn-on-surface-variant);
 
-      &:hover {
-        color: $background-color;
-      }
+    &:hover {
+      background-color: color-mix(in srgb, var(--syn-primary) 10%, transparent);
+      color: var(--syn-on-surface);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--syn-primary);
+    }
+  }
+
+  // The state the component did not have at all: which section you are on.
+  page-bar .page-bar__tab--active {
+    background-color: var(--syn-primary);
+    color: var(--syn-on-primary);
+
+    &:hover {
+      background-color: var(--syn-primary-hover);
+      color: var(--syn-on-primary);
     }
   }
 }

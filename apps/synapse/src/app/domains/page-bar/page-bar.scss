@@ -1,14 +1,67 @@
+// Structure only — every colour lives in _page-bar.theme.scss.
+
 :host {
-  display: block;
+  display: flex;
   width: 100%;
+  // A device page can carry five or six sections; wrapping keeps them all
+  // reachable, where an overflow would hide some.
+  flex-wrap: wrap;
 
-  button {
-    font-weight: 900;
+  // Insets the pills so the active one does not touch the edges of the bar,
+  // and keeps them apart once the row wraps.
+  padding: 0.375rem;
+  gap: 0.25rem;
+}
 
-    border: none;
-    background: none;
-    padding: 1em;
+.page-bar__tab {
+  // Wider than tall, so the filled state reads as an oblong pill rather than
+  // a circle on the shorter labels.
+  padding: 0.625rem 1.25rem;
+  border-radius: 999px;
 
-    text-transform: uppercase;
+  border: none;
+  background: none;
+
+  font: inherit;
+  font-weight: 900;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  // The active tab is marked by its fill alone, so nothing here changes size
+  // between states and the row never shifts.
+  transition:
+    background-color 0.15s ease-in-out,
+    color 0.15s ease-in-out;
+
+  &:focus {
+    outline: none;
+  }
+
+  // The outline follows border-radius, so it traces the pill.
+  &:focus-visible {
+    outline-offset: 2px;
+  }
+}
+
+// The pill sliding between tabs is a view transition: the component tags the
+// active tab with a `view-transition-name` and wraps the change in
+// `document.startViewTransition()`, so the browser morphs the old pill into the
+// new one. Position, size and the label's colour change together, and it keeps
+// working when the bar wraps onto a second row — which a hand-translated
+// indicator could not.
+//
+// Its timing is the browser default (~250ms) on purpose. A
+// `::view-transition-group()` rule CANNOT live in a component stylesheet:
+// emulated encapsulation rewrites it to
+// `[_ngcontent-%COMP%]::view-transition-group(…)`, and those pseudo-elements
+// hang off the document root, so the rule silently never matches. Tuning it
+// would mean a rule in the global stylesheet.
+//
+// `prefers-reduced-motion` is handled in the component, which skips
+// `startViewTransition` altogether.
+
+@media (prefers-reduced-motion: reduce) {
+  .page-bar__tab {
+    transition: none;
   }
 }
