@@ -1,66 +1,119 @@
+// Structure only — every colour lives in _slider.theme.scss.
+// See libs/ui/AGENTS.md for the split.
+
+@use 'sass:math';
+
+$thumb-size: 14px;
+$track-height: 4px;
+$bubble-radius: 3px;
+$label-size: 12px;
+
+// Vertical room above the track for the bubble.
+$bubble-lane: 26px;
+
 :host {
-  margin-top: 5em;
+  // Overwritten by the host binding in slider.ts; declared here so the track
+  // still renders if the component is used outside Angular's binding pass.
+  --syn-slider-fill: 0%;
 
-  & > input {
-    width: 100%;
+  display: block;
+  position: relative;
+  padding-top: $bubble-lane;
+}
+
+// ── track + thumb ───────────────────────────────────────────────────────────
+// The two vendor pseudo-elements cannot be grouped in one selector: browsers
+// drop the whole rule when they meet a selector they do not recognise.
+
+.syn-slider__input {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  // Matches the thumb, not the track — the track is centred inside it.
+  height: $thumb-size;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::-webkit-slider-runnable-track {
+    height: $track-height;
+    border-radius: 999px;
+  }
+  &::-moz-range-track {
+    height: $track-height;
+    border-radius: 999px;
+  }
+
+  &::-webkit-slider-thumb {
     -webkit-appearance: none;
-
-    &:focus {
-      outline: none;
-    }
-
-    &::-webkit-slider-runnable-track {
-      width: 100%;
-      height: 2px;
-      cursor: pointer;
-    }
-    &::-moz-range-track {
-      width: 100%;
-      height: 2px;
-      cursor: pointer;
-    }
-
-    &::-webkit-slider-thumb {
-      height: 2em;
-      width: 2em;
-      border-radius: 50%;
-      cursor: pointer;
-      -webkit-appearance: none;
-      margin-top: -1em;
-    }
-    &::-moz-range-thumb {
-      height: 2em;
-      width: 2em;
-      border-radius: 50%;
-      cursor: pointer;
-      -webkit-appearance: none;
-      margin-top: -1em;
-    }
-
-    &::-moz-focus-outer {
-      border: 0;
-    }
+    appearance: none;
+    width: $thumb-size;
+    height: $thumb-size;
+    // Recentre the thumb on the thinner track.
+    margin-top: math.div($track-height - $thumb-size, 2);
+    border: none;
+    border-radius: 50%;
+  }
+  &::-moz-range-thumb {
+    width: $thumb-size;
+    height: $thumb-size;
+    border: none;
+    border-radius: 50%;
   }
 
-  & > span {
-    position: relative;
-    display: block;
-    width: 2em;
-    height: 2em;
-    transform: translateX(-50%);
-    text-align: center;
-    border-radius: 0.25rem;
-    font-weight: 600;
-    // margin: 0 0 0 0.25em;
+  &::-moz-focus-outer {
+    border: 0;
   }
+}
 
-  .box-minmax {
-    margin-top: 1em;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    span:first-child {
-      margin-left: 0.5em;
-    }
+// ── value bubble ────────────────────────────────────────────────────────────
+
+.syn-slider__bubble {
+  position: absolute;
+  top: 0;
+  // `left` is set in px by the component, already clamped to the track.
+  left: 0;
+  padding: 3px 8px;
+  border-radius: $bubble-radius;
+  font-size: $label-size;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+:host(.syn-slider--bubble-on-demand) .syn-slider__bubble {
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+}
+
+:host(.syn-slider--bubble-on-demand:hover) .syn-slider__bubble,
+:host(.syn-slider--bubble-on-demand:focus-within) .syn-slider__bubble {
+  opacity: 1;
+}
+
+// ── min / max scale ─────────────────────────────────────────────────────────
+// Same container width as the track, so the max label lines up with its end.
+
+.syn-slider__scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: $label-size;
+}
+
+// ── disabled ────────────────────────────────────────────────────────────────
+
+:host(.syn-slider--disabled) {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .syn-slider__bubble {
+    transition: none;
   }
 }

@@ -66,6 +66,7 @@
 		"@swc/helpers": "~0.5.11",
 		"@tauri-apps/cli": "^2.6.2",
 		"@testing-library/angular": "^17.4.0",
+		"@testing-library/jest-dom": "^7.0.1",
 		"@types/node": "18.16.9",
 		"@typescript-eslint/utils": "8.51.0",
 		"@vitest/browser": "^4.0.16",
