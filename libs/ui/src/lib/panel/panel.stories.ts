@@ -24,7 +24,6 @@ type Story = StoryObj<Panel>;
  * inside are what react.
  */
 export const Default: Story = {
-	name: 'Default',
 	render: () => ({
 		template: `
 			<syn-panel>
@@ -61,7 +60,6 @@ export const WithHeading: Story = {
 
 /** Several side by side, which is how a device page lays them out. */
 export const Several: Story = {
-	name: 'Several',
 	render: () => ({
 		template: `
 			<div style="display:flex; gap:1rem; flex-wrap:wrap">

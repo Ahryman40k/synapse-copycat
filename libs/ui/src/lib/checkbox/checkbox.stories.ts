@@ -1,14 +1,17 @@
 import { Component, signal } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 import { componentWrapperDecorator, moduleMetadata } from '@storybook/angular';
-import { within } from '@testing-library/angular';
-import { expect } from 'storybook/test';
+import { expect, within } from 'storybook/test';
 import { CheckboxComponent } from './checkbox';
 
 const meta: Meta<CheckboxComponent> = {
 	component: CheckboxComponent,
 	title: 'UI library / Checkbox',
-	args: { checked: false, disabled: false, indeterminate: false },
+	args: {
+		checked: false,
+		disabled: false,
+		indeterminate: false,
+	},
 	decorators: [
 		componentWrapperDecorator(
 			(story) =>
@@ -21,7 +24,6 @@ export default meta;
 type Story = StoryObj<CheckboxComponent>;
 
 export const Default: Story = {
-	name: 'Default',
 	render: (args) => ({
 		props: args,
 		template:
@@ -40,7 +42,6 @@ export const Default: Story = {
 };
 
 export const Checked: Story = {
-	name: 'Checked',
 	args: { checked: true },
 	render: (args) => ({
 		props: args,
@@ -50,7 +51,6 @@ export const Checked: Story = {
 
 /** Partial selection — a "select all" over a mixed set. Wins over checked. */
 export const Indeterminate: Story = {
-	name: 'Indeterminate',
 	args: { indeterminate: true },
 	render: (args) => ({
 		props: args,
@@ -70,7 +70,6 @@ export const Indeterminate: Story = {
  * answers `InterfaceUnsupported`.
  */
 export const Disabled: Story = {
-	name: 'Disabled',
 	render: () => ({
 		template: `
 			<syn-checkbox disabled>Unsupported</syn-checkbox>

@@ -1,10 +1,15 @@
 import nx from '@nx/eslint-plugin';
+import storybook from 'eslint-plugin-storybook';
 import baseConfig from '../../eslint.config.mjs';
 
 export default [
 	...baseConfig,
 	...nx.configs['flat/angular'],
 	...nx.configs['flat/angular-template'],
+	// The app already had this; libs/ui did not, so its stories escaped the
+	// rules by accident — including the one that keeps them off
+	// @testing-library/angular in favour of storybook/test.
+	...storybook.configs['flat/recommended'],
 	{
 		files: ['**/*.ts'],
 		rules: {

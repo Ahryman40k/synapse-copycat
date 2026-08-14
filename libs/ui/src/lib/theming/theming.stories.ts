@@ -135,6 +135,5 @@ export default meta;
  * green — that property is asserted for nine hostile sources in palette.spec.ts.
  */
 export const PaletteExplorer: StoryObj<PaletteStoryHost> = {
-	name: 'Palette explorer',
 	render: () => ({ template: '<syn-palette-story-host />' }),
 };

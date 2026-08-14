@@ -4,7 +4,7 @@ import { type Meta, moduleMetadata, type StoryObj } from '@storybook/angular';
 // query and event shows up as a replayable step in the Interactions panel.
 // Importing @testing-library/angular directly here loses that, which is what
 // the storybook/use-storybook-testing-library rule protects.
-import { expect, fireEvent, within } from 'storybook/test';
+import { expect, fireEvent, fn, within } from 'storybook/test';
 import { PageBarComponent, type PageBarDescriptor } from './page-bar';
 
 @Component({
@@ -34,7 +34,11 @@ const DESCRIPTOR: PageBarDescriptor = [
 const meta: Meta<PageBarComponent> = {
 	component: PageBarComponent,
 	title: 'Synapse Application / Components / Page Bar',
-	args: { descriptor: DESCRIPTOR, ariaLabel: 'Mouse sections' },
+	args: {
+		descriptor: DESCRIPTOR,
+		ariaLabel: 'Mouse sections',
+		panelChanging: fn(),
+	},
 	decorators: [
 		moduleMetadata({
 			imports: [CustomizePanelStub, LightingPanelStub, PowerPanelStub],

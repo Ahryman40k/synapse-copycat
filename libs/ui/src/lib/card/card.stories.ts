@@ -129,7 +129,6 @@ export const AsLink: Story = {
 
 /** A device present but unusable — no lift, no pointer, no activation. */
 export const Disabled: Story = {
-	name: 'Disabled',
 	render: () => ({
 		template: `
 			<button syn-card type="button" image="assets/devices/5426-3587.png" disabled>

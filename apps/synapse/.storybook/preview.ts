@@ -112,6 +112,18 @@ const preview: Preview = {
 		themeTone: 'dark',
 	},
 
+	parameters: {
+		// Angular reflects a `model()` two-way binding as an implicit `xChange`
+		// output, and Storybook's typings do not know it — `args: { valueChange:
+		// fn() }` does not compile against the component. A regex is the only
+		// way to reach those, and it is why the Actions panel logged nothing for
+		// the slider, switch and checkbox.
+		//
+		// Outputs declared with `output()` still take an explicit `fn()`: the
+		// spies this creates are not assertable inside a play function.
+		actions: { argTypesRegex: '^(on[A-Z].*|.*Change)$' },
+	},
+
 	decorators: [withThemePalette],
 };
 

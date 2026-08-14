@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { componentWrapperDecorator } from '@storybook/angular';
-import { within } from '@testing-library/angular';
-import { expect } from 'storybook/test';
+import { expect, within } from 'storybook/test';
 import { Button } from './button';
 
 const meta: Meta<Button> = {
@@ -31,7 +30,6 @@ type Story = StoryObj<Button>;
  * turns dark on its own, on blue it turns light. Nothing is pinned.
  */
 export const Primary: Story = {
-	name: 'Primary',
 	render: (args) => ({
 		props: args,
 		template: '<button syn-button [variant]="variant">Apply</button>',
@@ -47,7 +45,6 @@ export const Primary: Story = {
 
 /** Outlined: same geometry, border and label take the primary colour. */
 export const Secondary: Story = {
-	name: 'Secondary',
 	args: { variant: 'secondary' },
 	render: (args) => ({
 		props: args,
@@ -57,7 +54,6 @@ export const Secondary: Story = {
 
 /** No fill, no border — for low-emphasis actions inside a dense panel. */
 export const Ghost: Story = {
-	name: 'Ghost',
 	args: { variant: 'ghost' },
 	render: (args) => ({
 		props: args,
@@ -67,7 +63,6 @@ export const Ghost: Story = {
 
 /** The three side by side, which is how a variant change is easiest to judge. */
 export const AllVariants: Story = {
-	name: 'All variants',
 	render: () => ({
 		template: `
 			<button syn-button>Apply</button>
@@ -98,7 +93,6 @@ export const AllVariants: Story = {
  * attribute is the state, which is why the button also stops taking clicks.
  */
 export const Disabled: Story = {
-	name: 'Disabled',
 	render: () => ({
 		template: `
 			<button syn-button disabled>Apply</button>

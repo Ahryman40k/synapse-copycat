@@ -1,13 +1,13 @@
 import { Component, signal } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 import { componentWrapperDecorator, moduleMetadata } from '@storybook/angular';
-import { fireEvent, waitFor, within } from '@testing-library/angular';
-import { expect } from 'storybook/test';
+import { expect, fireEvent, waitFor, within } from 'storybook/test';
 import { SliderComponent } from './slider';
 
 // ── test helpers ────────────────────────────────────────────────────────────
-// Queries and events come from @testing-library/angular (which re-exports
-// @testing-library/dom); only the assertion library comes from Storybook.
+// Everything comes from `storybook/test`, which re-exports @testing-library/dom
+// *instrumented*: each query and event shows up as a replayable step in the
+// Interactions panel. Importing @testing-library/angular directly loses that.
 //
 // These run in a real browser, so they cover what the jsdom unit tests cannot:
 // anything that depends on measured layout — above all the bubble clamp.
@@ -39,7 +39,7 @@ const fillOf = (root: HTMLElement) =>
 
 /**
  * `waitFor` callbacks must stay synchronous and signal failure by throwing:
- * @testing-library/dom types them as `() => T extends Promise<any> ? never : T`,
+ * @testing-library/dom types them `() => T extends Promise<any> ? never : T`,
  * and Storybook's `expect` returns a Promise. Asserting inside the callback
  * would both fail to typecheck and leave a floating promise the retry loop
  * never observes. So: plain throws to retry, Storybook assertions afterwards.
@@ -116,7 +116,6 @@ export default meta;
 type Story = StoryObj<SliderComponent>;
 
 export const Default: Story = {
-	name: 'Default',
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
@@ -182,7 +181,6 @@ export const SteppedRange: Story = {
  * off. Track, thumb and bubble drop to 35% and the control stops taking events.
  */
 export const Disabled: Story = {
-	name: 'Disabled',
 	args: { disabled: true, value: 70 },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
@@ -194,7 +192,6 @@ export const Disabled: Story = {
 
 /** Bare track, for dense layouts where the value is displayed elsewhere. */
 export const WithoutBubble: Story = {
-	name: 'Without bubble',
 	args: { showBubble: false },
 };
 
