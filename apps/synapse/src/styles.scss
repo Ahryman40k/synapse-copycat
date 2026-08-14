@@ -8,8 +8,15 @@
 @use '../src/app/domains/page-bar/_page-bar.theme.scss' as pagebar;
 
 $primary-color: #00ff00;
+// Text drawn *on* the primary colour. create-theme-dark() defaults it to the
+// base colour, which would render primary-on-primary — invisible. The slider
+// value bubble is the first component to consume the `contrast` theme key.
+$contrast-color: #ffffff;
 
-$theme-dark: theme.create-theme-dark(var(--synapse-primary-color));
+$theme-dark: theme.create-theme-dark(
+  var(--synapse-primary-color),
+  var(--synapse-contrast-color)
+);
 $background-color: color.adjust(
   map.get($theme-dark, background),
   $lightness: 10%
@@ -17,7 +24,13 @@ $background-color: color.adjust(
 $inverted-background: color.invert($background-color);
 
 :root {
+  // Theme roles — the default palette. ThemeService overrides these as inline
+  // styles on <html> once a device reports its colour; inline wins over :root,
+  // so no !important and no ordering trap.
+  @include theme.declare-roles;
+
   --synapse-primary-color: #{$primary-color};
+  --synapse-contrast-color: #{$contrast-color};
   --synapse-background-color: ;
   --synapse-foreground-color: ;
 

@@ -1,5 +1,21 @@
+@use './sdk/roles';
 @use './sdk/theme-maker';
 @use './sdk/ui';
+
+@forward './sdk/roles' show $default-dark;
+
+/// Declare the theme roles as `--syn-<role>` custom properties.
+///
+/// This is the new entry point. `ThemeService` overrides these at runtime with
+/// the palette derived from the connected device's colour; what is emitted here
+/// is only the default used before that happens.
+@mixin declare-roles($palette: roles.$default-dark) {
+  @include roles.declare($palette);
+}
+
+// ── legacy $theme map ───────────────────────────────────────────────────────
+// Components are being migrated from the `$theme` Sass map to the roles above,
+// one at a time. `slider` is done; the rest still read the map.
 
 @function create-theme-light(
   $base-color,
@@ -18,6 +34,5 @@
 }
 
 @mixin apply($theme) {
-  @debug $theme;
   @include ui.apply($theme);
 }
