@@ -8,6 +8,8 @@
   as brightness-panel;
 @use '../src/app/core/components/lighting-switch-off-panel/_lighting-switch-off-panel.theme.scss'
   as lighting-switch-off-panel;
+@use '../src/app/core/components/effects-panel/_effects-panel.theme.scss' as
+  effects-panel;
 
 $primary-color: #00ff00;
 // Text drawn *on* the primary colour. create-theme-dark() defaults it to the
@@ -50,4 +52,5 @@ $theme-dark: theme.create-theme-dark(
   @include pagebar.apply($theme-dark);
   @include brightness-panel.apply($theme-dark);
   @include lighting-switch-off-panel.apply($theme-dark);
+  @include effects-panel.apply($theme-dark);
 }

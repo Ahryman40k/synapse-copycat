@@ -1,0 +1,10 @@
+<syn-panel>
+  <h2>Effects</h2>
+
+  <syn-select
+    ariaLabel="Lighting effect"
+    [options]="effects"
+    [value]="effect()"
+    (valueChange)="onEffectChange($event)"
+  ></syn-select>
+</syn-panel>

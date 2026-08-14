@@ -1,0 +1,9 @@
+// Structure only — the colour lives in _effects-panel.theme.scss.
+// The column layout comes from `syn-panel` itself.
+
+h2 {
+  margin: 0;
+  font-size: 1rem;
+  // The label reads EFFECTS whatever the markup says, like every panel title.
+  text-transform: uppercase;
+}
