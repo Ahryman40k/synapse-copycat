@@ -331,6 +331,46 @@ Registration differs by location — miss this and your theme silently never app
   `libs/ui/src/styles/sdk/ui.scss`
 - **app component** → add a `@use` + `@include` in `apps/synapse/src/styles.scss`
 
+### Where this is heading — read before touching a theme file
+
+The theming SDK is **a work in progress, not a finished system**. The component
+theme files you will find are sketches and experiments toward the design below;
+treat them as such rather than as a convention to copy. Hardcoded colours in
+them are known and expected at this stage.
+
+**The product intent.** Synapse controls the RGB lighting of Razer peripherals.
+When a device's colour is set, **the whole application theme adopts it** — so
+the UI visibly reflects what the hardware is doing. The colour is discovered by
+the Rust backend on device enumeration; for now the **first device found** wins.
+(Per-device colours are an open design question — devices can each have their
+own.) A default palette must exist for first paint and for the browser/mock
+path, before any device answers.
+
+**What is and is not runtime.** `primary` is the _only_ colour that changes at
+runtime. Text, surfaces, `error`, `warning` and `success` are fixed. So the
+palette cannot be computed at build time by Sass — it is derived in TypeScript
+when the colour changes, and published as CSS custom properties that the Sass
+mixins reference.
+
+**The rule that makes it safe.** The chosen colour contributes **hue and chroma
+only — never lightness**. Lightness always comes from a fixed tone ladder tied
+to the role. Verified across green, red and blue sources: every text pair stays
+above the 4.5:1 WCAG floor, within 0.1 of the same ratio. Without this rule a
+pale colour washes the interface out — `#00ff00` sits at OKLCH `L = 0.866`, far
+too light to be used raw as `primary`; it is tone-mapped to `#48c242`.
+
+**The raw colour is kept too.** A separate unmapped role holds the device's
+exact RGB, used for the glow behind the device image. Do not derive that one
+from the tone ladder — it must match the hardware.
+
+**The colour crosses the IPC boundary**, so it is validated with valibot like
+any other backend value (§6). `hexColor()` exists natively; combine it with
+`length(7)` to require `#rrggbb`.
+
+This is the same model as Material 3, where `material-color-utilities` computes
+tonal palettes in TypeScript from a source colour and writes CSS custom
+properties — Android's wallpaper-driven theming is the same problem.
+
 ---
 
 ## 9. Storybook

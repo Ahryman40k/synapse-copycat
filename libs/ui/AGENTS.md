@@ -197,8 +197,48 @@ visual diffs on PRs.
 
 ## Tests
 
-Vitest + jsdom, config in `vite.config.mts`, setup in `src/test-setup.ts`.
-`@testing-library/angular` is installed — prefer it to raw `TestBed`.
+Two complementary levels. Both use **`@testing-library/angular`** for queries
+and events — do not introduce a second testing library.
+
+| Level                         | Runs in      | Covers                                       |
+| ----------------------------- | ------------ | -------------------------------------------- |
+| `<name>.spec.ts` (Vitest)     | jsdom        | signal API, DOM contract, accessible name    |
+| `play` in `<name>.stories.ts` | real browser | anything needing layout — sizes, positioning |
+
+jsdom reports `0` for every measurement, so **anything positional has to be
+asserted in a `play` function**, not in a spec. `slider.stories.ts` is the
+reference: the bubble clamp is only testable there.
+
+`@testing-library/jest-dom` is wired into `src/test-setup.ts`, so
+`toBeVisible()`, `toHaveTextContent()`, `toBeDisabled()` and friends are
+available in specs.
+
+### Writing a `play` function
+
+Queries and events from `@testing-library/angular`, assertions from
+`storybook/test`:
+
+```ts
+import { fireEvent, waitFor, within } from '@testing-library/angular';
+import { expect } from 'storybook/test';
+```
+
+⚠️ **Never assert inside a `waitFor` callback.** Storybook's `expect` returns a
+Promise, and `@testing-library/dom` types `waitFor` as
+`() => T extends Promise<any> ? never : T` — so it does not typecheck, and the
+floating promise means the retry loop never sees the failure. Throw plainly to
+retry, then assert afterwards:
+
+```ts
+await waitFor(() => {
+  if (bubble()?.textContent !== '85') throw new Error('not there yet');
+});
+await expect(bubble()).toHaveTextContent('85');
+```
+
+`play` functions run in the Storybook UI's Interactions panel.
+`@storybook/addon-vitest` is installed but **not registered** in
+`apps/synapse/.storybook/main.ts`, so they do not yet run in CI.
 
 ```sh
 pnpm exec nx test ui
