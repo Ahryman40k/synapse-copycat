@@ -1,9 +1,13 @@
-:host {
-  syn-card {
-    span {
-      text-transform: uppercase;
-      margin-right: 2em;
-      font-weight: 500;
-    }
+// Structure only — the colour lives in _brightness-panel.theme.scss.
+
+.brightness-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2em;
+
+  span {
+    text-transform: uppercase;
+    font-weight: 500;
   }
 }

@@ -1,5 +1,27 @@
 <syn-panel>
-  <span>brightness</span
-  ><syn-switch (checkedChange)="onStateChange($event)"></syn-switch>
-  <syn-slider (valueChange)="onValueChange($event)"></syn-slider>
+  <!--
+    The label and its switch share a row; the slider sits below. `syn-panel`
+    stacks its children, so the row needs a wrapper of its own — the old
+    `syn-card` was display:block, which let them flow inline without one.
+  -->
+  <div class="brightness-panel__header">
+    <span>brightness</span>
+    <syn-switch
+      ariaLabel="Brightness"
+      [checked]="activated()"
+      (checkedChange)="onStateChange($event)"
+    ></syn-switch>
+  </div>
+
+  <!--
+    Bound both ways, not just listened to: the panel owns the state, so the
+    controls have to reflect it. Turning brightness off disables the level —
+    the switch is what says whether there is a level to set at all.
+  -->
+  <syn-slider
+    ariaLabel="Brightness level"
+    [value]="level()"
+    [disabled]="!activated()"
+    (valueChange)="onValueChange($event)"
+  ></syn-slider>
 </syn-panel>

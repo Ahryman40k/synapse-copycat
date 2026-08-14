@@ -1,11 +1,8 @@
-:host {
-  syn-card {
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-  }
+// Structure only — the colour lives in _lighting-switch-off-panel.theme.scss.
+// The column layout comes from `syn-panel` itself; it does not belong here.
 
-  h2 {
-    text-transform: uppercase;
-  }
+h2 {
+  margin: 0;
+  font-size: 1rem;
+  text-transform: uppercase;
 }

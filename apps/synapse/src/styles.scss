@@ -1,11 +1,13 @@
 /* You can add global styles to this file, and also import other style files */
-@use 'sass:map';
-@use 'sass:color';
 
 @use '../../../libs/ui/src/styles/_theming.scss' as theme;
 @use '../src/app/domains/dashboard-page/_dashboard-page.theme.scss' as dashboard;
 @use '../src/app/appbar/_appbar.theme.scss' as appbar;
 @use '../src/app/domains/page-bar/_page-bar.theme.scss' as pagebar;
+@use '../src/app/core/components/brightness-panel/_brightness-panel.theme.scss'
+  as brightness-panel;
+@use '../src/app/core/components/lighting-switch-off-panel/_lighting-switch-off-panel.theme.scss'
+  as lighting-switch-off-panel;
 
 $primary-color: #00ff00;
 // Text drawn *on* the primary colour. create-theme-dark() defaults it to the
@@ -17,12 +19,6 @@ $theme-dark: theme.create-theme-dark(
   var(--synapse-primary-color),
   var(--synapse-contrast-color)
 );
-$background-color: color.adjust(
-  map.get($theme-dark, background),
-  $lightness: 10%
-);
-$inverted-background: color.invert($background-color);
-
 :root {
   // Theme roles — the default palette. ThemeService overrides these as inline
   // styles on <html> once a device reports its colour; inline wins over :root,
@@ -31,23 +27,27 @@ $inverted-background: color.invert($background-color);
 
   --synapse-primary-color: #{$primary-color};
   --synapse-contrast-color: #{$contrast-color};
-  --synapse-background-color: ;
-  --synapse-foreground-color: ;
 
   * {
     margin: 0;
   }
 
+  // On the theme roles, like everything else. These used to be
+  // `color.adjust(background, 10%)` and its inverse — values computed once from
+  // a hardcoded #101010, so they never followed the device colour.
   body {
-    background-color: $background-color;
+    background-color: var(--syn-surface);
+    color: var(--syn-on-surface);
   }
 
   h2 {
-    color: $inverted-background;
+    color: var(--syn-on-surface);
   }
 
   @include theme.apply($theme-dark);
   @include dashboard.apply($theme-dark);
   @include appbar.apply($theme-dark);
   @include pagebar.apply($theme-dark);
+  @include brightness-panel.apply($theme-dark);
+  @include lighting-switch-off-panel.apply($theme-dark);
 }
