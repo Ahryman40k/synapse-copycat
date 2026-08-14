@@ -1,23 +1,88 @@
-@use 'sass:map';
+// Colour only — every dimension lives in button.scss.
+//
+// MIGRATED to the theme roles. This component no longer reads the `$theme`
+// Sass map: it consumes `--syn-<role>` custom properties, which `ThemeService`
+// rewrites whenever the connected device reports a new colour. Defaults come
+// from `libs/ui/src/styles/sdk/_roles.scss`.
+//
+// The label of a filled button follows the same rule as the slider's value
+// bubble: `--syn-on-primary` is derived by MEASURING contrast against
+// `--syn-primary`, so it flips between light and dark on its own as the device
+// colour changes. Never pin it — the previous `color: black` with a
+// `color: white` on hover was exactly the bug that rule exists to prevent.
 
-@mixin apply($theme) {
-  $primary: map.get($theme, primary);
+/// $theme is accepted for compatibility with `ui.scss`, which still passes the
+/// legacy map to the components that have not migrated yet. Unused here.
+@mixin apply($theme: null) {
+  $tint-hover: color-mix(in srgb, var(--syn-primary) 12%, transparent);
+  $tint-active: color-mix(in srgb, var(--syn-primary) 20%, transparent);
 
-  button[synapse-button],
-  syn-button {
-    color: black;
-    background-color: $primary;
+  button[syn-button],
+  a[syn-button] {
+    // ── primary (default) ───────────────────────────────────────────────────
+    background-color: var(--syn-primary);
+    border-color: var(--syn-primary);
+    color: var(--syn-on-primary);
 
-    border: solid 1px #179e27;
+    &:not(:disabled):not([aria-disabled='true']) {
+      &:hover {
+        background-color: var(--syn-primary-hover);
+        border-color: var(--syn-primary-hover);
+      }
 
-    &:hover {
-      color: white;
+      &:active {
+        background-color: var(--syn-primary-active);
+        border-color: var(--syn-primary-active);
+      }
     }
 
-    &[btn-secondary] {
-      border: solid 1px $primary;
+    &:focus-visible {
+      outline: 2px solid var(--syn-primary);
+    }
+
+    // ── secondary: outlined ─────────────────────────────────────────────────
+    &[data-variant='secondary'] {
       background-color: transparent;
-      color: $primary;
+      border-color: var(--syn-primary);
+      color: var(--syn-primary);
+
+      &:not(:disabled):not([aria-disabled='true']) {
+        &:hover {
+          background-color: $tint-hover;
+          border-color: var(--syn-primary-hover);
+          color: var(--syn-primary-hover);
+        }
+
+        &:active {
+          background-color: $tint-active;
+        }
+      }
+    }
+
+    // ── ghost: text only ────────────────────────────────────────────────────
+    &[data-variant='ghost'] {
+      background-color: transparent;
+      border-color: transparent;
+      color: var(--syn-primary);
+
+      &:not(:disabled):not([aria-disabled='true']) {
+        &:hover {
+          background-color: $tint-hover;
+          color: var(--syn-primary-hover);
+        }
+
+        &:active {
+          background-color: $tint-active;
+        }
+      }
+    }
+
+    // ── disabled ────────────────────────────────────────────────────────────
+    // The real case: a capability the device does not support — the Rust
+    // backend answers InterfaceUnsupported.
+    &:disabled,
+    &[aria-disabled='true'] {
+      opacity: 0.35;
     }
   }
 }

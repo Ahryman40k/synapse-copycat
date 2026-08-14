@@ -16,10 +16,14 @@ export default [
 					style: 'camelCase',
 				},
 			],
+			// `attribute` is allowed alongside `element`: a component that must
+			// render on a native host — `button[syn-button]`, so the browser
+			// supplies the role, the tab stop and `disabled` — has no element
+			// form at all. The `syn` prefix is still enforced on both.
 			'@angular-eslint/component-selector': [
 				'error',
 				{
-					type: 'element',
+					type: ['element', 'attribute'],
 					prefix: 'syn',
 					style: 'kebab-case',
 				},

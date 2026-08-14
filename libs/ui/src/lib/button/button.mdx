@@ -1,10 +1,91 @@
 {/* button.mdx */}
 
-import { Canvas, Meta } from '@storybook/addon-docs/blocks';
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
 import * as stories from './button.stories.ts';
 
 <Meta of={stories} />
 
 # Button
 
-<Canvas of={stories.ButtonPrimary} />
+Applied to a **native element**, never rendered as one of its own.
+
+```html
+<button syn-button>Apply</button>
+<button syn-button variant="secondary">Cancel</button>
+<a syn-button href="/docs">Open the docs</a>
+```
+
+<Canvas of={stories.AllVariants} />
+
+<Controls of={stories.Primary} />
+
+## Why attribute-only
+
+The component used to also match `syn-button`, an element form. A custom
+element is not a button: no `role`, no tab stop, no Enter/Space activation, no
+`disabled`, no form submission. Every one of those has to be reimplemented, and
+reimplemented worse.
+
+Applying the styles to a real `<button>` keeps all of it for free — the same
+reasoning that has the slider wrap a native `<input type="range">`. Use `<a>`
+when the action navigates; it stays a link, so middle-click and "open in new
+tab" keep working.
+
+| Selector             | Use for                        |
+| -------------------- | ------------------------------ |
+| `button[syn-button]` | an action                      |
+| `a[syn-button]`      | navigation that looks like one |
+
+## Variants
+
+<Canvas of={stories.Primary} />
+<Canvas of={stories.Secondary} />
+<Canvas of={stories.Ghost} />
+
+| Variant     | Fill        | Border      | Label        |
+| ----------- | ----------- | ----------- | ------------ |
+| `primary`   | `primary`   | `primary`   | `on-primary` |
+| `secondary` | transparent | `primary`   | `primary`    |
+| `ghost`     | transparent | transparent | `primary`    |
+
+The variant is a typed input reflected to `[data-variant]`, which is what the
+theme file selects on. Declaring it statically works too — `variant="ghost"`
+needs no binding.
+
+## The label colour is never pinned
+
+The filled variant draws its label with `--syn-on-primary`, which the palette
+derives by **measuring** WCAG contrast against `--syn-primary` and keeping the
+better of a light and a dark candidate. Exactly the rule the slider's value
+bubble follows.
+
+Switch the device colour in the toolbar: on amber the label turns dark by
+itself, on blue it turns light. The previous implementation hardcoded
+`color: black` with `color: white` on hover — the failure this rule exists to
+prevent.
+
+Every variant also tracks `--syn-primary-hover` and `--syn-primary-active`, so
+the whole interaction chain follows the connected device.
+
+## States
+
+<Canvas of={stories.Disabled} />
+
+There is **no `disabled` input**. On a `<button>` the native attribute already
+is the state — it removes the tab stop, blocks the click, and is announced. The
+theme styles `:disabled`; adding an input would mean mirroring native behaviour
+by hand. On an `<a>`, which has no `disabled`, use `aria-disabled="true"`.
+
+The realistic case is a capability the peripheral does not support, where the
+Rust backend answers `InterfaceUnsupported`.
+
+<Canvas of={stories.Focus} />
+
+The focus ring is required, not decoration. A button is a keyboard control, and
+the previous implementation had no visible focus state at all.
+
+## Composition
+
+`display: inline-flex` with a `gap`, so an icon can sit beside the label without
+extra markup. The border is declared on every variant — transparent where it is
+not wanted — so switching variants never shifts the layout by a pixel.

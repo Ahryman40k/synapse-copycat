@@ -1,5 +1,53 @@
+// Structure only — every colour lives in _button.theme.scss.
+// See libs/ui/AGENTS.md for the split.
+
 :host {
+  // inline-flex, not the browser default: the old `syn-button` element form was
+  // `display: inline`, so vertical padding did not affect layout and the two
+  // usages rendered differently. `gap` is there for an icon beside the label.
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  padding: 0.5rem 0.875rem;
   border-radius: 0.5rem;
-  padding: 0.5rem;
+
+  // Declared on every variant so switching one does not shift the layout by a
+  // pixel; the colour is the theme's business.
+  border: 1px solid transparent;
+
+  font: inherit;
   font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+
+  // The <a> form: strip the link look, keep the link semantics.
+  text-decoration: none;
+
+  transition:
+    background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out,
+    color 0.15s ease-in-out;
+
+  &:focus {
+    outline: none;
+  }
+
+  // Colour comes from the theme; the geometry stays here.
+  &:focus-visible {
+    outline-offset: 2px;
+  }
+
+  &:disabled,
+  &[aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition: none;
+  }
 }
