@@ -31,3 +31,5 @@ storybook-static
 
 # Rust
 **/src-tauri
+
+.nx/self-healing

@@ -61,3 +61,5 @@ documentation.json
 .claude/worktrees
 
 .nx/polygraph
+
+.nx/self-healing
