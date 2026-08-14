@@ -1,14 +1,111 @@
-<img src="assets/razer-logo.svg" alt="razer logo" />
-<button navbar (click)="goHome()">Synapse</button>
+<!--
+  Only this part is clipped. The overflow menu lives outside it: an
+  `overflow: hidden` ancestor also clips absolutely positioned descendants, so
+  a menu rendered inside here was in the DOM and invisible.
+-->
+<div class="bar__entries" #entries>
+  <img src="assets/razer-logo.svg" alt="Razer" />
 
-@for (device of devices(); track device) {
-  <button navbar (click)="activateDevice(device)">{{ device.kind }}</button>
-}
-@for (module of modules(); track module) {
-  <button navbar (click)="activateModule(module)">{{ module.kind }}</button>
-}
+  <!--
+  aria-current="page" is set only on the current entry — that is what tells a
+  screen-reader user where they are, and what the theme file selects on to
+  recolour the label.
+-->
+  <button
+    navbar
+    type="button"
+    [attr.aria-current]="activeId() ? null : 'page'"
+    (click)="goHome()"
+  >
+    Synapse
+  </button>
 
-<div class="spacer"></div>
+  <!--
+  Labelled by kind, numbered only where a kind repeats — short enough for a
+  narrow window. The full device name is the `title`, never an aria-label
+  overriding the visible text: WCAG 2.5.3 (Label in Name) requires the
+  accessible name to contain what is written on the control, or voice control
+  stops matching it.
+
+  `hidden` on the clipped ones takes them out of the tab order and the
+  accessibility tree; the stylesheet keeps their box, so the layout — and
+  therefore what fits — never changes as a result.
+-->
+  @for (entry of deviceEntries(); track entry.item.id) {
+    <button
+      #entryButton
+      navbar
+      type="button"
+      [attr.data-entry-id]="entry.item.id"
+      [hidden]="overflowing().has(entry.item.id)"
+      [title]="entry.item.name"
+      [attr.aria-current]="entry.item.id === activeId() ? 'page' : null"
+      (click)="activateDevice(entry.item)"
+    >
+      {{ entry.label }}
+    </button>
+  }
+  @for (entry of moduleEntries(); track entry.item.kind) {
+    <button
+      #entryButton
+      navbar
+      type="button"
+      [attr.data-entry-id]="entry.item.kind"
+      [hidden]="overflowing().has(entry.item.kind)"
+      [title]="entry.item.name"
+      [attr.aria-current]="entry.item.kind === activeId() ? 'page' : null"
+      (click)="activateModule(entry.item)"
+    >
+      {{ entry.label }}
+    </button>
+  }
+
+  <div class="spacer"></div>
+</div>
+
+<!--
+  The slot is always in the layout, the trigger only shown when it has
+  something to offer. Reserving the width keeps what fits from changing as the
+  trigger appears.
+-->
+<div class="overflow" [class.overflow--empty]="!hasOverflow()">
+  @if (hasOverflow()) {
+    <button
+      navbar
+      type="button"
+      class="overflow__trigger"
+      aria-haspopup="menu"
+      [attr.aria-expanded]="overflowOpen()"
+      [attr.aria-label]="hiddenEntries().length + ' more'"
+      (click)="toggleOverflow()"
+    >
+      ⋯
+    </button>
+
+    @if (overflowOpen()) {
+      <!--
+        Closes on selection and on Escape, which is bound on the host so it
+        works wherever the focus sits inside the bar.
+      -->
+      <div class="overflow__menu" role="menu">
+        @for (entry of hiddenEntries(); track entryId(entry.item)) {
+          <button
+            type="button"
+            role="menuitem"
+            class="overflow__item"
+            [title]="entry.item.name"
+            [attr.aria-current]="
+              entryId(entry.item) === activeId() ? 'page' : null
+            "
+            (click)="activateFromMenu(entry.item)"
+          >
+            {{ entry.label }}
+          </button>
+        }
+      </div>
+    }
+  }
+</div>
 
 <!-- <ng-icon name="featherSettings"></ng-icon> -->
 <!-- <ng-icon name="featherMinimize2"></ng-icon> -->

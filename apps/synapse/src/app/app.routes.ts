@@ -31,12 +31,14 @@ export const appRoutes: Route[] = [
 	{
 		path: 'device',
 		children: [
+			// The id segment is what lets two different mouse models each have
+			// their own page; the kind still selects which component renders.
 			{
-				path: 'mousemat',
+				path: 'mousemat/:id',
 				component: MousematPageComponent,
 			},
 			{
-				path: 'mouse',
+				path: 'mouse/:id',
 				component: MousePageComponent,
 			},
 			// {

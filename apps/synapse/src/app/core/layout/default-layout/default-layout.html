@@ -1,6 +1,7 @@
 <syn-bar
   [devices]="devices()"
   [modules]="modules()"
+  [activeId]="activeId()"
   (homeRequested)="goHome()"
   (deviceActivated)="activateDevice($event)"
   (moduleActivated)="activateModule($event)"

@@ -33,6 +33,16 @@ export function makeAppConfig(config: Config) {
 						vendor_id: 5426,
 						product_id: 136,
 					},
+					// A second mouse, of a different model, so the browser path actually
+					// exercises two devices sharing a kind. They are told apart by
+					// vendor_id/product_id; two units of the SAME model would not be —
+					// that needs the serial, which the wire shape drops.
+					{
+						kind: 'mouse',
+						name: 'Razer Viper V2 Pro',
+						vendor_id: 5426,
+						product_id: 165,
+					},
 					{
 						kind: 'mousemat',
 						name: 'Goliatus Extended',

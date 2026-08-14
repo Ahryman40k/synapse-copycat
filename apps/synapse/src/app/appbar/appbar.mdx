@@ -1,0 +1,149 @@
+{/* appbar.mdx */}
+
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as stories from './appbar.stories.ts';
+
+<Meta of={stories} />
+
+# Application bar
+
+Top-level navigation: home, then one entry per connected device and module.
+
+<Canvas of={stories.All} />
+
+<Controls of={stories.Default} />
+
+## Depth
+
+<Canvas of={stories.AgainstThePageBar} />
+
+| Bar             | Surface role        | Tone |
+| --------------- | ------------------- | ---- |
+| Application bar | `surface`           | 0.14 |
+| Page bar        | `surface-container` | 0.20 |
+
+The application bar is **always the darker of the two**, for any colour a device
+reports — lightness comes from the tone ladder, never from the source colour, so
+the ordering cannot invert. That is what the two surface roles are for; swapping
+them would flatten the hierarchy.
+
+## Where you are
+
+<Canvas of={stories.CurrentEntry} />
+
+The bar had no notion of the current page: every entry looked the same wherever
+you were. The current one now carries `aria-current="page"` — what a screen
+reader announces, and what the theme file selects on.
+
+Only the label is recoloured, where the page bar uses a **filled pill** — the
+two levels of navigation stay told apart while sharing the same colour.
+
+Exactly one entry is current at a time; with no device open, that is Home.
+
+> The current entry is signalled by colour alone (WCAG 1.4.1). `aria-current`
+> covers assistive technology, but `primary` and `on-surface-variant` sit at
+> tones 0.72 and 0.76 — close enough in lightness that colour vision deficiency
+> may flatten them. A background tint would fix it without a border.
+
+## Two devices of the same kind
+
+Entries are **labelled by kind and keyed by `id`** — the zero-padded
+`vendor_id-product_id` pair — so two different mouse models each get their own
+entry and their own page, `/device/mouse/5426-0136`. The kind picks which page
+component renders; the id picks the device.
+
+Labels are numbered **only where a kind repeats**:
+
+| Connected              | Labels                             |
+| ---------------------- | ---------------------------------- |
+| one mouse              | `mouse`                            |
+| two mice, one mousemat | `mouse (1)` `mouse (2)` `mousemat` |
+
+Kinds are short and stable, which matters in a bar that has to fit a window the
+user can make narrow; device names are long and inconsistent. The full name is
+the `title`, so hovering still reveals it.
+
+> Never as an `aria-label`. WCAG 2.5.3 (Label in Name) requires the accessible
+> name to contain the visible text — overriding "mouse (2)" with "Razer Viper
+> V2 Pro" would stop voice control from matching what is written on the button.
+
+Keying on `kind`, as this did before, showed both mice as "mouse" and marked
+both as current at once.
+
+> ⚠️ Two units of the **same model** share a `vendor_id-product_id` and would
+> still collide. Telling those apart needs the device serial — OpenRazer's real
+> primary key, present on the Rust `Device` but dropped from the wire shape. See
+> `libs/backend-api/AGENTS.md`.
+
+## When it does not fit
+
+<Canvas of={stories.Narrow} />
+
+Entries that do not fit move into a **`⋯` menu**, they do not scroll out of
+sight. Scrolling was tried first and was the wrong answer twice over: with the
+scrollbar hidden the overflow was invisible, and with it shown it would eat a
+third of a 2.5em bar. Neither is reachable with a mouse without hunting.
+
+The bar is therefore clipped, not scrollable, and the trigger keeps a slot of
+its own at the right — reserved even when empty, so what fits does not change as
+it comes and goes. The menu closes on selection and on Escape.
+
+> Only the **entries region** is clipped, never the host. An `overflow: hidden`
+> ancestor clips absolutely positioned descendants as well, so a menu rendered
+> inside the clipping box is in the DOM and invisible — which is exactly what
+> happened on the first attempt.
+
+**Which entries fit is decided by an `IntersectionObserver`**, not by width
+arithmetic. Clipped buttons keep their box — `[hidden]` plus
+`visibility: hidden` rather than `display: none` — so they stay in the layout.
+That is what stops the classic oscillation: remove an item and it frees room,
+which makes it fit, which puts it back. `[hidden]` still takes it out of the tab
+order and the accessibility tree, so it is reachable in exactly one place: the
+menu.
+
+The observer's root is the entries region, so no `rootMargin` fudge is needed —
+the trigger sits beside the clipped box rather than over it.
+
+The menu is asserted in `appbar.spec.ts` by driving the clipped set directly,
+since jsdom has neither an `IntersectionObserver` nor any layout. _Which_
+entries clip is only observable in a browser — hence the story above.
+
+## It stays dumb
+
+The bar emits what was activated; `DefaultLayout`, which already owns the
+`Router`, navigates and feeds `activeKind` back:
+
+```ts
+readonly activeId = computed(() => {
+  const segments = this.#url().split('?')[0].split('/').filter(Boolean);
+  return segments[0] === 'device' ? segments.at(2) : segments.at(1);
+});
+```
+
+Read from the **URL**, not remembered on click, so it survives a back/forward
+and a page opened directly on its address. The bar never imports the router.
+
+> ⚠️ Several kinds have **no route**: `module/**` has none at all, and the
+> keyboard, accessory and streaming device routes are commented out in
+> `app.routes.ts`. `Router.navigate` resolves to `false` rather than throwing,
+> so those clicks used to do nothing at all — no URL change, no current entry.
+> The layout now warns on the console instead of failing silently, but the
+> pages still have to be written.
+
+## Theming
+
+| Part           | Role                                 |
+| -------------- | ------------------------------------ |
+| bar            | `surface`                            |
+| entry          | `on-surface-variant`                 |
+| entry, hover   | `on-surface` on a 10% `primary` tint |
+| entry, current | `primary` label                      |
+| focus ring     | `primary`                            |
+
+Entries recede through a **text role, not opacity** — dimming a label lowers its
+contrast, the opposite of "less prominent but readable". Both pairs are asserted
+above 4.5:1 for every source colour in
+`libs/ui/src/lib/theming/palette.spec.ts`.
+
+The previous file used `color.invert($background-color)` for the label and
+hardcoded `white` and `#111111` for the hover, none of which followed the theme.

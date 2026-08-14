@@ -1,33 +1,86 @@
-@use 'sass:map';
-@use 'sass:color';
+// Colour only — every dimension lives in appbar.scss.
+//
+// MIGRATED to the theme roles. This component no longer reads the `$theme`
+// Sass map: it consumes `--syn-<role>` custom properties, which `ThemeService`
+// rewrites whenever the connected device reports a new colour.
+//
+// DEPTH: the application bar sits on `surface` (tone 0.14) while the page bar
+// sits on `surface-container` (tone 0.20). The application bar is therefore
+// always the darker of the two, and stays so for any device colour — the
+// ladder decides lightness, never the colour. That ordering is the whole point
+// of having two surface roles; do not swap them.
+//
+// Entries recede through `on-surface-variant` rather than through opacity —
+// dimming a label lowers its contrast, which is the opposite of "less prominent
+// but readable". Both pairs used here are asserted above 4.5:1 for every source
+// colour in libs/ui/src/lib/theming/palette.spec.ts.
 
-@mixin apply($theme) {
-  $background-color: map.get($theme, background);
-  $color: color.invert($background-color);
-  $primary: map.get($theme, primary);
-
-  syn-bar {
-    background-color: $background-color;
+/// $theme is accepted for compatibility with the call in styles.scss, which
+/// still passes the legacy map. Unused here.
+@mixin apply($theme: null) {
+  syn-bar,
+  nav[synapse-bar] {
+    background-color: var(--syn-surface);
+    color: var(--syn-on-surface);
 
     button[navbar] {
-      color: $color;
-
       background: none;
-      cursor: pointer;
+      color: var(--syn-on-surface-variant);
+
+      &:hover {
+        background-color: color-mix(
+          in srgb,
+          var(--syn-primary) 10%,
+          transparent
+        );
+        color: var(--syn-on-surface);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--syn-primary);
+      }
     }
 
-    button[navbar]:hover {
-      color: white;
-      background: $color;
+    // Where you are. The page bar marks its selection with a filled pill; the
+    // application bar only recolours the label, so the two levels of navigation
+    // stay told apart while sharing the same colour language.
+    //
+    // ⚠️ This is the one place in the design where a state is signalled by
+    // colour alone (WCAG 1.4.1). `aria-current` covers assistive technology,
+    // but `primary` and `on-surface-variant` sit at tones 0.72 and 0.76 — close
+    // enough in lightness that colour vision deficiency may flatten them. A
+    // background tint would fix it without reintroducing a border.
+    button[navbar][aria-current] {
+      color: var(--syn-primary);
     }
 
-    ng-icon {
-      color: $color;
+    // ── overflow menu ───────────────────────────────────────────────────────
+    // Raised above the bar: `surface-container`, the same step the page bar
+    // sits on, so the depth ladder still reads.
+    .overflow__menu {
+      background-color: var(--syn-surface-container);
+      box-shadow: 0 4px 16px rgb(0 0 0 / 0.4);
     }
 
-    ng-icon:hover {
-      color: white;
-      background: #111111;
+    .overflow__item {
+      color: var(--syn-on-surface-variant);
+
+      &:hover {
+        background-color: color-mix(
+          in srgb,
+          var(--syn-primary) 12%,
+          transparent
+        );
+        color: var(--syn-on-surface);
+      }
+
+      &[aria-current] {
+        color: var(--syn-primary);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--syn-primary);
+      }
     }
   }
 }

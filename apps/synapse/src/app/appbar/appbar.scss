@@ -1,25 +1,144 @@
+// Structure only — every colour lives in _appbar.theme.scss.
+
+$trigger-width: 44px;
+
+// NOT clipped: an `overflow: hidden` ancestor also clips absolutely positioned
+// descendants, which is what made the overflow menu invisible. Only the entries
+// are clipped, one level down.
 :host {
-  height: 2.5em;
   display: flex;
   align-items: center;
+  height: 2.5em;
+}
 
-  gap: 2em;
+.bar__entries {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+  height: 100%;
+
+  // Takes the room the trigger leaves, and may shrink below its contents —
+  // `min-width: 0` is what allows that inside a flex parent.
+  flex: 1 1 auto;
+  min-width: 0;
+
+  // Clipped, not scrolled. What does not fit goes into the overflow menu, which
+  // the mouse can reach — a hidden scrollbar cannot be, and a visible one would
+  // eat a third of a 2.5em bar.
+  overflow: hidden;
 
   .spacer {
-    flex-grow: 1;
+    flex: 1 1 0;
   }
 
   img {
-    margin-left: 1rem;
-    padding: 0 0.25em;
+    flex: 0 0 auto;
+    margin: 0 0.75em 0 1rem;
     max-height: 1.5em;
   }
+}
 
-  button {
-    background: none;
-    border: none;
-    height: 100%;
-    text-transform: uppercase;
-    font-weight: 900;
+button[navbar] {
+  // Never squashed: a half-cut label is worse than one moved into the menu.
+  flex: 0 0 auto;
+
+  height: 100%;
+  padding: 0 0.875em;
+
+  border: none;
+  background: none;
+
+  font: inherit;
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+
+  transition:
+    background-color 0.15s ease-in-out,
+    color 0.15s ease-in-out;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline-offset: -3px;
+  }
+}
+
+// A clipped entry keeps its box so the layout — and therefore what fits — does
+// not change when it moves into the menu. Without this the item would free its
+// space, fit again, take the space back, and oscillate.
+//
+// `[hidden]` already removes it from the tab order and the accessibility tree,
+// which `visibility` alone would not make obvious.
+button[navbar][hidden] {
+  display: block;
+  visibility: hidden;
+}
+
+// ── overflow menu ───────────────────────────────────────────────────────────
+
+// A real flex item, so the entries clip before reaching it — no absolute
+// positioning over them, and no rootMargin fudge in the observer. The slot
+// keeps its width even when empty, so what fits does not change as the trigger
+// comes and goes.
+.overflow {
+  position: relative;
+  flex: 0 0 $trigger-width;
+  height: 100%;
+}
+
+.overflow--empty {
+  visibility: hidden;
+}
+
+.overflow__trigger {
+  width: $trigger-width;
+  padding: 0;
+  // The character is the icon; the accessible name is on the aria-label.
+  font-size: 1.25em;
+  line-height: 1;
+}
+
+.overflow__menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 2;
+
+  display: flex;
+  flex-direction: column;
+  min-width: 12ch;
+  padding: 0.25rem;
+  border-radius: 0.5rem;
+}
+
+.overflow__item {
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 0.25rem;
+  background: none;
+
+  font: inherit;
+  font-weight: 900;
+  text-transform: uppercase;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline-offset: -2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button[navbar] {
+    transition: none;
   }
 }
