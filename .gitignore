@@ -59,3 +59,5 @@ documentation.json
 .nx/migrate-runs
 
 .claude/worktrees
+
+.nx/polygraph
