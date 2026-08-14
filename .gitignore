@@ -57,3 +57,5 @@ storybook-static
 documentation.json
 
 .nx/migrate-runs
+
+.claude/worktrees
