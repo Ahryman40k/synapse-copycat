@@ -55,6 +55,7 @@
 		"@nx/vitest": "23.1.1",
 		"@nx/web": "23.1.1",
 		"@nx/workspace": "23.1.1",
+		"@oxc-project/runtime": "^0.144.0",
 		"@playwright/test": "^1.36.0",
 		"@schematics/angular": "22.0.9",
 		"@storybook/addon-coverage": "^3.0.0",
