@@ -2,6 +2,13 @@
   display: flex;
   flex-direction: column;
   gap: 1em;
+}
 
-  align-items: center;
+// `align-items: center` used to sit on the host. On a column flexbox that
+// makes every child shrink to its own content width instead of stretching —
+// the bar only escaped it because it carries its own `width: 100%`, so the
+// tab panel was the one left stranded in the middle of the page.
+[role='tabpanel'] {
+  // On the panel rather than the host, so the bar stays full-bleed.
+  padding: 0 1.5rem 1.5rem;
 }
