@@ -10,7 +10,7 @@
 			"executor": "@nx/vitest:test",
 			"outputs": ["{options.reportsDirectory}"],
 			"options": {
-				"reportsDirectory": "../../coverage/libs/backend-api"
+				"reportsDirectory": "{projectRoot}/../../coverage/libs/backend-api"
 			}
 		},
 		"lint": {
