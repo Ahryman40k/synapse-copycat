@@ -6,6 +6,10 @@
   // A device page can carry five or six sections; wrapping keeps them all
   // reachable, where an overflow would hide some.
   flex-wrap: wrap;
+  // Centred rather than left-aligned: a single section — the common case
+  // today — otherwise sits alone against the left edge of an empty bar.
+  // Each wrapped row is centred in turn.
+  justify-content: center;
 
   // Insets the pills so the active one does not touch the edges of the bar,
   // and keeps them apart once the row wraps.
