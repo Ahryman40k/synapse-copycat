@@ -1,45 +1,89 @@
+// Structure only — every colour lives in _checkbox.theme.scss.
+// See libs/ui/AGENTS.md for the split.
+
+$box-size: 1.125rem;
+$tick-width: 0.3125rem;
+$tick-height: 0.625rem;
+
 :host {
-  display: block;
-  position: relative;
-  padding-left: 35px;
-  margin-bottom: 12px;
+  display: inline-block;
+}
+
+.syn-checkbox__control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
   cursor: pointer;
-  font-size: 22px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
+}
 
-  input {
+// The native control. Hidden from sight, never from the keyboard or the
+// accessibility tree — `display: none` or `visibility: hidden` would remove
+// both. Kept over the box so a direct click still lands on it.
+.syn-checkbox__input {
+  position: absolute;
+  width: $box-size;
+  height: $box-size;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.syn-checkbox__box {
+  position: relative;
+  flex: 0 0 auto;
+  width: $box-size;
+  height: $box-size;
+  border: 1px solid;
+  border-radius: 0.25rem;
+  transition:
+    background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out;
+
+  // The tick: two borders of a rotated rectangle. Colour is the theme's.
+  &::after {
+    content: '';
     position: absolute;
-    cursor: pointer;
-    display: none;
-
-    &:checked ~ .checkmark:after {
-      display: block;
-    }
+    inset: 0;
+    margin: auto;
+    width: $tick-width;
+    height: $tick-height;
+    border-style: solid;
+    border-width: 0 2px 2px 0;
+    transform: translateY(-1px) rotate(45deg);
+    opacity: 0;
+    transition: opacity 0.1s ease-in-out;
   }
+}
 
-  .checkmark {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 25px;
-    width: 25px;
+.syn-checkbox__input:checked + .syn-checkbox__box::after {
+  opacity: 1;
+}
 
-    &:after {
-      content: '';
-      position: absolute;
-      display: none;
+// Indeterminate wins over checked, as it does natively: a dash, not a tick.
+.syn-checkbox__input:indeterminate + .syn-checkbox__box::after {
+  opacity: 1;
+  width: $tick-width + 0.125rem;
+  height: 0;
+  border-width: 0 0 2px 0;
+  transform: none;
+}
 
-      left: 9px;
-      top: 5px;
-      width: 5px;
-      height: 10px;
-      border-width: 0 3px 3px 0;
-      -webkit-transform: rotate(45deg);
-      -ms-transform: rotate(45deg);
-      transform: rotate(45deg);
-    }
+.syn-checkbox__input:focus-visible + .syn-checkbox__box {
+  outline-offset: 2px;
+}
+
+.syn-checkbox__label:empty {
+  display: none;
+}
+
+:host(.syn-checkbox--disabled) .syn-checkbox__control {
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .syn-checkbox__box,
+  .syn-checkbox__box::after {
+    transition: none;
   }
 }

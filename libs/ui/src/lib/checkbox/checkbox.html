@@ -1,3 +1,17 @@
-<ng-content></ng-content>
-<input type="checkbox" [checked]="state()" />
-<span class="checkmark"></span>
+<label class="syn-checkbox__control">
+  <!--
+    Visually hidden but NOT display:none — it must keep its tab stop and stay
+    in the accessibility tree. The box beside it is decoration.
+  -->
+  <input
+    class="syn-checkbox__input"
+    type="checkbox"
+    [checked]="checked()"
+    [indeterminate]="indeterminate()"
+    [disabled]="disabled()"
+    [attr.aria-label]="ariaLabel()"
+    (change)="onChange($event)"
+  />
+  <span class="syn-checkbox__box" aria-hidden="true"></span>
+  <span class="syn-checkbox__label"><ng-content /></span>
+</label>

@@ -1,0 +1,85 @@
+{/* checkbox.mdx */}
+
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as stories from './checkbox.stories.ts';
+
+<Meta of={stories} />
+
+# Checkbox
+
+A real `<input type="checkbox">` inside a `<label>`, restyled — not replaced.
+
+```html
+<syn-checkbox [(checked)]="enabled">When display is turned off</syn-checkbox>
+```
+
+<Canvas of={stories.Default} />
+
+<Controls of={stories.Default} />
+
+## Why the native input is still there
+
+The previous implementation set `display: none` on the input and toggled the
+model from a `(click)` on the host. That removes the control from the **tab
+order** and from the **accessibility tree** at once: unreachable by keyboard,
+invisible to a screen reader.
+
+Here the input is only hidden from sight — `position: absolute; opacity: 0`,
+never `display: none` or a zero size. Everything below comes from the browser,
+not from component code:
+
+| Behaviour                     | Source                 |
+| ----------------------------- | ---------------------- |
+| Tab stop, Space to toggle     | native input           |
+| `:checked`, `:indeterminate`  | native state           |
+| `:disabled`, no click when so | native attribute       |
+| Clicking the text toggles     | the wrapping `<label>` |
+| Announced role and state      | native semantics       |
+
+There is no toggle handler; `(change)` only mirrors the result into the model.
+
+<Canvas of={stories.Keyboard} />
+
+## States
+
+<Canvas of={stories.Checked} />
+<Canvas of={stories.Indeterminate} />
+
+`indeterminate` is a DOM **property**, not an attribute, so it is bound as
+`[indeterminate]`. It wins over `checked` visually, as it does natively — a dash
+rather than a tick. Use it for a "select all" reflecting a mixed set.
+
+<Canvas of={stories.Disabled} />
+
+The realistic disabled case is a capability the peripheral does not support,
+where the Rust backend answers `InterfaceUnsupported`.
+
+## Labelling
+
+<Canvas of={stories.WithoutLabel} />
+
+Projected text is the label and is associated automatically. With no projected
+text, pass `ariaLabel` — an unlabelled checkbox announces only its state.
+
+## Theming
+
+The tick uses `--syn-on-primary`, derived by **measuring** WCAG contrast against
+`--syn-primary`, so it flips between light and dark on its own as the connected
+device changes colour. The same rule as the slider's value bubble and the
+button's label — switch the device colour in the toolbar to see it.
+
+| Part           | Role                               |
+| -------------- | ---------------------------------- |
+| box, unchecked | `outline` border, transparent fill |
+| box, checked   | `primary` fill and border          |
+| tick           | `on-primary`                       |
+| hover          | `primary-hover`                    |
+| focus ring     | `primary`                          |
+| label          | `on-surface`                       |
+
+The previous theme file pinned `#eee`, `white` and `#ccc`, none of which
+followed the theme.
+
+The focus ring is not decoration here but a requirement: the input is visually
+hidden, so the ring on the box is the only thing telling a keyboard user where
+they are.

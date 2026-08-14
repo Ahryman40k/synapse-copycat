@@ -1,26 +1,68 @@
-@use 'sass:map';
+// Colour only — every dimension lives in checkbox.scss.
+//
+// MIGRATED to the theme roles. This component no longer reads the `$theme`
+// Sass map: it consumes `--syn-<role>` custom properties, which `ThemeService`
+// rewrites whenever the connected device reports a new colour. Defaults come
+// from `libs/ui/src/styles/sdk/_roles.scss`.
+//
+// The tick uses `--syn-on-primary`, derived by MEASURING contrast against
+// `--syn-primary`, so it flips between light and dark on its own — the same
+// rule as the slider's value bubble and the button's label. The previous file
+// pinned `#eee`, `white` and `#ccc`, none of which followed the theme.
 
-@mixin apply($theme) {
-  $background: map.get($theme, background);
-  $primary: map.get($theme, primary);
-
+/// $theme is accepted for compatibility with `ui.scss`, which still passes the
+/// legacy map to the components that have not migrated yet. Unused here.
+@mixin apply($theme: null) {
   syn-checkbox {
-    input {
-      &:checked ~ .checkmark {
-        background-color: $primary;
-      }
+    color: var(--syn-on-surface);
+
+    .syn-checkbox__box {
+      background-color: transparent;
+      border-color: var(--syn-outline);
     }
 
-    .checkmark {
-      background-color: #eee;
-
-      &:after {
-        border: solid white;
-      }
+    .syn-checkbox__box::after {
+      border-color: var(--syn-on-primary);
     }
 
-    &:hover input ~ .checkmark {
-      background-color: #ccc;
+    // Hover only where it means something: on the label, and not when disabled.
+    .syn-checkbox__control:hover
+      .syn-checkbox__input:not(:disabled)
+      + .syn-checkbox__box {
+      border-color: var(--syn-primary-hover);
+      background-color: color-mix(in srgb, var(--syn-primary) 12%, transparent);
     }
+
+    .syn-checkbox__input:checked + .syn-checkbox__box,
+    .syn-checkbox__input:indeterminate + .syn-checkbox__box {
+      background-color: var(--syn-primary);
+      border-color: var(--syn-primary);
+    }
+
+    .syn-checkbox__control:hover
+      .syn-checkbox__input:not(:disabled):checked
+      + .syn-checkbox__box,
+    .syn-checkbox__control:hover
+      .syn-checkbox__input:not(:disabled):indeterminate
+      + .syn-checkbox__box {
+      background-color: var(--syn-primary-hover);
+      border-color: var(--syn-primary-hover);
+    }
+
+    .syn-checkbox__input:active:not(:disabled) + .syn-checkbox__box {
+      border-color: var(--syn-primary-active);
+    }
+
+    // Mandatory: the input is visually hidden, so this ring is the only thing
+    // telling a keyboard user where they are.
+    .syn-checkbox__input:focus-visible + .syn-checkbox__box {
+      outline: 2px solid var(--syn-primary);
+    }
+  }
+
+  // The real case: a capability the device does not support — the Rust backend
+  // answers InterfaceUnsupported.
+  syn-checkbox.syn-checkbox--disabled {
+    opacity: 0.35;
   }
 }
