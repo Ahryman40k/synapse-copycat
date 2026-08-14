@@ -1,39 +1,94 @@
-@use 'sass:map';
-@use 'sass:color';
+// Colour only — every dimension lives in slider.scss.
+//
+// MIGRATED to the theme roles. This component no longer reads the `$theme`
+// Sass map: it consumes `--syn-<role>` custom properties, which `ThemeService`
+// rewrites whenever the connected device reports a new colour. Defaults come
+// from `libs/ui/src/styles/sdk/_roles.scss`.
+//
+// Role mapping:
+//   track fill, thumb   -> --syn-primary            (+ -hover / -active)
+//   unfilled track      -> --syn-surface-variant
+//   value bubble        -> --syn-primary / --syn-on-primary
+//   min / max labels    -> --syn-on-surface-variant
+//
+// `--syn-on-primary` is computed by measuring contrast against `--syn-primary`,
+// so the bubble text flips between light and dark on its own. Do not pin it.
 
-@mixin apply($theme) {
-  $primary: map.get($theme, primary);
-  $background: map.get($theme, background);
-  $inverted-background: color.invert($background);
+/// $theme is accepted for compatibility with `ui.scss`, which still passes the
+/// legacy map to every component. It is deliberately unused here.
+@mixin apply($theme: null) {
+  // Fill runs left-to-right from the start of the track — never bipolar.
+  // --syn-slider-fill is set by the component.
+  $track-fill: linear-gradient(
+    to right,
+    var(--syn-primary) 0 var(--syn-slider-fill),
+    var(--syn-surface-variant) var(--syn-slider-fill) 100%
+  );
 
-  syn-slider,
-  input[type='range'] {
-    & > input {
-      &::-webkit-slider-runnable-track {
-        background: $primary;
-      }
+  syn-slider .syn-slider__input {
+    &::-webkit-slider-runnable-track {
+      background: $track-fill;
+    }
+    &::-moz-range-track {
+      background: $track-fill;
+    }
 
-      &::-moz-range-track {
-        background: $primary;
-      }
+    // A swelling of the track, not a separate element sitting on it:
+    // same colour, no border, no shadow, no ring.
+    &::-webkit-slider-thumb {
+      background: var(--syn-primary);
+    }
+    &::-moz-range-thumb {
+      background: var(--syn-primary);
+    }
+
+    // color-mix rather than a dedicated role: the halo is the primary colour at
+    // 15%, and adding an alpha-carrying role would complicate the palette type
+    // for one shadow.
+    &:hover::-webkit-slider-thumb {
+      background: var(--syn-primary-hover);
+      box-shadow: 0 0 0 6px
+        color-mix(in srgb, var(--syn-primary) 15%, transparent);
+    }
+    &:hover::-moz-range-thumb {
+      background: var(--syn-primary-hover);
+      box-shadow: 0 0 0 6px
+        color-mix(in srgb, var(--syn-primary) 15%, transparent);
+    }
+
+    &:active {
+      cursor: grabbing;
 
       &::-webkit-slider-thumb {
-        box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.25);
-        background: $primary;
+        background: var(--syn-primary-active);
       }
       &::-moz-range-thumb {
-        box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.25);
-        background: $primary;
+        background: var(--syn-primary-active);
       }
     }
 
-    & > span {
-      background-color: hsl(from $primary h s l / 0.5);
-      color: $inverted-background;
+    // Mandatory: this is a keyboard control (arrows step, Home/End jump).
+    &:focus-visible::-webkit-slider-thumb {
+      outline: 1px solid var(--syn-primary);
+      outline-offset: 3px;
     }
+    &:focus-visible::-moz-range-thumb {
+      outline: 1px solid var(--syn-primary);
+      outline-offset: 3px;
+    }
+  }
 
-    .box-minmax {
-      color: $inverted-background;
-    }
+  syn-slider .syn-slider__bubble {
+    background: var(--syn-primary);
+    color: var(--syn-on-primary);
+  }
+
+  syn-slider .syn-slider__scale {
+    color: var(--syn-on-surface-variant);
+  }
+
+  // Real case: the BRIGHTNESS toggle in the panel header switching off.
+  syn-slider.syn-slider--disabled {
+    opacity: 0.35;
   }
 }

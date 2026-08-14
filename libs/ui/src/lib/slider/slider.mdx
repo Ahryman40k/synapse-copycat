@@ -1,0 +1,120 @@
+{/* slider.mdx */}
+
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as stories from './slider.stories.ts';
+
+<Meta of={stories} />
+
+# Slider
+
+A single-value range control with a persistent value bubble. Wraps the native
+`<input type="range">`, so keyboard support, screen-reader semantics and touch
+behaviour come for free.
+
+<Canvas of={stories.Default} />
+
+<Controls of={stories.Default} />
+
+## Anatomy
+
+| Part             | Size                             | Colour                                      |
+| ---------------- | -------------------------------- | ------------------------------------------- |
+| Track            | 4px tall, `border-radius: 999px` | filled `accent`, remainder `track-inactive` |
+| Thumb            | 14px circle, no border/shadow    | `accent`                                    |
+| Value bubble     | ~38×18px, 3px radius             | **`primary`** fill, `contrast` text, 12px   |
+| Min / max labels | 12px, `space-between`            | `text-tertiary`                             |
+
+The bubble is filled with `primary`, not with the `accent` used by the track and
+the thumb, so it reads as a value badge rather than as part of the control. In
+the current application theme both keys resolve to the same green, but the
+distinction is what a second theme would act on.
+
+The fill always runs left-to-right from the start of the track — there is no
+bipolar or centre-origin mode. The thumb is the same colour as the filled track
+by design: it reads as a swelling of the track, not as a separate element
+placed on top of it.
+
+## Bubble placement
+
+The bubble is centred on the thumb but clamped so it never overflows the track:
+
+```
+bubbleLeft = clamp(0, thumbCentre - bubbleWidth / 2, trackWidth - bubbleWidth)
+```
+
+`thumbCentre` accounts for the native thumb being inset by half its width at
+both ends, so at the maximum the bubble sits slightly left of the track end
+rather than hanging off it.
+
+<Canvas of={stories.AtMaximum} />
+<Canvas of={stories.AtMinimum} />
+
+Both the track width and the bubble width are measured with a `ResizeObserver`,
+so the clamp survives a container resize. A plain `offsetWidth` read inside a
+`computed()` would not — it is not a reactive source.
+
+## States
+
+| State    | Behaviour                                                |
+| -------- | -------------------------------------------------------- |
+| Hover    | thumb `accent-hover`, plus a 6px halo at 15% opacity     |
+| Active   | thumb `accent-dim`, `cursor: grabbing`                   |
+| Focus    | 1px outline on the thumb, 3px offset — **do not remove** |
+| Disabled | whole control at 35%, `pointer-events: none`             |
+
+The focus ring is mandatory. This is a keyboard control: arrows step by `step`,
+Home/End jump to `min`/`max`. That is native `<input type="range">` behaviour and
+is why the component wraps it rather than reimplementing it with divs.
+
+<Canvas of={stories.Disabled} />
+
+## Theming
+
+The design spec is written against CSS variables; they are mapped onto the Sass
+`$theme` map in `_slider.theme.scss`:
+
+| Spec variable      | Theme source                     | Used by           |
+| ------------------ | -------------------------------- | ----------------- |
+| `--accent`         | `map.get($theme, accent)`        | track fill, thumb |
+| `--primary`        | `map.get($theme, primary)`       | bubble fill       |
+| `--on-accent`      | `map.get($theme, contrast)`      | bubble text       |
+| `--track-inactive` | `hsl(from <background> h s 30%)` | unfilled track    |
+| `--text-tertiary`  | `hsl(from <background> h s 62%)` | min / max labels  |
+| `--accent-hover`   | accent, lightness `+8`           | thumb hover       |
+| `--accent-dim`     | accent, lightness `-8`           | thumb active      |
+
+Derived shades use **CSS relative colour syntax**, not `sass:color`. The
+application passes `accent` as `var(--synapse-primary-color)` — a runtime
+reference, not a Sass colour — so `color.adjust()` and friends cannot operate on
+it. `hsl(from … )` resolves in the browser and works with both forms.
+
+This is the first component to consume the `contrast` key.
+`create-theme-dark()` defaults it to the base colour, which would paint the
+bubble primary-on-primary; the application now passes an explicit
+`--synapse-contrast-color` (white).
+
+## Usage
+
+```html
+<syn-slider
+  [(value)]="brightness"
+  [min]="0"
+  [max]="100"
+  ariaLabel="Brightness"
+/>
+```
+
+<Canvas of={stories.TwoWayBinding} />
+
+`value` is a `model()`, so `[(value)]` works and `valueChange` is the `onChange`
+of the design spec.
+
+**Always pass `ariaLabel`** unless the slider is already labelled by adjacent
+text — a bare range input announces only its number.
+
+### Composing with a device preview
+
+The value is meant to drive the glow of a device preview (glow layer opacity =
+`value / 100`, or an interpolated `drop-shadow` blur). Wire that as shared state
+in the containing tab, **not inside the card** — the slider stays a dumb
+controlled input.

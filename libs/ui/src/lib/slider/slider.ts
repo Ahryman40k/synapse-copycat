@@ -1,63 +1,135 @@
 import {
+	booleanAttribute,
+	ChangeDetectionStrategy,
 	Component,
 	computed,
-	ElementRef,
-	inject,
+	type ElementRef,
+	effect,
 	input,
 	model,
+	numberAttribute,
+	signal,
 	viewChild,
 } from '@angular/core';
 
+/**
+ * Thumb diameter in px. Kept in sync with `$thumb-size` in slider.scss — the
+ * bubble clamp needs it in TypeScript and CSS cannot report it back.
+ */
+const THUMB_SIZE = 14;
+
 @Component({
-	selector: 'syn-slider, input[type=range]',
+	selector: 'syn-slider',
 	templateUrl: './slider.html',
 	styleUrl: './slider.scss',
 	host: {
-		// '(resize)': 'onresize($event)',
+		'[style.--syn-slider-fill]': 'fillPercent()',
+		'[class.syn-slider--disabled]': 'disabled()',
+		'[class.syn-slider--bubble-on-demand]': '!bubbleAlwaysVisible()',
 	},
+	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SliderComponent {
-	el = inject(ElementRef<HTMLElement>);
+	// ── inputs ────────────────────────────────────────────────────────────────
 
-	inputRange = viewChild<ElementRef<HTMLInputElement>>('inputRange');
-	thumbLabel = viewChild('thumbLabel');
+	readonly min = input(0, { transform: numberAttribute });
+	readonly max = input(100, { transform: numberAttribute });
+	readonly step = input(1, { transform: numberAttribute });
 
-	min = input<number>(0);
-	max = input<number>(100);
+	readonly disabled = input(false, { transform: booleanAttribute });
 
-	value = model(0);
+	/** Render the value bubble at all. */
+	readonly showBubble = input(true, { transform: booleanAttribute });
 
-	position = computed(() => {
-		const value = this.value();
-		const min = this.min();
-		const max = this.max();
+	/**
+	 * When false the bubble only appears on hover / keyboard focus. It stays in
+	 * the DOM either way so its width remains measurable for the clamp.
+	 */
+	readonly bubbleAlwaysVisible = input(true, { transform: booleanAttribute });
 
-		// const width = this.el.nativeElement.offsetWidth;
+	/** Accessible name. A slider with no visible label needs one. */
+	readonly ariaLabel = input<string | undefined>(undefined);
 
-		// console.log(value, min, max, this.el.nativeElement.offsetWidth);
+	/** Two-way. `valueChange` is the `onChange` of the design spec. */
+	readonly value = model(0);
 
-		const thumbWidth = 32;
-		const percent = (value - min) / (max - min);
+	// ── measurements ──────────────────────────────────────────────────────────
 
-		const input = this.inputRange();
+	private readonly inputRange =
+		viewChild<ElementRef<HTMLInputElement>>('inputRange');
+	private readonly bubble = viewChild<ElementRef<HTMLElement>>('bubble');
 
-		return !input
-			? 0
-			: percent * (input.nativeElement.offsetWidth - thumbWidth) +
-					thumbWidth / 2;
-	});
+	private readonly trackWidth = signal(0);
+	private readonly bubbleWidth = signal(0);
 
-	onValueChanged($event: Event): void {
-		if (!$event.target) return;
+	constructor() {
+		// offsetWidth is not reactive, so the previous implementation never
+		// recomputed on resize. Observe the elements instead.
+		effect((onCleanup) => {
+			const track = this.inputRange()?.nativeElement;
+			if (!track) return;
+			const bubble = this.bubble()?.nativeElement;
 
-		if ($event.target instanceof HTMLInputElement) {
-			const { valueAsNumber } = $event.target;
-			this.value.set(valueAsNumber || 0);
-		}
+			const measure = () => {
+				this.trackWidth.set(track.clientWidth);
+				this.bubbleWidth.set(bubble?.offsetWidth ?? 0);
+			};
+			measure();
+
+			// jsdom (unit tests) has no ResizeObserver; the initial measure is
+			// enough there.
+			if (typeof ResizeObserver === 'undefined') return;
+
+			const observer = new ResizeObserver(measure);
+			observer.observe(track);
+			if (bubble) observer.observe(bubble);
+			onCleanup(() => observer.disconnect());
+		});
 	}
 
-	// onResize(event: any): void {
-	//   const value = this.value();
-	//   this.value.set(value);
-	// }
+	// ── derived state ─────────────────────────────────────────────────────────
+
+	/** Position of the value within [min, max], as 0..1. */
+	protected readonly ratio = computed(() => {
+		const span = this.max() - this.min();
+		if (span <= 0) return 0;
+		return Math.min(1, Math.max(0, (this.value() - this.min()) / span));
+	});
+
+	/** Drives the two-colour track gradient, via a CSS custom property. */
+	protected readonly fillPercent = computed(() => `${this.ratio() * 100}%`);
+
+	/**
+	 * Centre of the thumb in px. The native thumb is inset by half its width at
+	 * both ends so its circle never overflows the track.
+	 */
+	private readonly thumbCentre = computed(
+		() => THUMB_SIZE / 2 + this.ratio() * (this.trackWidth() - THUMB_SIZE),
+	);
+
+	/**
+	 * Bubble offset in px, centred on the thumb but clamped inside the track:
+	 * `clamp(0, thumbCentre - bubbleWidth / 2, trackWidth - bubbleWidth)`.
+	 */
+	protected readonly bubbleLeft = computed(() => {
+		const track = this.trackWidth();
+		const bubble = this.bubbleWidth();
+		if (!track || !bubble) return 0;
+		return Math.min(
+			Math.max(this.thumbCentre() - bubble / 2, 0),
+			track - bubble,
+		);
+	});
+
+	// ── events ────────────────────────────────────────────────────────────────
+
+	protected onInput(event: Event): void {
+		const target = event.target;
+		if (!(target instanceof HTMLInputElement)) return;
+
+		const next = target.valueAsNumber;
+		if (Number.isNaN(next)) return;
+
+		this.value.set(next);
+	}
 }

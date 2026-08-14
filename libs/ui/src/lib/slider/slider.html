@@ -1,14 +1,28 @@
-<span #thumbLabel [style.left.px]="position() || '8'">{{ value() }}</span>
+@if (showBubble()) {
+  <div
+    #bubble
+    class="syn-slider__bubble"
+    [style.left.px]="bubbleLeft()"
+    aria-hidden="true"
+  >
+    {{ value() }}
+  </div>
+}
+
 <input
   #inputRange
+  class="syn-slider__input"
   type="range"
-  [value]="value()"
   [min]="min()"
   [max]="max()"
-  (input)="onValueChanged($event)"
+  [step]="step()"
+  [value]="value()"
+  [disabled]="disabled()"
+  [attr.aria-label]="ariaLabel()"
+  (input)="onInput($event)"
 />
 
-<div class="box-minmax">
-  <span>{{ min() }}</span
-  ><span>{{ max() }}</span>
+<div class="syn-slider__scale" aria-hidden="true">
+  <span>{{ min() }}</span>
+  <span>{{ max() }}</span>
 </div>
