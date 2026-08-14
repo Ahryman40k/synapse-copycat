@@ -1,0 +1,30 @@
+<label class="syn-select__control">
+  <span class="syn-select__label"><ng-content /></span>
+
+  <span class="syn-select__field">
+    <!--
+      `selected` is bound on each option, not `value` on the select: Angular
+      applies a property binding on the select before @for has rendered the
+      options, so the value lands on an empty list and is dropped.
+    -->
+    <select
+      class="syn-select__input"
+      [disabled]="disabled()"
+      [attr.aria-label]="ariaLabel()"
+      (change)="onChange($event)"
+    >
+      @for (option of options(); track option.value) {
+        <option
+          [value]="option.value"
+          [selected]="option.value === value()"
+          [disabled]="option.disabled ?? false"
+        >
+          {{ option.label }}
+        </option>
+      }
+    </select>
+
+    <!-- Decoration: the native control keeps its own semantics. -->
+    <span class="syn-select__chevron" aria-hidden="true"></span>
+  </span>
+</label>

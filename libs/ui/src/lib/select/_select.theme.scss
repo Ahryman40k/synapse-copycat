@@ -1,0 +1,57 @@
+// Colour only — every dimension lives in select.scss.
+//
+// The closed control is ours to paint; the open list is drawn by the platform
+// and cannot be themed. That is the trade for keeping the native keyboard and
+// the native picker — worth it, and the reason `<option>` carries no styling
+// here beyond the colours the browser will accept.
+
+/// $theme is accepted for compatibility with `ui.scss`, which still passes the
+/// legacy map to the components that have not migrated yet. Unused here.
+@mixin apply($theme: null) {
+  syn-select {
+    color: var(--syn-on-surface);
+  }
+
+  syn-select .syn-select__label {
+    color: var(--syn-on-surface-variant);
+  }
+
+  syn-select .syn-select__input {
+    background-color: var(--syn-surface-variant);
+    color: var(--syn-on-surface);
+    border-color: color-mix(
+      in srgb,
+      var(--syn-primary) 45%,
+      var(--syn-surface-container)
+    );
+
+    &:not(:disabled):hover {
+      border-color: var(--syn-primary);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--syn-primary);
+    }
+
+    // The platform draws the open list, so this is the most a theme can reach.
+    option {
+      background-color: var(--syn-surface-container);
+      color: var(--syn-on-surface);
+    }
+  }
+
+  syn-select .syn-select__chevron {
+    border-color: var(--syn-on-surface-variant);
+  }
+
+  syn-select:hover .syn-select__input:not(:disabled) + .syn-select__chevron,
+  syn-select .syn-select__input:not(:disabled):hover ~ .syn-select__chevron {
+    border-color: var(--syn-primary);
+  }
+
+  // The real case: a capability the device does not support — the Rust backend
+  // answers InterfaceUnsupported.
+  syn-select.syn-select--disabled {
+    opacity: 0.35;
+  }
+}
