@@ -1,0 +1,82 @@
+{/* switch.mdx */}
+
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as stories from './switch.stories.ts';
+
+<Meta of={stories} />
+
+# Switch
+
+A real `<input type="checkbox" role="switch">` inside a `<label>`, restyled.
+
+```html
+<syn-switch [(checked)]="brightness">Brightness</syn-switch>
+```
+
+<Canvas of={stories.Default} />
+
+<Controls of={stories.Default} />
+
+## Switch or checkbox?
+
+Same element, different meaning. A **checkbox** selects something that takes
+effect later, on submit; a **switch** applies immediately. `role="switch"` makes
+a screen reader announce _on_ / _off_ rather than _checked_ / _unchecked_.
+
+Use the switch for anything that acts on the peripheral straight away —
+brightness on or off, an effect enabled.
+
+## Three things the rebuild fixed
+
+The previous implementation had the input at `opacity: 0; width: 0; height: 0`
+and toggled the model from a `(click)` on the host:
+
+1. **No keyboard path.** A zero-sized, hidden input is out of the tab order.
+2. **`[attr.checked]` instead of the property.** The HTML attribute is only the
+   _default_ state; it diverges from the property as soon as the user
+   interacts, so the rendered state and the real state drift apart.
+3. **A double toggle.** The `label[syn-switch]` selector meant a native label
+   wrapping the input toggled it, _and_ the host click handler toggled the
+   model — the two cancelled out. That selector is gone; the component now
+   contains its own label, and nesting labels is invalid HTML anyway.
+
+None of it is reimplemented: the browser toggles, and `(change)` only mirrors
+the result into the model.
+
+<Canvas of={stories.Keyboard} />
+
+## States
+
+<Canvas of={stories.On} />
+<Canvas of={stories.Disabled} />
+
+The realistic disabled case is a capability the peripheral does not support,
+where the Rust backend answers `InterfaceUnsupported`.
+
+## Labelling
+
+<Canvas of={stories.WithoutLabel} />
+
+Projected text is the label and is associated automatically. With no projected
+text, pass `ariaLabel`.
+
+## Theming
+
+The knob follows the same rule as the slider's value bubble and the button's
+label: its colour is the `on-*` counterpart of whatever it sits on, derived by
+**measuring** contrast.
+
+| Part       | Off                  | On              |
+| ---------- | -------------------- | --------------- |
+| track      | `surface-variant`    | `primary`       |
+| knob       | `on-surface-variant` | `on-primary`    |
+| hover      | primary-tinted track | `primary-hover` |
+| focus ring | `primary`            | `primary`       |
+
+The previous theme file pinned `white` for the knob, which stops working the
+moment the track becomes light. Switch the device colour and the tone in the
+toolbar to see both follow.
+
+The focus ring is not decoration but a requirement: the input is visually
+hidden, so the ring on the track is the only thing telling a keyboard user where
+they are.

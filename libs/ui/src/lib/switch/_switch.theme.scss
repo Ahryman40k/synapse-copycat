@@ -1,28 +1,68 @@
-@use 'sass:map';
-@use 'sass:color';
+// Colour only — every dimension lives in switch.scss.
+//
+// MIGRATED to the theme roles. This component no longer reads the `$theme`
+// Sass map: it consumes `--syn-<role>` custom properties, which `ThemeService`
+// rewrites whenever the connected device reports a new colour. Defaults come
+// from `libs/ui/src/styles/sdk/_roles.scss`.
+//
+// The knob follows the same rule as the slider's value bubble and the button's
+// label: its colour is the `on-*` counterpart of whatever it sits on, derived
+// by MEASURING contrast — `on-surface-variant` when off, `on-primary` when on.
+// The previous file pinned `white`, which stopped working the moment the track
+// became light.
 
-@mixin apply($theme) {
-  $primary: map.get($theme, primary);
-  $background: map.get($theme, background);
+/// $theme is accepted for compatibility with `ui.scss`, which still passes the
+/// legacy map to the components that have not migrated yet. Unused here.
+@mixin apply($theme: null) {
+  syn-switch {
+    color: var(--syn-on-surface);
 
-  syn-switch,
-  label[syn-switch] {
-    .slider {
-      background-color: hsl(from $background h s 55%);
+    .syn-switch__track {
+      background-color: var(--syn-surface-variant);
 
-      &:before {
-        background-color: white;
+      &::after {
+        background-color: var(--syn-on-surface-variant);
       }
     }
 
-    & > input {
-      &:checked + .slider {
-        background-color: $primary;
-      }
+    .syn-switch__control:hover
+      .syn-switch__input:not(:disabled)
+      + .syn-switch__track {
+      background-color: color-mix(
+        in srgb,
+        var(--syn-primary) 20%,
+        var(--syn-surface-variant)
+      );
+    }
 
-      &:focus + .slider {
-        box-shadow: 0 0 1px $primary;
+    .syn-switch__input:checked + .syn-switch__track {
+      background-color: var(--syn-primary);
+
+      &::after {
+        background-color: var(--syn-on-primary);
       }
     }
+
+    .syn-switch__control:hover
+      .syn-switch__input:not(:disabled):checked
+      + .syn-switch__track {
+      background-color: var(--syn-primary-hover);
+    }
+
+    .syn-switch__input:active:not(:disabled):checked + .syn-switch__track {
+      background-color: var(--syn-primary-active);
+    }
+
+    // Mandatory: the input is visually hidden, so this ring is the only thing
+    // telling a keyboard user where they are.
+    .syn-switch__input:focus-visible + .syn-switch__track {
+      outline: 2px solid var(--syn-primary);
+    }
+  }
+
+  // The real case: a capability the device does not support — the Rust backend
+  // answers InterfaceUnsupported.
+  syn-switch.syn-switch--disabled {
+    opacity: 0.35;
   }
 }

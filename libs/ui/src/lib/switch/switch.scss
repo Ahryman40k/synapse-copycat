@@ -1,49 +1,77 @@
+// Structure only — every colour lives in _switch.theme.scss.
+// See libs/ui/AGENTS.md for the split.
+
+$track-width: 2.5rem;
+$track-height: 1.5rem;
+$knob-size: 1.125rem;
+$knob-inset: 0.1875rem;
+
 :host {
-  position: relative;
   display: inline-block;
-  width: 60px;
-  height: 34px;
+}
 
-  input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
+.syn-switch__control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  cursor: pointer;
+  user-select: none;
+}
 
-  .slider {
+// The native control. Hidden from sight, never from the keyboard or the
+// accessibility tree — `display: none`, `visibility: hidden` or a zero size
+// would remove both.
+.syn-switch__input {
+  position: absolute;
+  width: $track-width;
+  height: $track-height;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.syn-switch__track {
+  position: relative;
+  flex: 0 0 auto;
+  width: $track-width;
+  height: $track-height;
+  border-radius: 999px;
+  transition: background-color 0.2s ease-in-out;
+
+  // The knob.
+  &::after {
+    content: '';
     position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    -webkit-transition: 0.4s;
-    transition: 0.4s;
-
-    &:before {
-      position: absolute;
-      content: '';
-      height: 26px;
-      width: 26px;
-      left: 4px;
-      bottom: 4px;
-      -webkit-transition: 0.4s;
-      transition: 0.4s;
-    }
-  }
-
-  input:checked + .slider:before {
-    -webkit-transform: translateX(26px);
-    -ms-transform: translateX(26px);
-    transform: translateX(26px);
-  }
-
-  /* Rounded sliders */
-  .slider.round {
-    border-radius: 34px;
-  }
-
-  .slider.round:before {
+    top: $knob-inset;
+    left: $knob-inset;
+    width: $knob-size;
+    height: $knob-size;
     border-radius: 50%;
+    transition:
+      transform 0.2s ease-in-out,
+      background-color 0.2s ease-in-out;
+  }
+}
+
+.syn-switch__input:checked + .syn-switch__track::after {
+  transform: translateX($track-width - $knob-size - $knob-inset * 2);
+}
+
+.syn-switch__input:focus-visible + .syn-switch__track {
+  outline-offset: 2px;
+}
+
+.syn-switch__label:empty {
+  display: none;
+}
+
+:host(.syn-switch--disabled) .syn-switch__control {
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .syn-switch__track,
+  .syn-switch__track::after {
+    transition: none;
   }
 }

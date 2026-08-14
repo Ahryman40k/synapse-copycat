@@ -1,2 +1,17 @@
-<input type="checkbox" [attr.checked]="state() === true ? true : undefined" />
-<span class="slider round"></span>
+<label class="syn-switch__control">
+  <!--
+    Visually hidden but NOT display:none — it must keep its tab stop and stay
+    in the accessibility tree. The track beside it is decoration.
+  -->
+  <input
+    class="syn-switch__input"
+    type="checkbox"
+    role="switch"
+    [checked]="checked()"
+    [disabled]="disabled()"
+    [attr.aria-label]="ariaLabel()"
+    (change)="onChange($event)"
+  />
+  <span class="syn-switch__track" aria-hidden="true"></span>
+  <span class="syn-switch__label"><ng-content /></span>
+</label>
