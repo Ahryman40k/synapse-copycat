@@ -7,4 +7,95 @@ import * as stories from './card.stories.ts';
 
 # Card
 
-<Canvas of={stories.DeviceCard} />
+A clickable tile — a device on the dashboard, opening its page.
+
+```html
+<button syn-card type="button" [image]="device.visual" (click)="open(device)">
+  {{ device.name }}
+</button>
+```
+
+<Canvas of={stories.Grid} />
+
+## Attribute-only
+
+The whole surface activates something, so it has to be a real `<button>` — or an
+`<a>` when it navigates. Same reasoning as `Button`: a custom element gives no
+role, no tab stop, no Enter/Space and no `disabled`, and every one of those
+would have to be reimplemented, worse.
+
+The dashboard used to hand-roll a `<div class="card">`: not focusable, not
+announced, and not clickable at all.
+
+<Canvas of={stories.AsLink} />
+
+## Card or panel?
+
+This component used to be both, so every panel in the application inherited its
+hover lift. The static container is now [`syn-panel`](?path=/docs/ui-library-panel--docs).
+
+**If clicking the surface does something, it is a card.** Otherwise it is a
+panel.
+
+## Content
+
+<Canvas of={stories.AspectRatios} />
+
+The picture goes through the **`image` input**, not projected content. That is
+not a style preference:
+
+> A component's encapsulated styles **cannot reach projected content**. The
+> emitted rule carries the card's `_ngcontent` attribute while a projected node
+> carries the consumer's, so `:host img { … }` never matched and the image kept
+> its intrinsic size. Owning the element is what makes the sizing a guarantee
+> rather than a request.
+
+The media box is **the card's width by `8em`**, with `object-fit: contain`
+letterboxing inside it, so devices whose source ratios are nothing alike lay out
+identically.
+
+`width: 100%`, not `max-width`. An image given only a height lays out at
+height × its aspect ratio, so the 2868×1292 mousemat asked for ~284px and
+dragged the card past its grid track. The card also carries `min-width: 0`: a
+grid or flex item defaults to `min-width: auto` and refuses to shrink below its
+content, which is what let the image win that argument.
+
+`imageAlt` is empty by default — the card's own text already says what it is.
+
+<Canvas of={stories.Disabled} />
+
+Disabled uses the native attribute — no input to mirror it, and the lift and the
+pointer go with it.
+
+## Theming
+
+| Part          | Role                                   |
+| ------------- | -------------------------------------- |
+| background    | `surface-container`                    |
+| border        | `primary` mixed 45% toward the surface |
+| border, hover | full `primary`                         |
+| text          | `on-surface`, `primary` on hover       |
+| focus ring    | `primary`                              |
+
+The border carries the theme colour rather than a neutral `outline`. Mixing
+`primary` **toward the surface it sits on** flips the direction by itself —
+lighter than the surface in the dark theme, darker in the light one — with no
+test on the tone anywhere:
+
+| Source | Dark                   | Light                  |
+| ------ | ---------------------- | ---------------------- |
+| green  | `#2b6429` on `#141714` | `#80b980` on `#e8ede8` |
+| red    | `#813f39` on `#1a1514` | `#d88489` on `#f0e9e8` |
+| blue   | `#405581` on `#14161a` | `#91a8e3` on `#e8ebf1` |
+
+That measures 1.9–2.5:1 against the surface: a visible but quiet line. It is
+decoration — the surface is identified by its content, not by this border.
+
+The resting border is kept deliberately below the full `primary` of the hover
+state, so the two read as different.
+
+The dashboard used to hardcode `#111111`, `white` and a `limegreen` hover, none
+of which followed the theme. The card now takes the device colour like
+everything else — switch it in the toolbar and hover a card.
+
+The lift is suppressed under `prefers-reduced-motion`.

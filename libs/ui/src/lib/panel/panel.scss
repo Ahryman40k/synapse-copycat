@@ -1,0 +1,15 @@
+// Structure only — every colour lives in _panel.theme.scss.
+// See libs/ui/AGENTS.md for the split.
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  padding: 1rem 1.25rem;
+  border: 1px solid;
+  border-radius: 0.5rem;
+
+  // Deliberately no transition and no hover: this is a container, not a
+  // control. Whatever it holds is what reacts.
+}

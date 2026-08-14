@@ -2,6 +2,7 @@
 @use '../../lib/card/_card.theme' as card;
 @use '../../lib/switch/_switch.theme.scss' as switch;
 @use '../../lib/checkbox/_checkbox.theme.scss' as checkbox;
+@use '../../lib/panel/panel.theme' as panel;
 @use '../../lib/slider/_slider.theme.scss' as slider;
 
 @mixin apply($theme) {
@@ -9,5 +10,6 @@
   @include card.apply($theme);
   @include switch.apply($theme);
   @include checkbox.apply($theme);
+  @include panel.apply($theme);
   @include slider.apply($theme);
 }

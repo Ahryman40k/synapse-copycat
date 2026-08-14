@@ -1,0 +1,29 @@
+// Colour only — every dimension lives in panel.scss.
+//
+// A panel is raised one step above the page: `surface-container` over the
+// `surface` the page sits on, the same rung the page bar uses. That is what
+// makes it read as a distinct group without a heavy border.
+
+/// $theme is accepted for compatibility with `ui.scss`, which still passes the
+/// legacy map to the components that have not migrated yet. Unused here.
+@mixin apply($theme: null) {
+  syn-panel {
+    background-color: var(--syn-surface-container);
+    color: var(--syn-on-surface);
+
+    // A themed outline rather than the neutral `outline`: `primary` mixed 45%
+    // toward the surface it sits on. Mixing toward the surface flips the
+    // direction on its own — lighter than the surface in the dark theme, darker
+    // in the light one — with no tone test anywhere.
+    //
+    // Measured 1.9–2.5:1 against the surface across sources. That is a visible
+    // but quiet line, deliberately below the full `primary` the card takes on
+    // hover so the two read as different states. It is decoration: the card is
+    // identified by its content and its focus ring, not by this border.
+    border-color: color-mix(
+      in srgb,
+      var(--syn-primary) 45%,
+      var(--syn-surface-container)
+    );
+  }
+}

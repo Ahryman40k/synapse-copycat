@@ -1,0 +1,65 @@
+{/* panel.mdx */}
+
+import { Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as stories from './panel.stories.ts';
+
+<Meta of={stories} />
+
+# Panel
+
+A static surface holding a group of controls.
+
+```html
+<syn-panel>
+  <syn-switch [(checked)]="on">Brightness</syn-switch>
+  <syn-slider [(value)]="level" ariaLabel="Brightness" />
+</syn-panel>
+```
+
+<Canvas of={stories.Default} />
+
+## Panel or card?
+
+They were one component, and every panel in the application inherited a hover
+lift and a pointer cursor built for something clickable — the surface invited a
+click that did nothing.
+
+|           | `syn-panel`                  | `syn-card`                        |
+| --------- | ---------------------------- | --------------------------------- |
+| Purpose   | groups controls              | activates something               |
+| Element   | `syn-panel`                  | `button[syn-card]`, `a[syn-card]` |
+| Hover     | none                         | lifts                             |
+| Focusable | no — the controls inside are | yes                               |
+
+The rule: **if clicking the surface does something, it is a card.** Otherwise it
+is a panel, and the controls inside are what react.
+
+<Canvas of={stories.WithHeading} />
+<Canvas of={stories.Several} />
+
+## Theming
+
+| Part       | Role                                   |
+| ---------- | -------------------------------------- |
+| background | `surface-container`                    |
+| border     | `primary` mixed 45% toward the surface |
+| text       | `on-surface`                           |
+
+The border carries the theme colour rather than a neutral `outline`. Mixing
+`primary` **toward the surface it sits on** flips the direction by itself —
+lighter than the surface in the dark theme, darker in the light one — with no
+test on the tone anywhere:
+
+| Source | Dark                   | Light                  |
+| ------ | ---------------------- | ---------------------- |
+| green  | `#2b6429` on `#141714` | `#80b980` on `#e8ede8` |
+| red    | `#813f39` on `#1a1514` | `#d88489` on `#f0e9e8` |
+| blue   | `#405581` on `#14161a` | `#91a8e3` on `#e8ebf1` |
+
+That measures 1.9–2.5:1 against the surface: a visible but quiet line. It is
+decoration — the surface is identified by its content, not by this border.
+
+A panel is raised one step above the page — `surface-container` over the
+`surface` the page sits on, the same rung the page bar uses. That is what makes
+it read as a distinct group without a heavy border, and it follows the device
+colour like everything else.

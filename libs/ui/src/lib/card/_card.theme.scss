@@ -1,15 +1,62 @@
-@use 'sass:map';
-@use 'sass:color';
+// Colour only — every dimension lives in card.scss.
+//
+// MIGRATED to the theme roles. The dashboard used to hardcode #111111, white
+// and a limegreen hover, none of which followed the theme; the card now takes
+// the device colour like everything else.
 
-@mixin apply($theme) {
-  $tone: map.get($theme, primary);
-  $background: map.get($theme, background);
-  $inverted-background: color.invert($background);
+/// $theme is accepted for compatibility with `ui.scss`, which still passes the
+/// legacy map to the components that have not migrated yet. Unused here.
+@mixin apply($theme: null) {
+  button[syn-card],
+  a[syn-card] {
+    background-color: var(--syn-surface-container);
+    color: var(--syn-on-surface);
 
-  syn-card {
-    background-color: $background;
-    color: $inverted-background;
+    // Two layers, and they do different jobs. The black one is depth — it
+    // grounds the card on the page. The coloured one is a glow in the border's
+    // own colour, spread with no offset so it haloes the whole edge rather than
+    // falling below it.
+    //
+    // A translucent `primary` rather than the opaque border colour: a glow has
+    // to fade into whatever it sits on, and mixing with `transparent` keeps it
+    // doing that on either tone.
+    box-shadow:
+      0 4px 8px rgb(0 0 0 / 0.2),
+      0 0 14px color-mix(in srgb, var(--syn-primary) 22%, transparent);
 
-    border: 1px solid color.adjust($background, $lightness: -10%);
+    // A themed outline rather than the neutral `outline`: `primary` mixed 45%
+    // toward the surface it sits on. Mixing toward the surface flips the
+    // direction on its own — lighter than the surface in the dark theme, darker
+    // in the light one — with no tone test anywhere.
+    //
+    // Measured 1.9–2.5:1 against the surface across sources. That is a visible
+    // but quiet line, deliberately below the full `primary` the card takes on
+    // hover so the two read as different states. It is decoration: the card is
+    // identified by its content and its focus ring, not by this border.
+    border-color: color-mix(
+      in srgb,
+      var(--syn-primary) 45%,
+      var(--syn-surface-container)
+    );
+
+    // Hover raises the card and the glow with it: the border goes to full
+    // primary, so the halo follows rather than staying behind.
+    &:not(:disabled):not([aria-disabled='true']):hover {
+      border-color: var(--syn-primary);
+      box-shadow:
+        0 8px 16px rgb(0 0 0 / 0.25),
+        0 0 26px color-mix(in srgb, var(--syn-primary) 45%, transparent);
+      // Picks out the title, which is what the eye lands on.
+      color: var(--syn-primary);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--syn-primary);
+    }
+
+    &:disabled,
+    &[aria-disabled='true'] {
+      opacity: 0.35;
+    }
   }
 }

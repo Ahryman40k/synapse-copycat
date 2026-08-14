@@ -1,22 +1,76 @@
-:host {
-  display: block;
-  padding: 1em;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+// Structure only — every colour lives in _card.theme.scss.
+// See libs/ui/AGENTS.md for the split.
 
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1rem;
+
+  padding: 2rem 1.5rem;
+  border: 1px solid;
   border-radius: 0.5rem;
 
-  transition: 0.3s;
-  min-width: 20rem;
-  min-height: 1em;
+  // A grid or flex item defaults to `min-width: auto`, meaning it refuses to
+  // shrink below its content. With a wide device image that content is wider
+  // than the track, so the card burst out of the grid. This lets it shrink and
+  // the image adapt instead.
+  min-width: 0;
 
-  // display: flex;
-  // flex-direction: column;
-  // justify-content: flex-start;
-  // align-items: center;
+  font: inherit;
+  text-align: center;
+  // The <a> form: strip the link look, keep the link semantics.
+  text-decoration: none;
+  cursor: pointer;
+
+  // The lift belongs here and not on `syn-panel`: it says "this reacts".
+  transition:
+    transform 0.2s ease-out,
+    box-shadow 0.2s ease-out,
+    border-color 0.2s ease-out;
 
   &:hover {
-    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
-
     transform: translateY(-0.5em);
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline-offset: 2px;
+  }
+
+  &:disabled,
+  &[aria-disabled='true'] {
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  // `width: 100%`, not `max-width`: with only a height set, an image lays out
+  // at height × its aspect ratio, so a 2868×1292 mousemat asked for ~284px and
+  // dragged the card with it. Fixing the box and letting `object-fit` letterbox
+  // inside it keeps every card the same size whatever the source ratio —
+  // 0.63 for a mouse, 2.22 for a mousemat.
+  //
+  // This targets the card's OWN element. The same rule on a projected `<img>`
+  // never matched: encapsulation stamps it with this component's `_ngcontent`
+  // while projected nodes carry the consumer's.
+  .syn-card__media {
+    display: block;
+    width: 100%;
+    height: 8em;
+    object-fit: contain;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition: none;
+  }
+
+  :host(:hover) {
+    transform: none;
   }
 }

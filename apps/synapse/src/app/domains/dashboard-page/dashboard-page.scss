@@ -1,3 +1,6 @@
+// Structure only — the card carries its own colours now, from the theme roles.
+// The hardcoded #111111 / white / limegreen that used to live here are gone.
+
 :host {
   & > h2 {
     font-weight: 900;
@@ -7,43 +10,16 @@
   & > section {
     display: grid;
     gap: 1rem;
-    grid-template-columns: repeat(auto-fill, 320px);
+    // Cards size themselves to the track rather than to a fixed width, so the
+    // grid reflows instead of overflowing. The `min()` matters below 16rem:
+    // a bare `minmax(16rem, …)` keeps a 16rem floor and overflows a narrower
+    // window rather than shrinking.
+    grid-template-columns: repeat(auto-fill, minmax(min(16rem, 100%), 1fr));
 
     margin: 1rem;
   }
 }
 
-.card {
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-  background-color: #111111;
-  color: white;
-
-  border-radius: 0.5rem;
-
-  transition: 0.3s;
-  width: 20rem;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-
-  img {
-    margin-top: 2em;
-    height: 8em;
-  }
-
-  .container {
-    padding: 2em;
-  }
-}
-
-.card:hover {
-  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
-
-  transform: translateY(-0.5em);
-
-  & h4 {
-    color: limegreen;
-  }
+.dashboard-page__name {
+  font-weight: 700;
 }
