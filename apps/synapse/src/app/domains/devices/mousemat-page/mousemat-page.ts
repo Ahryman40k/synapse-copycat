@@ -4,7 +4,7 @@ import {
 	PageBarComponent,
 	type PageBarDescriptor,
 } from '../../page-bar/page-bar';
-import { MousematLightingPanelComponent } from './lighting/mousemat-lighting';
+import { MousematLightingSection } from './lighting/mousemat-lighting';
 
 @Component({
 	selector: 'mousemat-page',
@@ -16,7 +16,7 @@ export class MousematPageComponent {
 	descriptor: PageBarDescriptor = [
 		{
 			title: 'lighting',
-			component: MousematLightingPanelComponent,
+			component: MousematLightingSection,
 		},
 	];
 }

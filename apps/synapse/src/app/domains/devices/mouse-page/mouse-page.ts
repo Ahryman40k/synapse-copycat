@@ -5,7 +5,7 @@ import {
 	type PageBarDescriptor,
 } from '../../page-bar/page-bar';
 import { MouseCustomizePanelComponent } from './customize/mouse-customize';
-import { MouseLightingPanelComponent } from './lighting/mouse-lighting';
+import { MouseLightingSection } from './lighting/mouse-lighting';
 
 @Component({
 	selector: 'mouse-page',
@@ -21,19 +21,19 @@ export class MousePageComponent {
 		},
 		{
 			title: 'performance',
-			component: MouseLightingPanelComponent,
+			component: MouseLightingSection,
 		},
 		{
 			title: 'lighting',
-			component: MouseLightingPanelComponent,
+			component: MouseLightingSection,
 		},
 		{
 			title: 'calibration',
-			component: MouseLightingPanelComponent,
+			component: MouseLightingSection,
 		},
 		{
 			title: 'power',
-			component: MouseLightingPanelComponent,
+			component: MouseLightingSection,
 		},
 	];
 }

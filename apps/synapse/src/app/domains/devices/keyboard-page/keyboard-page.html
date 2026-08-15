@@ -1,0 +1,17 @@
+<page-bar
+  #bar
+  [descriptor]="descriptor"
+  ariaLabel="Keyboard sections"
+></page-bar>
+
+<!--
+  Closes the tabs pattern: the bar owns the tab ids and the selection, the page
+  owns the panel. Without these the tabs' aria-controls point at nothing.
+-->
+<div
+  role="tabpanel"
+  [id]="bar.activePanelId()"
+  [attr.aria-labelledby]="bar.activeTabId()"
+>
+  <ng-container *ngComponentOutlet="bar.activeItem().component"></ng-container>
+</div>

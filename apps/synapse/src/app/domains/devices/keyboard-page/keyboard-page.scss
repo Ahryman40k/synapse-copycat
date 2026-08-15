@@ -1,0 +1,10 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+// No `align-items: center`: on a column flexbox it makes every child shrink to
+// its content width, which is what once left the tab panel stranded in the
+// middle of the mousemat page. The padding belongs to `device-layout`, which
+// is what every section renders.

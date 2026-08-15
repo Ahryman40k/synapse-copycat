@@ -9,7 +9,7 @@ import { DeviceLayout } from '../../../../core/layout/device-layout/device-layou
 import { ApplicationStore } from '../../../../core/stores/application-store';
 
 /**
- * The lighting section of the mousemat page.
+ * The lighting section of the keyboard page.
  *
  * Deliberately its own copy rather than one section shared by every device:
  * they start identical and are expected to diverge, and a component shared by
@@ -21,8 +21,8 @@ import { ApplicationStore } from '../../../../core/stores/application-store';
  * hands it to the template, which stays presentational.
  */
 @Component({
-	selector: 'mousemat-lighting-section',
-	templateUrl: './mousemat-lighting.html',
+	selector: 'keyboard-lighting-section',
+	templateUrl: './keyboard-lighting.html',
 	imports: [
 		DeviceLayout,
 		BrightnessPanelComponent,
@@ -30,7 +30,7 @@ import { ApplicationStore } from '../../../../core/stores/application-store';
 		EffectsPanel,
 	],
 })
-export class MousematLightingSection {
+export class KeyboardLightingSection {
 	readonly #store = inject(ApplicationStore);
 
 	protected readonly device = this.#store.currentDevice;
