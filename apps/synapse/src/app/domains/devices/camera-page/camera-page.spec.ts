@@ -1,9 +1,13 @@
+import { inject, provideAppInitializer } from '@angular/core';
 import { provideBackendApi, withMock } from '@synapse-copycat/backend-api';
 import { render, screen } from '@testing-library/angular';
+import { ApplicationStore } from '../../../core/stores/application-store';
 import { CameraPageComponent } from './camera-page';
 
 const setup = () =>
 	render(CameraPageComponent, {
+		// The `:id` segment, as `withComponentInputBinding()` supplies it.
+		inputs: { id: '5426-3587' },
 		providers: [
 			provideBackendApi(
 				withMock({
@@ -18,6 +22,10 @@ const setup = () =>
 					modules: [],
 				}),
 			),
+			// The dashboard route fills the store in the running application.
+			provideAppInitializer(() => {
+				void inject(ApplicationStore).getDevices();
+			}),
 		],
 	});
 
@@ -36,5 +44,13 @@ describe('CameraPage', () => {
 		expect(screen.getByRole('heading', { name: 'Image' })).toBeVisible();
 		expect(screen.getByRole('switch', { name: 'Preview' })).toBeVisible();
 		expect(screen.getByRole('group', { name: 'Picture preset' })).toBeVisible();
+	});
+
+	it('hands its own device to the section it shows', async () => {
+		const { fixture } = await setup();
+		await fixture.whenStable();
+		fixture.detectChanges();
+
+		expect(screen.getByRole('img', { name: 'Razer Kiyo' })).toBeVisible();
 	});
 });

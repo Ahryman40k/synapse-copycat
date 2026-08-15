@@ -1,8 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, input } from '@angular/core';
+import type { Device } from '@synapse-copycat/backend-api';
 import { CameraPanel } from '../../../../core/components/camera-panel/camera-panel';
 import { ImagePanel } from '../../../../core/components/image-panel/image-panel';
 import { DeviceLayout } from '../../../../core/layout/device-layout/device-layout';
-import { ApplicationStore } from '../../../../core/stores/application-store';
 
 /**
  * The camera itself on one side, the picture it produces on the other.
@@ -18,7 +18,6 @@ import { ApplicationStore } from '../../../../core/stores/application-store';
 	imports: [DeviceLayout, CameraPanel, ImagePanel],
 })
 export class CameraCustomizeSection {
-	readonly #store = inject(ApplicationStore);
-
-	protected readonly device = this.#store.currentDevice;
+	/** Handed down by the page, which owns the route. */
+	readonly device = input<Device | undefined>(undefined);
 }

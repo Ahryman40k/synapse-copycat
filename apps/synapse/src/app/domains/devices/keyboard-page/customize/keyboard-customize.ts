@@ -1,8 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, input } from '@angular/core';
+import type { Device } from '@synapse-copycat/backend-api';
 import { GamingModePanel } from '../../../../core/components/gaming-mode-panel/gaming-mode-panel';
 import { SnapTapPanel } from '../../../../core/components/snap-tap-panel/snap-tap-panel';
 import { DeviceLayout } from '../../../../core/layout/device-layout/device-layout';
-import { ApplicationStore } from '../../../../core/stores/application-store';
 
 /**
  * Gaming mode and Snap Tap today; key remapping, macros and profiles will join
@@ -19,7 +19,6 @@ import { ApplicationStore } from '../../../../core/stores/application-store';
 	imports: [DeviceLayout, GamingModePanel, SnapTapPanel],
 })
 export class KeyboardCustomizeSection {
-	readonly #store = inject(ApplicationStore);
-
-	protected readonly device = this.#store.currentDevice;
+	/** Handed down by the page, which owns the route. */
+	readonly device = input<Device | undefined>(undefined);
 }

@@ -9,5 +9,7 @@
   [id]="bar.activePanelId()"
   [attr.aria-labelledby]="bar.activeTabId()"
 >
-  <ng-container *ngComponentOutlet="bar.activeItem().component"></ng-container>
+  <ng-container
+    *ngComponentOutlet="bar.activeItem().component; inputs: sectionInputs()"
+  ></ng-container>
 </div>

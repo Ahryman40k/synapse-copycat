@@ -1,4 +1,5 @@
-import { Component, inject, model } from '@angular/core';
+import { Component, input, model } from '@angular/core';
+import type { Device } from '@synapse-copycat/backend-api';
 import {
 	type BrightnessChange,
 	BrightnessPanelComponent,
@@ -6,7 +7,6 @@ import {
 import { EffectsPanel } from '../../../../core/components/effects-panel/effects-panel';
 import { LightingSwitchOffPanelComponent } from '../../../../core/components/lighting-switch-off-panel/lighting-switch-off-panel';
 import { DeviceLayout } from '../../../../core/layout/device-layout/device-layout';
-import { ApplicationStore } from '../../../../core/stores/application-store';
 
 /**
  * The lighting section of the keyboard page.
@@ -16,9 +16,6 @@ import { ApplicationStore } from '../../../../core/stores/application-store';
  * three pages is the awkward thing to split later. What they do share — the
  * portrait, the grid, the reflow — is `device-layout`, and the panels
  * themselves are components.
- *
- * The connected half of the pair: it selects the device from the store and
- * hands it to the template, which stays presentational.
  */
 @Component({
 	selector: 'keyboard-lighting-section',
@@ -31,9 +28,13 @@ import { ApplicationStore } from '../../../../core/stores/application-store';
 	],
 })
 export class KeyboardLightingSection {
-	readonly #store = inject(ApplicationStore);
-
-	protected readonly device = this.#store.currentDevice;
+	/**
+	 * Handed down by the page, which owns the route and so owns the answer.
+	 * `ngComponentOutlet` sets it, leaving the page-bar descriptor untouched —
+	 * that array has to keep its identity, since the bar holds the selected tab
+	 * by reference.
+	 */
+	readonly device = input<Device | undefined>(undefined);
 
 	readonly brightness = model<BrightnessChange>({
 		value: 100,

@@ -1,5 +1,4 @@
 import { inject, provideAppInitializer } from '@angular/core';
-import { Router } from '@angular/router';
 import {
 	type Mock,
 	provideBackendApi,
@@ -10,7 +9,6 @@ import {
 	type Meta,
 	type StoryObj,
 } from '@storybook/angular';
-import { EMPTY } from 'rxjs';
 import { expect, within } from 'storybook/test';
 import { ApplicationStore } from '../../../core/stores/application-store';
 import { KeyboardPageComponent } from './keyboard-page';
@@ -37,16 +35,11 @@ const meta: Meta<KeyboardPageComponent> = {
 				provideAppInitializer(() => {
 					void inject(ApplicationStore).getDevices();
 				}),
-				// The store selects the device from the URL, and Storybook's own
-				// address says nothing about devices. Standing in for the router
-				// beats navigating the iframe away from the address Storybook needs.
-				{
-					provide: Router,
-					useValue: { url: '/device/keyboard/5426-0550', events: EMPTY },
-				},
 			],
 		}),
 	],
+	// The `:id` segment, as `withComponentInputBinding()` supplies it at runtime.
+	args: { id: '5426-0550' },
 };
 export default meta;
 
