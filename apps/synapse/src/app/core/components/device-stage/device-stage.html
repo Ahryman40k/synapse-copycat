@@ -1,0 +1,11 @@
+<!-- Decoration. Nothing here is announced. -->
+<div class="device-stage__backdrop" aria-hidden="true"></div>
+
+@if (showImage()) {
+  <img
+    class="device-stage__image"
+    [src]="image()"
+    [alt]="name()"
+    (error)="failed.set(true)"
+  />
+}

@@ -4,6 +4,15 @@
   ariaLabel="Mousemat sections"
 ></page-bar>
 
+<!--
+  On the page, not inside the lighting tab: the portrait identifies the device,
+  so it stays put while the sections change.
+-->
+<device-stage
+  [image]="device()?.visual"
+  [name]="device()?.name ?? ''"
+></device-stage>
+
 <div
   role="tabpanel"
   [id]="bar.activePanelId()"

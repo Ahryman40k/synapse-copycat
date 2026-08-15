@@ -1,0 +1,18 @@
+// Colour only — every dimension lives in device-stage.scss.
+
+/// $theme is accepted for compatibility with the call in styles.scss, which
+/// still passes the legacy map. Unused here.
+@mixin apply($theme: null) {
+  device-stage {
+    // Published as a custom property rather than set on the element itself:
+    // the dot is one stop inside a `background-image` the structure file owns,
+    // and a colour has no business being declared there. Custom properties
+    // inherit, so the encapsulated rule picks it up.
+    //
+    // `primary`, not `primary-source`: the tone-mapped role is the one that is
+    // guaranteed readable on the surface. The raw device colour stays reserved
+    // for the glow behind the device, which is its documented use (AGENTS.md
+    // §8) and is not built yet.
+    --device-stage-dot: color-mix(in srgb, var(--syn-primary) 55%, transparent);
+  }
+}

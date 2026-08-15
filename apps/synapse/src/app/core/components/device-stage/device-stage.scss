@@ -1,0 +1,72 @@
+// Structure only — every colour lives in _device-stage.theme.scss.
+
+:host {
+  position: relative;
+  display: grid;
+  place-items: center;
+
+  // Full width of the row it sits on, and a floor so the backdrop still reads
+  // as a stage while no artwork is shipped.
+  width: 100%;
+  min-height: 12rem;
+  padding: 1.5rem 0;
+
+  // The mask fades the grid out, but a dot half-drawn at the edge would still
+  // show through on a narrow window.
+  overflow: hidden;
+}
+
+.device-stage__backdrop {
+  position: absolute;
+  inset: 0;
+
+  // One dot per cell. The 0.5px feather between the two stops is what keeps
+  // the dot from aliasing into a square on a non-integer device pixel ratio.
+  //
+  // ⚠️ `--global--` is not decoration. Angular scopes every custom property it
+  // finds in a component stylesheet — `--x` is compiled to `--%NS%x` and the
+  // namespace is substituted per component at runtime — so a plain
+  // `var(--device-stage-dot)` would never meet the one the global theme file
+  // declares. The compiler strips this prefix and leaves the name global
+  // (`namespaceCssVariable`, @angular/compiler). Nothing warns; the dots just
+  // never paint.
+  background-image: radial-gradient(
+    circle at center,
+    var(--global--device-stage-dot) 1px,
+    transparent 1.5px
+  );
+  background-size: 1.25rem 1.25rem;
+
+  // The fade is a thin band at the very edge, and nothing else. Its first
+  // shape kept the grid at full strength in the middle and had it gone by
+  // 72% — which is the one band the picture covers, so every dot that
+  // survived was already half faded. Full strength now runs out to 70% and
+  // dissolves only over the last stretch, where nothing sits on top of it.
+  //
+  // Ellipse rather than circle — the stage is far wider than it is tall, and
+  // a circle would leave the corners bare.
+  //
+  // -webkit- first: the Linux Tauri shell is WebKitGTK, where the unprefixed
+  // property is the more recent of the two.
+  -webkit-mask-image: radial-gradient(
+    ellipse 88% 96% at 50% 50%,
+    #000 70%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 88% 96% at 50% 50%,
+    #000 70%,
+    transparent 100%
+  );
+}
+
+.device-stage__image {
+  position: relative;
+
+  // Constrained on both axes: an asset is whatever size it happens to be, and
+  // an unconstrained one overflows its container — the mistake the card made.
+  max-width: min(100%, 32rem);
+  max-height: 14rem;
+  height: auto;
+  object-fit: contain;
+}
