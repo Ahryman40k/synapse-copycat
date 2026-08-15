@@ -1,0 +1,16 @@
+// Colour only — every dimension lives in gaming-mode-panel.scss.
+
+/// $theme is accepted for compatibility with the call in styles.scss, which
+/// still passes the legacy map. Unused here.
+@mixin apply($theme: null) {
+  gaming-mode-panel {
+    .gaming-mode-panel__header span {
+      color: var(--syn-primary);
+    }
+
+    // Quieter than the options it introduces: it is a caption, not a choice.
+    .gaming-mode-panel__caption {
+      color: var(--syn-on-surface-variant);
+    }
+  }
+}

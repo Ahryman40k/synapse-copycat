@@ -1,0 +1,9 @@
+// Colour only — every dimension lives in snap-tap-panel.scss.
+
+/// $theme is accepted for compatibility with the call in styles.scss, which
+/// still passes the legacy map. Unused here.
+@mixin apply($theme: null) {
+  snap-tap-panel .snap-tap-panel__header span {
+    color: var(--syn-primary);
+  }
+}

@@ -1,0 +1,28 @@
+// Structure only — the colour lives in _gaming-mode-panel.theme.scss.
+
+.gaming-mode-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2em;
+
+  span {
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+}
+
+.gaming-mode-panel__caption {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+}
+
+.gaming-mode-panel__keys {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  // Set in from the caption, so the four read as belonging to it rather than
+  // as four more options at the same level as "Apply In-game only".
+  padding-left: 0.75rem;
+}

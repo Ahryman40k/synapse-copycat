@@ -1,0 +1,14 @@
+<syn-panel>
+  <!--
+    Same row as the brightness and gaming-mode panels: the label, then its
+    switch. `syn-panel` stacks its children, so the row needs a wrapper.
+  -->
+  <div class="snap-tap-panel__header">
+    <span>snap tap</span>
+    <syn-switch
+      ariaLabel="Snap Tap"
+      [checked]="activated()"
+      (checkedChange)="activated.set($event)"
+    ></syn-switch>
+  </div>
+</syn-panel>

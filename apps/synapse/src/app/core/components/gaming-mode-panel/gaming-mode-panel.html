@@ -1,0 +1,50 @@
+<syn-panel>
+  <!--
+    The label and its switch share a row, like the brightness panel; the rest
+    stacks below. `syn-panel` stacks its children, so the row needs a wrapper.
+  -->
+  <div class="gaming-mode-panel__header">
+    <span>gaming mode</span>
+    <syn-switch
+      ariaLabel="Gaming mode"
+      [checked]="activated()"
+      (checkedChange)="onActivatedChange($event)"
+    ></syn-switch>
+  </div>
+
+  <syn-checkbox
+    [checked]="inGameOnly()"
+    [disabled]="!activated()"
+    (checkedChange)="onInGameOnlyChange($event)"
+  >
+    Apply In-game only
+  </syn-checkbox>
+
+  <!--
+    A heading for the four boxes below, not a label: it names the group, and
+    `aria-describedby` on each box would repeat it four times over.
+  -->
+  <p class="gaming-mode-panel__caption" id="gaming-mode-caption">
+    When gaming mode is On:
+  </p>
+
+  <!--
+    A group, so a screen reader announces the four together and reads the
+    caption once as their name.
+  -->
+  <div
+    class="gaming-mode-panel__keys"
+    role="group"
+    aria-labelledby="gaming-mode-caption"
+  >
+    @for (entry of keys; track entry.key) {
+      <syn-checkbox
+        [checked]="checked(entry.key)"
+        [disabled]="!activated()"
+        (checkedChange)="onKeyChange(entry.key, $event)"
+      >
+        {{ entry.label }}
+      </syn-checkbox>
+    }
+  </div>
+</syn-panel>

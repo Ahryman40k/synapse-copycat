@@ -14,6 +14,10 @@
   device-stage;
 @use '../src/app/core/components/razer-logo/_razer-logo.theme.scss' as
   razer-logo;
+@use '../src/app/core/components/gaming-mode-panel/_gaming-mode-panel.theme.scss'
+  as gaming-mode-panel;
+@use '../src/app/core/components/snap-tap-panel/_snap-tap-panel.theme.scss' as
+  snap-tap-panel;
 
 $primary-color: #00ff00;
 // Text drawn *on* the primary colour. create-theme-dark() defaults it to the
@@ -59,4 +63,6 @@ $theme-dark: theme.create-theme-dark(
   @include effects-panel.apply($theme-dark);
   @include device-stage.apply($theme-dark);
   @include razer-logo.apply($theme-dark);
+  @include gaming-mode-panel.apply($theme-dark);
+  @include snap-tap-panel.apply($theme-dark);
 }
