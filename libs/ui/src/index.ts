@@ -4,6 +4,7 @@ export * from './lib/checkbox/checkbox';
 export * from './lib/panel/panel';
 export * from './lib/select/select';
 export * from './lib/slider/slider';
+export * from './lib/temperature-slider/temperature-slider';
 export * from './lib/switch/switch';
 export * from './lib/theming/oklch';
 export * from './lib/theming/palette';

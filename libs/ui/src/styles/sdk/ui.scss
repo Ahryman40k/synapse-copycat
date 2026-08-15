@@ -5,6 +5,8 @@
 @use '../../lib/panel/panel.theme' as panel;
 @use '../../lib/select/select.theme' as select;
 @use '../../lib/slider/_slider.theme.scss' as slider;
+@use '../../lib/temperature-slider/_temperature-slider.theme.scss' as
+  temperature-slider;
 
 @mixin apply($theme) {
   @include button.apply($theme);
@@ -14,4 +16,6 @@
   @include panel.apply($theme);
   @include select.apply($theme);
   @include slider.apply($theme);
+  // After the slider: it repaints the track that one has just painted.
+  @include temperature-slider.apply($theme);
 }

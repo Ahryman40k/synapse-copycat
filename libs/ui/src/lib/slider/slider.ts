@@ -50,6 +50,15 @@ export class SliderComponent {
 	/** Accessible name. A slider with no visible label needs one. */
 	readonly ariaLabel = input<string | undefined>(undefined);
 
+	/**
+	 * What the two ends of the scale read as. They show the bare numbers unless
+	 * told otherwise — a scale whose ends mean something ("cool" / "warm") says
+	 * more than 2000 and 7500 do. Decoration either way: the scale is
+	 * `aria-hidden`, and the input carries the real min and max.
+	 */
+	readonly minLabel = input<string | undefined>(undefined);
+	readonly maxLabel = input<string | undefined>(undefined);
+
 	/** Two-way. `valueChange` is the `onChange` of the design spec. */
 	readonly value = model(0);
 

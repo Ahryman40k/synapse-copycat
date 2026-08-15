@@ -1,0 +1,33 @@
+// Colour only. This component has no dimensions of its own — `syn-slider`
+// carries every one of them.
+
+/// $theme is accepted for compatibility with `ui.scss`, which still passes the
+/// legacy map to the components that have not migrated yet. Unused here.
+@mixin apply($theme: null) {
+  // Reaching into the slider's own class from here is deliberate and is what
+  // theme files are for: they are global, so no encapsulation stands in the
+  // way, and `_slider.theme.scss` paints the very same element one level up.
+  //
+  // End to end, so the whole scale is visible at once — this replaces the fill
+  // rather than sitting under it. The two stops are a warm/cool pair at equal
+  // lightness, so neither end draws the eye more than the other.
+  $ramp: linear-gradient(to right, #7ab6ff 0%, #ffb066 100%);
+
+  syn-temperature-slider .syn-slider__input {
+    &::-webkit-slider-runnable-track {
+      background: $ramp;
+    }
+    &::-moz-range-track {
+      background: $ramp;
+    }
+
+    // The thumb sits on colours it cannot be guaranteed to contrast with, so
+    // it carries a ring in the surface colour to cut it out of the ramp.
+    &::-webkit-slider-thumb {
+      box-shadow: 0 0 0 2px var(--syn-surface);
+    }
+    &::-moz-range-thumb {
+      box-shadow: 0 0 0 2px var(--syn-surface);
+    }
+  }
+}

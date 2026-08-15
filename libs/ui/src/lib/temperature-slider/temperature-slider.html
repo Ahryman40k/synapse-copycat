@@ -1,0 +1,15 @@
+<!--
+  The ends read as what they are. A number of kelvin means nothing to most
+  people; `cool` and `warm` are the two directions of the ramp behind them.
+-->
+<syn-slider
+  minLabel="cool"
+  maxLabel="warm"
+  [ariaLabel]="ariaLabel()"
+  [min]="min()"
+  [max]="max()"
+  [step]="step()"
+  [disabled]="disabled()"
+  [value]="value()"
+  (valueChange)="value.set($event)"
+></syn-slider>
