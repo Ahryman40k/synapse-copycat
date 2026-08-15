@@ -1,0 +1,27 @@
+// Structure only — every colour lives in _image-panel.theme.scss.
+
+h2 {
+  margin: 0;
+  font-size: 1rem;
+  // The title reads IMAGE whatever the markup says, like every panel title.
+  text-transform: uppercase;
+}
+
+.image-panel__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  button {
+    // The five share the row evenly and wrap together rather than leaving one
+    // stranded when the panel is narrow.
+    flex: 1 1 auto;
+    text-transform: capitalize;
+  }
+}
+
+.image-panel__white-balance {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

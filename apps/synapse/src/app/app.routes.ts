@@ -3,6 +3,7 @@ import type { ResolveFn, Route } from '@angular/router';
 import type { Device, Module } from '@synapse-copycat/backend-api';
 import { ApplicationStore } from './core/stores/application-store';
 import { DashboardPage } from './domains/dashboard-page/dashboard-page';
+import { CameraPageComponent } from './domains/devices/camera-page/camera-page';
 import { KeyboardPageComponent } from './domains/devices/keyboard-page/keyboard-page';
 import { MousePageComponent } from './domains/devices/mouse-page/mouse-page';
 import { MousematPageComponent } from './domains/devices/mousemat-page/mousemat-page';
@@ -50,10 +51,12 @@ export const appRoutes: Route[] = [
 			//   path: 'accessory',
 			//   component: AccessoryPageComponent,
 			// },
-			// {
-			//   path: 'streaming',
-			//   component: StreamingPageComponent,
-			// },
+			// `streaming` is the kind the contract carries for the Kiyo; there is
+			// no `camera` one.
+			{
+				path: 'streaming/:id',
+				component: CameraPageComponent,
+			},
 		],
 	},
 ];

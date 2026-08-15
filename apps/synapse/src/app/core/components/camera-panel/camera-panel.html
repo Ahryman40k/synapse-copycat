@@ -1,0 +1,81 @@
+<syn-panel>
+  <!--
+    The title and the preview switch share a row, the label reading with the
+    title rather than trailing its own control.
+  -->
+  <div class="camera-panel__header">
+    <h2>Camera</h2>
+
+    <syn-switch
+      labelPosition="before"
+      [checked]="preview()"
+      (checkedChange)="onPreviewChange($event)"
+    >
+      Preview
+    </syn-switch>
+  </div>
+
+  <!--
+    The stage keeps its 16:9 box whether the preview is on or off, so switching
+    it does not make the panel jump — the same reason the brightness slider
+    stays put when it is disabled.
+  -->
+  <div
+    class="camera-panel__preview"
+    [class.camera-panel__preview--on]="preview()"
+  >
+    <!--
+      `muted` is not decoration: without it a browser refuses to autoplay, and
+      a preview would show a still first frame. `playsinline` keeps iOS from
+      taking it fullscreen.
+    -->
+    <video
+      #video
+      class="camera-panel__video"
+      autoplay
+      muted
+      playsinline
+      [attr.aria-label]="'Camera preview'"
+    ></video>
+
+    @if (!preview()) {
+      <div class="camera-panel__notice">
+        <!--
+          Drawn here rather than pulled from an asset: it is three shapes, and
+          an <img> could not take the theme colour — the same reason the Razer
+          mark is inlined. Decoration, so the caption below carries the
+          meaning on its own.
+        -->
+        <svg
+          class="camera-panel__notice-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path
+            d="M4 7h3l1.5-2h7L17 7h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z"
+          />
+          <circle cx="12" cy="13" r="3.5" />
+          <path d="M3.5 3.5l17 17" />
+        </svg>
+
+        <p>Preview disabled</p>
+      </div>
+    } @else if (error(); as message) {
+      <div class="camera-panel__notice" role="status">
+        <p>{{ message }}</p>
+      </div>
+    }
+  </div>
+
+  <syn-switch
+    [checked]="autoFocus()"
+    (checkedChange)="onAutoFocusChange($event)"
+  >
+    Auto focus
+  </syn-switch>
+</syn-panel>

@@ -1,0 +1,33 @@
+// Colour only — every dimension lives in camera-panel.scss.
+
+/// $theme is accepted for compatibility with the call in styles.scss, which
+/// still passes the legacy map. Unused here.
+@mixin apply($theme: null) {
+  camera-panel {
+    h2 {
+      color: var(--syn-primary);
+    }
+
+    // Off: a recess in the panel, quiet enough to read as "nothing here yet".
+    .camera-panel__preview {
+      background-color: var(--syn-surface);
+      border-color: color-mix(
+        in srgb,
+        var(--syn-primary) 25%,
+        var(--syn-surface-container)
+      );
+    }
+
+    // On: the frame takes the device colour, so the stage reads as live even
+    // before a picture reaches it.
+    .camera-panel__preview--on {
+      border-color: var(--syn-primary);
+    }
+
+    // Sits over the stage, so it needs its own ground to stay readable.
+    .camera-panel__notice {
+      background-color: var(--syn-surface);
+      color: var(--syn-on-surface-variant);
+    }
+  }
+}

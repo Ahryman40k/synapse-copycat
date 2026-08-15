@@ -1,0 +1,54 @@
+<syn-panel>
+  <h2>Image</h2>
+
+  <!--
+    A single choice among five, so the buttons carry `aria-pressed` and the
+    group is named: a screen reader announces which one is applied, which the
+    fill alone only says visually.
+
+    Secondary is outlined, primary is filled, so the applied one still reads
+    as the chosen one against the other four.
+  -->
+  <div class="image-panel__presets" role="group" aria-label="Picture preset">
+    @for (option of presets; track option) {
+      <button
+        syn-button
+        type="button"
+        [variant]="option === preset() ? 'primary' : 'secondary'"
+        [attr.aria-pressed]="option === preset()"
+        (click)="selectPreset(option)"
+      >
+        {{ option }}
+      </button>
+    }
+  </div>
+
+  @for (adjustment of adjustments; track adjustment.key) {
+    <syn-slider
+      [ariaLabel]="adjustment.label"
+      [value]="level(adjustment.key)"
+      (valueChange)="onLevelChange(adjustment.key, $event)"
+    ></syn-slider>
+  }
+
+  <!--
+    White balance is the one that can be left to the camera, so its switch
+    sits with it and disables the slider — there is no value to set while the
+    camera is choosing it.
+  -->
+  <div class="image-panel__white-balance">
+    <syn-switch
+      [checked]="whiteBalanceAuto()"
+      (checkedChange)="onWhiteBalanceAutoChange($event)"
+    >
+      White balance: auto
+    </syn-switch>
+
+    <syn-temperature-slider
+      ariaLabel="White balance"
+      [value]="whiteBalance()"
+      [disabled]="whiteBalanceAuto()"
+      (valueChange)="onWhiteBalanceChange($event)"
+    ></syn-temperature-slider>
+  </div>
+</syn-panel>
