@@ -1,0 +1,8 @@
+<device-stage
+  [image]="device()?.visual"
+  [name]="device()?.name ?? ''"
+></device-stage>
+
+<div class="device-layout__panels">
+  <ng-content />
+</div>

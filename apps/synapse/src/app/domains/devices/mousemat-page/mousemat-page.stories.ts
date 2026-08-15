@@ -1,4 +1,5 @@
 import { inject, provideAppInitializer } from '@angular/core';
+import { Router } from '@angular/router';
 import {
 	type Mock,
 	provideBackendApi,
@@ -9,6 +10,7 @@ import {
 	type Meta,
 	type StoryObj,
 } from '@storybook/angular';
+import { EMPTY } from 'rxjs';
 import { ApplicationStore } from '../../../core/stores/application-store';
 import { MousematPageComponent } from './mousemat-page';
 
@@ -43,11 +45,17 @@ const meta: Meta<MousematPageComponent> = {
 				provideAppInitializer(() => {
 					void inject(ApplicationStore).getDevices();
 				}),
+				// The store selects the device from the URL, and Storybook's own
+				// address says nothing about devices. Standing in for the router
+				// beats navigating the iframe away from the address Storybook
+				// needs — and the selection itself still runs for real.
+				{
+					provide: Router,
+					useValue: { url: '/device/mousemat/5426-3074', events: EMPTY },
+				},
 			],
 		}),
 	],
-	// The `:id` segment, as `withComponentInputBinding()` supplies it at runtime.
-	args: { id: '5426-3074' },
 };
 export default meta;
 

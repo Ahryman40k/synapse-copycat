@@ -1,19 +1,27 @@
+// Structure only. This template has no colours of its own — the portrait and
+// the panels each carry theirs.
+
+:host {
+  display: block;
+  padding: 0 1.5rem 1.5rem;
+}
+
 // A track floor above a third of the row is what caps the grid at two
 // columns: three of them would need 120% plus two gaps. 40% leaves the gap
 // its room without pushing the second column out.
 $two-column-floor: 40%;
 $min-column: 18rem;
 
-:host {
+.device-layout__panels {
   display: grid;
   gap: 1em;
 
   // Fills the row and reflows — two columns, then one — never three.
   //
-  // `auto-fit` on its own has no column cap, which is why all three panels
-  // landed on one line on a wide window. `$min-column` keeps a panel readable
-  // once 40% of the row gets too narrow, and `min(100%, …)` stops that floor
-  // from overflowing a window narrower than a single panel.
+  // `auto-fit` on its own has no column cap, and would put every panel on one
+  // line on a wide window. `$min-column` keeps a panel readable once 40% of
+  // the row gets too narrow, and `min(100%, …)` stops that floor from
+  // overflowing a window narrower than a single panel.
   grid-template-columns: repeat(
     auto-fit,
     minmax(min(100%, max($min-column, $two-column-floor)), 1fr)
