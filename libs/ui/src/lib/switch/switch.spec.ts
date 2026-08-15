@@ -99,4 +99,29 @@ describe('Switch', () => {
 
 		expect(control().checked).toBe(true);
 	});
+
+	it('puts the label after the track by default', async () => {
+		const { container } = await render('<syn-switch>Brightness</syn-switch>', {
+			imports: [SwitchComponent],
+		});
+
+		expect(container.querySelector('syn-switch')).not.toHaveClass(
+			'syn-switch--label-before',
+		);
+	});
+
+	it('can read the label before the track', async () => {
+		const { container } = await render(
+			'<syn-switch labelPosition="before">Preview</syn-switch>',
+			{ imports: [SwitchComponent] },
+		);
+
+		// Only the rendered order moves: the label stays inside the <label>, so
+		// clicking the text still toggles.
+		expect(container.querySelector('syn-switch')).toHaveClass(
+			'syn-switch--label-before',
+		);
+		screen.getByText('Preview').click();
+		expect(screen.getByRole('switch')).toBeChecked();
+	});
 });

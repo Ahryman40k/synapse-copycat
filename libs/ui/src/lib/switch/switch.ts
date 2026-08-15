@@ -30,6 +30,7 @@ import {
 	styleUrl: './switch.scss',
 	host: {
 		'[class.syn-switch--disabled]': 'disabled()',
+		'[class.syn-switch--label-before]': "labelPosition() === 'before'",
 	},
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -38,6 +39,18 @@ export class SwitchComponent {
 	readonly checked = model(false);
 
 	readonly disabled = input(false, { transform: booleanAttribute });
+
+	/**
+	 * Which side of the track the projected label sits on. `before` is for a
+	 * row that already reads left to right — a panel heading with its switch at
+	 * the far right, where the label belongs with the words, not with the
+	 * control.
+	 *
+	 * It reorders the rendered box, not the DOM: the label stays inside the
+	 * `<label>`, so clicking the text still toggles and the association still
+	 * holds.
+	 */
+	readonly labelPosition = input<'before' | 'after'>('after');
 
 	/** Only needed when the switch has no projected label. */
 	readonly ariaLabel = input<string | undefined>(undefined);

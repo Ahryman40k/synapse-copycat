@@ -41,16 +41,19 @@
     }
 
     // ── secondary: outlined ─────────────────────────────────────────────────
+    // The device colour is spent on the outline alone; the label stays the
+    // ordinary text colour. With both taking `primary`, a row of these read as
+    // a row of accents — the outline is enough to say "button", and the label
+    // is easier to read at the tone the rest of the interface uses.
     &[data-variant='secondary'] {
       background-color: transparent;
       border-color: var(--syn-primary);
-      color: var(--syn-primary);
+      color: var(--syn-on-surface);
 
       &:not(:disabled):not([aria-disabled='true']) {
         &:hover {
           background-color: $tint-hover;
           border-color: var(--syn-primary-hover);
-          color: var(--syn-primary-hover);
         }
 
         &:active {

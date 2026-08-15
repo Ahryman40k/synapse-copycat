@@ -18,6 +18,13 @@ $knob-inset: 0.1875rem;
   user-select: none;
 }
 
+// Reorders the two rendered boxes and nothing else — the label keeps its place
+// inside the `<label>`, so the click target and the association survive. The
+// input is out of flow, so it is untouched either way.
+:host(.syn-switch--label-before) .syn-switch__control {
+  flex-direction: row-reverse;
+}
+
 // The native control. Hidden from sight, never from the keyboard or the
 // accessibility tree — `display: none`, `visibility: hidden` or a zero size
 // would remove both.
