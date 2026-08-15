@@ -12,6 +12,8 @@
   effects-panel;
 @use '../src/app/core/components/device-stage/_device-stage.theme.scss' as
   device-stage;
+@use '../src/app/core/components/razer-logo/_razer-logo.theme.scss' as
+  razer-logo;
 
 $primary-color: #00ff00;
 // Text drawn *on* the primary colour. create-theme-dark() defaults it to the
@@ -56,4 +58,5 @@ $theme-dark: theme.create-theme-dark(
   @include lighting-switch-off-panel.apply($theme-dark);
   @include effects-panel.apply($theme-dark);
   @include device-stage.apply($theme-dark);
+  @include razer-logo.apply($theme-dark);
 }

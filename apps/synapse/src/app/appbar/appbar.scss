@@ -31,10 +31,12 @@ $trigger-width: 44px;
     flex: 1 1 0;
   }
 
-  img {
+  razer-logo {
     flex: 0 0 auto;
     margin: 0 0.75em 0 1rem;
-    max-height: 1.5em;
+    // The mark sizes itself from the font; this only says how big that is
+    // here. It used to be a `max-height` fighting the asset's fixed 800px box.
+    font-size: 1.5em;
   }
 }
 

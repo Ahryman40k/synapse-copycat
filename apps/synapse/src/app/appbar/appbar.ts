@@ -11,6 +11,7 @@ import {
 	viewChildren,
 } from '@angular/core';
 import type { Device, Module } from '@synapse-copycat/backend-api';
+import { RazerLogo } from '../core/components/razer-logo/razer-logo';
 
 /** What a button shows, and the entry it stands for. */
 type Entry<T> = { item: T; label: string };
@@ -58,6 +59,7 @@ function labelByKind<T extends { kind: string }>(
 	selector: 'syn-bar, nav[synapse-bar]',
 	templateUrl: './appbar.html',
 	styleUrl: './appbar.scss',
+	imports: [RazerLogo],
 	host: {
 		role: 'navigation',
 		'[attr.aria-label]': 'ariaLabel()',

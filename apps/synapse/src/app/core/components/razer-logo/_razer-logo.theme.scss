@@ -1,0 +1,18 @@
+// Colour only — every dimension lives in razer-logo.scss.
+
+/// $theme is accepted for compatibility with the call in styles.scss, which
+/// still passes the legacy map. Unused here.
+@mixin apply($theme: null) {
+  // The file shipped these as #0f0 and #222 — Razer's green and a near-black,
+  // neither of which followed the theme. `on-primary` is not a guess: the
+  // palette derives it by measuring both candidates against `primary` and
+  // keeping whichever clears the contrast floor, so the snake stays legible on
+  // a pale device colour as well as a dark one.
+  .razer-logo__disc {
+    fill: var(--syn-primary);
+  }
+
+  .razer-logo__mark {
+    fill: var(--syn-on-primary);
+  }
+}

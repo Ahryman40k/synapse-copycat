@@ -1,0 +1,14 @@
+// Structure only — the two fills live in _razer-logo.theme.scss.
+
+:host {
+  display: inline-flex;
+}
+
+svg {
+  display: block;
+
+  // Sized by the text around it, like the mark it is. The asset carried a
+  // fixed 800px box, which is why the appbar had to cap it by hand.
+  height: 1em;
+  width: auto;
+}
