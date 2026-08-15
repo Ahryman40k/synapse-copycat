@@ -49,6 +49,21 @@ export function makeAppConfig(config: Config) {
 						vendor_id: 5426,
 						product_id: 3074,
 					},
+					{
+						kind: 'keyboard',
+						name: 'Razer Huntsman Elite',
+						vendor_id: 5426,
+						product_id: 550,
+					},
+					// The Kiyo is a webcam, and `camera` is not one of the kinds the
+					// contract carries. `streaming` is Razer's own name for that line
+					// and is already what the (commented-out) route is called.
+					{
+						kind: 'streaming',
+						name: 'Razer Kiyo',
+						vendor_id: 5426,
+						product_id: 3587,
+					},
 				],
 				modules: [
 					{
