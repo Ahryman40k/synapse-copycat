@@ -1,0 +1,63 @@
+{/* button-group.mdx */}
+
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as stories from './button-group.stories.ts';
+
+<Meta of={stories} />
+
+# Button group
+
+A row of choices inside one rounded frame, exactly one of them taken.
+
+```html
+<syn-button-group [options]="rates" [(value)]="rate" ariaLabel="Polling rate" />
+```
+
+<Canvas of={stories.Default} />
+
+<Controls of={stories.Default} />
+
+## Radios, not buttons
+
+"One of these" **is** a radio group, so that is what it is built on — native
+`<input type="radio">` inside `<label>`s, restyled.
+
+A row of `<button aria-pressed>` looks the same and behaves worse. The browser
+gives the radio group four things for free that the button row has to
+reimplement, and usually doesn't:
+
+- **Arrow keys** move between the choices.
+- **One tab stop** for the whole group, landing on the current choice — not one
+  stop per option.
+- **The announcement**: "radio group, Polling rate, 1000 Hz, 3 of 3".
+- **Form participation**, if the group ever sits in one.
+
+The inputs are hidden from sight but never from the keyboard or the
+accessibility tree; each label is the pill you see and the click target.
+
+## The frame
+
+The rounded border is the group. It takes full `--syn-primary` rather than a
+mixed-down version, because it is what says these choices belong together — not
+a boundary to be half-seen. The taken pill is filled with the same colour, and
+its label uses `--syn-on-primary`, which the palette derives by measuring
+contrast, so it stays readable whatever colour a device reports.
+
+<Canvas of={stories.Unset} />
+
+## States
+
+<Canvas of={stories.Disabled} />
+
+An option can be disabled on its own — a rate the device cannot do — or the
+whole group at once.
+
+<Canvas of={stories.Keyboard} />
+
+## Names
+
+Each instance generates its own `name` for its radios. Two groups sharing one
+would behave as a single group: choosing in either would clear the other.
+
+`ariaLabel` is not optional in practice — a radio group with no accessible name
+is announced as nothing at all.

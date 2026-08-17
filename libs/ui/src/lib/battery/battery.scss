@@ -1,0 +1,37 @@
+// Structure only — every colour lives in _battery.theme.scss.
+// See libs/ui/AGENTS.md for the split.
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.syn-battery__icon {
+  // Sized by the text around it, like the figure it sits next to.
+  height: 1em;
+  width: auto;
+  display: block;
+  flex: 0 0 auto;
+}
+
+.syn-battery__value {
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  // Tabular figures alone are not enough: the gauge would still shuffle between
+  // two and three digits without a floor.
+  min-width: 2.5em;
+  text-align: right;
+}
+
+.syn-battery__fill,
+.syn-battery__bolt {
+  transition: width 0.3s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .syn-battery__fill,
+  .syn-battery__bolt {
+    transition: none;
+  }
+}

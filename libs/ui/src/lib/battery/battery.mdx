@@ -1,0 +1,53 @@
+{/* battery.mdx */}
+
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as stories from './battery.stories.ts';
+
+<Meta of={stories} />
+
+# Battery
+
+A battery gauge drawn like Android's: a rounded cell filling from the left, a
+bolt while charging, and the figure beside it.
+
+```html
+<syn-battery [level]="62" [charging]="false" />
+```
+
+<Canvas of={stories.Default} />
+
+<Controls of={stories.Default} />
+
+## One thing to read, not three
+
+The drawing is `aria-hidden` and the host carries the whole meaning as its
+accessible name — _"Battery 62%, discharging"_. Announcing the cell, the bolt
+and the number separately would give a screen reader three fragments and no
+sentence.
+
+Inline SVG rather than an asset, for the same reason the Razer mark is: an
+`<img>` is an isolated document and no rule of ours could colour it.
+
+## States
+
+<Canvas of={stories.Charging} />
+<Canvas of={stories.Low} />
+
+Below 20% the gauge turns to `--syn-error`, figure included. **Charging is
+never low** — it is its own state, and a good one, so it stays on
+`--syn-success` even at 4%:
+
+<Canvas of={stories.ChargingFromEmpty} />
+
+Otherwise the charge takes `--syn-primary`, like every other gauge in the
+library, and the shell and figure stay on `--syn-on-surface-variant`: they are
+furniture, not the reading.
+
+<Canvas of={stories.Range} />
+
+## Details worth keeping
+
+An empty battery keeps a sliver of fill, so it still reads as a battery rather
+than a bare outline. The figure uses tabular figures **and** a minimum width —
+tabular alone still lets the gauge shuffle between two and three digits. And a
+level outside 0–100 is brought back into range rather than drawn past the cell.

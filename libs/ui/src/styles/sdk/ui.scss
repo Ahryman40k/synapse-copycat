@@ -1,5 +1,7 @@
+@use '../../lib/battery/_battery.theme.scss' as battery;
 @use '../../lib/button/button.theme' as button;
 @use '../../lib/card/_card.theme' as card;
+@use '../../lib/button-group/_button-group.theme.scss' as button-group;
 @use '../../lib/switch/_switch.theme.scss' as switch;
 @use '../../lib/checkbox/_checkbox.theme.scss' as checkbox;
 @use '../../lib/panel/panel.theme' as panel;
@@ -9,8 +11,10 @@
   temperature-slider;
 
 @mixin apply($theme) {
+  @include battery.apply($theme);
   @include button.apply($theme);
   @include card.apply($theme);
+  @include button-group.apply($theme);
   @include switch.apply($theme);
   @include checkbox.apply($theme);
   @include panel.apply($theme);

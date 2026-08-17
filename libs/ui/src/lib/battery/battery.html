@@ -1,0 +1,47 @@
+<!-- Decoration: the host carries the whole meaning as its accessible name. -->
+<svg
+  class="syn-battery__icon"
+  viewBox="0 0 26 14"
+  fill="none"
+  aria-hidden="true"
+>
+  <rect
+    class="syn-battery__shell"
+    x="0.75"
+    y="0.75"
+    width="21.5"
+    height="12.5"
+    rx="3.25"
+    stroke="currentColor"
+    stroke-width="1.5"
+  />
+  <rect
+    class="syn-battery__cap"
+    x="23.5"
+    y="4.75"
+    width="2"
+    height="4.5"
+    rx="1"
+  />
+  <rect
+    class="syn-battery__fill"
+    x="2.5"
+    y="2.5"
+    height="9"
+    rx="1.75"
+    [attr.width]="fillWidth()"
+  />
+
+  @if (charging()) {
+    <!--
+      Drawn over the fill with the surface colour, so the bolt reads as cut out
+      of the charge rather than laid on top of it.
+    -->
+    <path
+      class="syn-battery__bolt"
+      d="M13.4 2.6 8.6 8.1h3.2l-1.2 3.9 4.8-5.5h-3.2z"
+    />
+  }
+</svg>
+
+<span class="syn-battery__value">{{ percent() }}%</span>

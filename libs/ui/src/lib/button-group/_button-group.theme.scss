@@ -1,0 +1,44 @@
+// Colour only — every dimension lives in button-group.scss.
+//
+// On the theme roles, like the rest of the migrated components: `$theme` is
+// accepted for compatibility with `ui.scss`, which still passes the legacy map,
+// and is deliberately unused.
+
+@mixin apply($theme: null) {
+  syn-button-group,
+  fieldset[syn-button-group] {
+    // The frame the group sits in. Full `primary`, because it is the shape
+    // that groups the choices — not a boundary to be half-seen.
+    border-color: var(--syn-primary);
+    color: var(--syn-on-surface);
+
+    // The one taken. `on-primary` is derived by measuring contrast against
+    // `primary`, so the label stays readable whatever colour a device reports.
+    .syn-button-group__input:checked + .syn-button-group__pill {
+      background-color: var(--syn-primary);
+      color: var(--syn-on-primary);
+    }
+
+    // Hovering an option that is not taken hints at it without claiming it.
+    .syn-button-group__input:not(:checked):not(:disabled)
+      + .syn-button-group__pill:hover {
+      background-color: color-mix(in srgb, var(--syn-primary) 14%, transparent);
+    }
+
+    // The ring follows the pill's radius, and sits on the label because the
+    // input itself is invisible.
+    .syn-button-group__input:focus-visible + .syn-button-group__pill {
+      outline: 2px solid var(--syn-primary);
+      outline-offset: 2px;
+    }
+
+    .syn-button-group__input:disabled + .syn-button-group__pill {
+      opacity: 0.35;
+    }
+  }
+
+  syn-button-group.syn-button-group--disabled,
+  fieldset[syn-button-group].syn-button-group--disabled {
+    opacity: 0.5;
+  }
+}

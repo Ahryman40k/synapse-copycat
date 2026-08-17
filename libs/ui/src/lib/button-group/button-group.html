@@ -1,0 +1,18 @@
+@for (option of options(); track option.value) {
+  <label class="syn-button-group__option">
+    <!--
+      Visually hidden but NOT display:none — it must keep its tab stop and stay
+      in the accessibility tree. The pill beside it is decoration.
+    -->
+    <input
+      class="syn-button-group__input"
+      type="radio"
+      [name]="name"
+      [value]="option.value"
+      [checked]="option.value === value()"
+      [disabled]="disabled() || (option.disabled ?? false)"
+      (change)="onChange(option.value)"
+    />
+    <span class="syn-button-group__pill">{{ option.label }}</span>
+  </label>
+}

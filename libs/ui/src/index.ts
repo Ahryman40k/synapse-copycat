@@ -1,4 +1,6 @@
+export * from './lib/battery/battery';
 export * from './lib/button/button';
+export * from './lib/button-group/button-group';
 export * from './lib/card/card';
 export * from './lib/checkbox/checkbox';
 export * from './lib/panel/panel';

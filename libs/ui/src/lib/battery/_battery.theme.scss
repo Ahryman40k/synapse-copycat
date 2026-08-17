@@ -1,0 +1,44 @@
+// Colour only — every dimension lives in battery.scss.
+//
+// `$theme` is accepted for compatibility with `ui.scss`, which still passes the
+// legacy map, and is deliberately unused.
+
+@mixin apply($theme: null) {
+  syn-battery {
+    // The shell and the figure are furniture, not the reading.
+    color: var(--syn-on-surface-variant);
+
+    .syn-battery__cap {
+      fill: currentColor;
+    }
+
+    // The charge itself takes the device colour, like every other gauge.
+    .syn-battery__fill {
+      fill: var(--syn-primary);
+    }
+
+    // Cut out of the charge rather than laid over it.
+    .syn-battery__bolt {
+      fill: var(--syn-surface);
+    }
+  }
+
+  // Being filled is its own state, and a good one: it should not read as an
+  // alarm even at 5%.
+  syn-battery.syn-battery--charging .syn-battery__fill {
+    fill: var(--syn-success);
+  }
+
+  // Nearly empty, and nothing is being done about it.
+  syn-battery.syn-battery--low {
+    color: var(--syn-error);
+
+    .syn-battery__fill {
+      fill: var(--syn-error);
+    }
+
+    .syn-battery__value {
+      color: var(--syn-error);
+    }
+  }
+}
