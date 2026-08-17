@@ -112,4 +112,64 @@ describe('Slider component', () => {
 			),
 		).toBe('0%');
 	});
+
+	it('stops the thumb at a travel limit without narrowing the scale', async () => {
+		const { fixture } = await render(SliderComponent, {
+			inputs: {
+				ariaLabel: 'Stage',
+				min: 100,
+				max: 20000,
+				limitMax: 9700,
+				value: 4000,
+			},
+		});
+
+		const field = screen.getByRole('slider') as HTMLInputElement;
+		// The scale is untouched, so this slider can still be read against its
+		// neighbours.
+		expect(field.min).toBe('100');
+		expect(field.max).toBe('20000');
+
+		field.value = '15000';
+		field.dispatchEvent(new Event('input'));
+		fixture.detectChanges();
+
+		expect(fixture.componentInstance.value()).toBe(9700);
+		// Put back in the same handler: a native range has already moved itself,
+		// and nothing else would rewrite the DOM if the model ends up unchanged.
+		expect(field.valueAsNumber).toBe(9700);
+	});
+
+	it('stops the thumb at the lower travel limit too', async () => {
+		const { fixture } = await render(SliderComponent, {
+			inputs: {
+				ariaLabel: 'Stage',
+				min: 100,
+				max: 20000,
+				limitMin: 1800,
+				value: 4000,
+			},
+		});
+
+		const field = screen.getByRole('slider') as HTMLInputElement;
+		field.value = '200';
+		field.dispatchEvent(new Event('input'));
+		fixture.detectChanges();
+
+		expect(fixture.componentInstance.value()).toBe(1800);
+		expect(field.valueAsNumber).toBe(1800);
+	});
+
+	it('falls back to min and max when no limit is given', async () => {
+		const { fixture } = await render(SliderComponent, {
+			inputs: { ariaLabel: 'Level', min: 0, max: 100, value: 50 },
+		});
+
+		const field = screen.getByRole('slider') as HTMLInputElement;
+		field.value = '80';
+		field.dispatchEvent(new Event('input'));
+		fixture.detectChanges();
+
+		expect(fixture.componentInstance.value()).toBe(80);
+	});
 });

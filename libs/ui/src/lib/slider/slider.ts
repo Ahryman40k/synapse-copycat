@@ -18,6 +18,14 @@ import {
  */
 const THUMB_SIZE = 14;
 
+/** `numberAttribute` turns an absent value into NaN; a limit may be absent. */
+function optionalNumber(value: unknown): number | undefined {
+	if (value === undefined || value === null || value === '') return undefined;
+
+	const parsed = Number(value);
+	return Number.isNaN(parsed) ? undefined : parsed;
+}
+
 @Component({
 	selector: 'syn-slider',
 	templateUrl: './slider.html',
@@ -34,6 +42,18 @@ export class SliderComponent {
 
 	readonly min = input(0, { transform: numberAttribute });
 	readonly max = input(100, { transform: numberAttribute });
+
+	/**
+	 * Where the thumb stops, while the track keeps spanning `min`..`max`.
+	 *
+	 * For sliders that depend on one another — a set of DPI stages that must
+	 * stay in order — narrowing `min`/`max` instead would give each its own
+	 * scale, so the same position would mean a different value on each track
+	 * and the five could not be read against each other. These hold the thumb
+	 * without touching the scale.
+	 */
+	readonly limitMin = input(undefined, { transform: optionalNumber });
+	readonly limitMax = input(undefined, { transform: optionalNumber });
 	readonly step = input(1, { transform: numberAttribute });
 
 	readonly disabled = input(false, { transform: booleanAttribute });
@@ -136,8 +156,19 @@ export class SliderComponent {
 		const target = event.target;
 		if (!(target instanceof HTMLInputElement)) return;
 
-		const next = target.valueAsNumber;
-		if (Number.isNaN(next)) return;
+		const raw = target.valueAsNumber;
+		if (Number.isNaN(raw)) return;
+
+		const next = Math.min(
+			this.limitMax() ?? this.max(),
+			Math.max(this.limitMin() ?? this.min(), raw),
+		);
+
+		// Put the thumb back in the same handler. The native range has already
+		// moved itself to `raw`, and if `next` matches the value we were already
+		// holding, no binding would change and nothing would rewrite the DOM —
+		// the thumb would sit past its limit with the model saying otherwise.
+		if (next !== raw) target.value = String(next);
 
 		this.value.set(next);
 	}
