@@ -6,6 +6,7 @@ import {
 	type PageBarDescriptor,
 } from '../../page-bar/page-bar';
 import { MouseCustomizePanelComponent } from './customize/mouse-customize';
+import { MousePowerSection } from './power/mouse-power';
 import { MouseLightingSection } from './lighting/mouse-lighting';
 
 @Component({
@@ -58,7 +59,7 @@ export class MousePageComponent {
 		},
 		{
 			title: 'power',
-			component: MouseLightingSection,
+			component: MousePowerSection,
 		},
 	];
 }

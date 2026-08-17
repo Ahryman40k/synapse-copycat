@@ -1,0 +1,19 @@
+<syn-panel>
+  <h2>Wireless power saving</h2>
+
+  <p class="wireless-power-saving-panel__caption">
+    Enter sleep mode if idle for (minutes)
+  </p>
+
+  <!--
+    The caption is the real label, but `syn-slider` takes a name rather than a
+    reference to one, so the two have to say the same thing in their own words.
+  -->
+  <syn-slider
+    ariaLabel="Idle minutes before sleep"
+    min="1"
+    max="15"
+    [value]="sleepAfter()"
+    (valueChange)="sleepAfter.set($event)"
+  ></syn-slider>
+</syn-panel>

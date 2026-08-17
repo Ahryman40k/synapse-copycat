@@ -22,6 +22,10 @@
   camera-panel;
 @use '../src/app/core/components/image-panel/_image-panel.theme.scss' as
   image-panel;
+@use '../src/app/core/components/wireless-power-saving-panel/_wireless-power-saving-panel.theme.scss'
+  as wireless-power-saving-panel;
+@use '../src/app/core/components/low-power-mode-panel/_low-power-mode-panel.theme.scss'
+  as low-power-mode-panel;
 
 $primary-color: #00ff00;
 // Text drawn *on* the primary colour. create-theme-dark() defaults it to the
@@ -71,4 +75,6 @@ $theme-dark: theme.create-theme-dark(
   @include snap-tap-panel.apply($theme-dark);
   @include camera-panel.apply($theme-dark);
   @include image-panel.apply($theme-dark);
+  @include wireless-power-saving-panel.apply($theme-dark);
+  @include low-power-mode-panel.apply($theme-dark);
 }

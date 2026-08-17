@@ -1,0 +1,19 @@
+<syn-panel>
+  <h2>Low power mode</h2>
+
+  <p class="low-power-mode-panel__caption">
+    When wireless, enter Low Power Mode if the battery level is below (%)
+  </p>
+
+  <!--
+    Starts at 5, not 0: a threshold of nothing would never be crossed, so the
+    mode could not turn on at all.
+  -->
+  <syn-slider
+    ariaLabel="Battery percentage before low power mode"
+    min="5"
+    max="100"
+    [value]="threshold()"
+    (valueChange)="threshold.set($event)"
+  ></syn-slider>
+</syn-panel>

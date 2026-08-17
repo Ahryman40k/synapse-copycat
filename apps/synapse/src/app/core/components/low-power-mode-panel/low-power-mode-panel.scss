@@ -1,0 +1,14 @@
+// Structure only — every colour lives in _low-power-mode-panel.theme.scss.
+
+h2 {
+  margin: 0;
+  font-size: 1rem;
+  // The title reads LOW POWER MODE whatever the markup says, like every panel
+  // title.
+  text-transform: uppercase;
+}
+
+.low-power-mode-panel__caption {
+  margin: 0;
+  font-size: 0.875rem;
+}
