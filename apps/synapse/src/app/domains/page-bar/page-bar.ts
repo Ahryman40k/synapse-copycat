@@ -52,10 +52,9 @@ let nextId = 0;
 	selector: 'page-bar',
 	styleUrl: './page-bar.scss',
 	templateUrl: './page-bar.html',
-	host: {
-		role: 'tablist',
-		'[attr.aria-label]': 'ariaLabel()',
-	},
+	// No `role` here: the tablist is the inner element, so the bar can also
+	// carry something that is not a tab.
+	host: {},
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PageBarComponent {
