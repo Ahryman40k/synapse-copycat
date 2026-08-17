@@ -1,4 +1,16 @@
-<page-bar #bar [descriptor]="descriptor" ariaLabel="Mouse sections"></page-bar>
+<page-bar #bar [descriptor]="descriptor" ariaLabel="Mouse sections">
+  <!--
+    Nothing when the device has no battery to report — which is also what a
+    wired mouse will look like once this is read from the device rather than
+    stood in for.
+  -->
+  @if (battery(); as charge) {
+    <syn-battery
+      [level]="charge.level"
+      [charging]="charge.charging"
+    ></syn-battery>
+  }
+</page-bar>
 
 <!--
   Closes the tabs pattern: the bar owns the tab ids and the selection, the page

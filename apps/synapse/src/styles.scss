@@ -26,6 +26,10 @@
   as wireless-power-saving-panel;
 @use '../src/app/core/components/low-power-mode-panel/_low-power-mode-panel.theme.scss'
   as low-power-mode-panel;
+@use '../src/app/core/components/sensitivity-panel/_sensitivity-panel.theme.scss'
+  as sensitivity-panel;
+@use '../src/app/core/components/polling-rate-panel/_polling-rate-panel.theme.scss'
+  as polling-rate-panel;
 
 $primary-color: #00ff00;
 // Text drawn *on* the primary colour. create-theme-dark() defaults it to the
@@ -77,4 +81,6 @@ $theme-dark: theme.create-theme-dark(
   @include image-panel.apply($theme-dark);
   @include wireless-power-saving-panel.apply($theme-dark);
   @include low-power-mode-panel.apply($theme-dark);
+  @include sensitivity-panel.apply($theme-dark);
+  @include polling-rate-panel.apply($theme-dark);
 }

@@ -1,0 +1,37 @@
+// Structure only — every colour lives in _sensitivity-panel.theme.scss.
+
+h2 {
+  margin: 0;
+  font-size: 1rem;
+  // The title reads SENSITIVITY whatever the markup says, like every panel
+  // title.
+  text-transform: uppercase;
+}
+
+.sensitivity-panel__caption {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.sensitivity-panel__stages {
+  // Hugs its label instead of stretching: `syn-panel` stacks its children, and
+  // a switch spanning the panel would put its track a long way from its name.
+  align-self: flex-start;
+}
+
+.sensitivity-panel__stage {
+  display: grid;
+  // The names share one column so the five sliders start on the same line,
+  // whatever the widest name turns out to be.
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sensitivity-panel__stage-name {
+  font-size: 0.875rem;
+  // The slider reserves a lane above its track for the value bubble; without
+  // this the name floats against the top of the row instead of the track.
+  align-self: end;
+  padding-bottom: 0.5rem;
+}

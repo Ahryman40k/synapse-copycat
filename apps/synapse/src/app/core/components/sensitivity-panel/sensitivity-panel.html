@@ -1,0 +1,55 @@
+<syn-panel>
+  <h2>Sensitivity</h2>
+
+  <p class="sensitivity-panel__caption">
+    The number of dots-per-inch (DPI) of mouse movement.
+  </p>
+
+  <!--
+    On its own line, under the caption it belongs to, rather than sharing the
+    title row: it names what the sliders below become, not the panel.
+  -->
+  <syn-switch
+    class="sensitivity-panel__stages"
+    labelPosition="before"
+    [checked]="staged()"
+    (checkedChange)="onStagedChange($event)"
+  >
+    Sensitivity Stages
+  </syn-switch>
+
+  @if (staged()) {
+    @for (stage of stages(); track stage.index) {
+      <div class="sensitivity-panel__stage">
+        <span class="sensitivity-panel__stage-name"
+          >Stage {{ stage.index + 1 }}</span
+        >
+
+        <!--
+          The scale is the sensor's whole range on every stage, so the five can
+          be read against each other; the thumb is what stops at the
+          neighbours, keeping them in order however they are dragged.
+        -->
+        <syn-slider
+          [ariaLabel]="'Stage ' + (stage.index + 1) + ' DPI'"
+          [min]="min"
+          [max]="max"
+          [limitMin]="stage.min"
+          [limitMax]="stage.max"
+          [step]="step"
+          [value]="stage.dpi"
+          (valueChange)="onStageChange(stage.index, $event)"
+        ></syn-slider>
+      </div>
+    }
+  } @else {
+    <syn-slider
+      ariaLabel="DPI"
+      [min]="min"
+      [max]="max"
+      [step]="step"
+      [value]="dpi()"
+      (valueChange)="onDpiChange($event)"
+    ></syn-slider>
+  }
+</syn-panel>

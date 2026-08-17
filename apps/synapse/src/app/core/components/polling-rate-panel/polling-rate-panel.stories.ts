@@ -1,0 +1,25 @@
+import type { Meta, StoryObj } from '@storybook/angular';
+import { expect, within } from 'storybook/test';
+import { PollingRatePanel } from './polling-rate-panel';
+
+const meta: Meta<PollingRatePanel> = {
+	component: PollingRatePanel,
+	title: 'Synapse application / Components / polling rate panel',
+};
+
+export default meta;
+type Story = StoryObj<PollingRatePanel>;
+
+export const Default: Story = {
+	name: 'Polling rate panel',
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+
+		await expect(
+			canvas.getByRole('button', { name: '1000 Hz' }),
+		).toHaveAttribute('aria-pressed', 'true');
+	},
+};
+
+/** The slowest of the three, for a wireless mouse saving its battery. */
+export const Slowest: Story = { args: { rate: 125 } };

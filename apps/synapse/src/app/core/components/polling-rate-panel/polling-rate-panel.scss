@@ -1,0 +1,19 @@
+// Structure only — every colour lives in _polling-rate-panel.theme.scss.
+
+h2 {
+  margin: 0;
+  font-size: 1rem;
+  // The title reads POLLING RATE whatever the markup says, like every panel
+  // title.
+  text-transform: uppercase;
+}
+
+.polling-rate-panel__caption {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.polling-rate-panel__rates {
+  // The frame hugs its three choices rather than stretching across the panel.
+  align-self: flex-start;
+}

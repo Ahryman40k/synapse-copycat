@@ -1,11 +1,13 @@
 import { NgComponentOutlet } from '@angular/common';
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
+import { Battery } from '@synapse-copycat/ui';
 import { ApplicationStore } from '../../../core/stores/application-store';
 import {
 	PageBarComponent,
 	type PageBarDescriptor,
 } from '../../page-bar/page-bar';
 import { MouseCustomizePanelComponent } from './customize/mouse-customize';
+import { MousePerformanceSection } from './performance/mouse-performance';
 import { MousePowerSection } from './power/mouse-power';
 import { MouseLightingSection } from './lighting/mouse-lighting';
 
@@ -13,7 +15,7 @@ import { MouseLightingSection } from './lighting/mouse-lighting';
 	selector: 'mouse-page',
 	styleUrl: './mouse-page.scss',
 	templateUrl: './mouse-page.html',
-	imports: [PageBarComponent, NgComponentOutlet],
+	imports: [PageBarComponent, NgComponentOutlet, Battery],
 })
 export class MousePageComponent {
 	readonly #store = inject(ApplicationStore);
@@ -35,6 +37,18 @@ export class MousePageComponent {
 	 */
 	protected readonly device = computed(() => this.#store.deviceById(this.id()));
 
+	/**
+	 * ⚠️ A stand-in. Nothing reports a battery yet: OpenRazer exposes it as
+	 * `razer.device.power` → `getBattery` / `isCharging`, but neither the
+	 * `BackendCommands` contract nor the mock carries it, so there is no honest
+	 * source to read. Undefined would be the truthful value — this is here to
+	 * make the gauge visible while the plumbing is missing, and should go the
+	 * moment it lands.
+	 */
+	protected readonly battery = signal<
+		{ level: number; charging: boolean } | undefined
+	>({ level: 62, charging: false });
+
 	/** What `ngComponentOutlet` hands to the section it renders. */
 	protected readonly sectionInputs = computed(() => ({
 		device: this.device(),
@@ -47,16 +61,14 @@ export class MousePageComponent {
 		},
 		{
 			title: 'performance',
-			component: MouseLightingSection,
+			component: MousePerformanceSection,
 		},
 		{
 			title: 'lighting',
 			component: MouseLightingSection,
 		},
-		{
-			title: 'calibration',
-			component: MouseLightingSection,
-		},
+		// No `calibration`: it tunes the sensor for a given surface, so it
+		// belongs to the mousemat rather than here.
 		{
 			title: 'power',
 			component: MousePowerSection,

@@ -1,0 +1,19 @@
+<syn-panel>
+  <h2>Polling rate</h2>
+
+  <p class="polling-rate-panel__caption">
+    The frequency (Hz) of data updates in a second
+  </p>
+
+  <!--
+    One of three, so it is a radio group rather than a row of buttons — see
+    `syn-button-group`. The frame is what says the three belong together.
+  -->
+  <syn-button-group
+    class="polling-rate-panel__rates"
+    ariaLabel="Polling rate"
+    [options]="options"
+    [value]="selected()"
+    (valueChange)="onChange($event)"
+  ></syn-button-group>
+</syn-panel>
