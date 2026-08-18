@@ -125,10 +125,18 @@ export class PageBarComponent {
 			return;
 		}
 
-		start(() => {
+		const transition = start(() => {
 			change();
 			this.#appRef.tick();
 		});
+
+		// A transition started while another is still running skips that one,
+		// and every promise it handed out rejects. Nothing has gone wrong — the
+		// change itself happened — but unheard, those rejections surface as
+		// unhandled errors the moment tabs are changed quickly.
+		void transition?.finished?.catch(() => undefined);
+		void transition?.ready?.catch(() => undefined);
+		void transition?.updateCallbackDone?.catch(() => undefined);
 	}
 
 	#prefersReducedMotion(): boolean {
