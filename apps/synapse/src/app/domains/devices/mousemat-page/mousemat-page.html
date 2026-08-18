@@ -1,6 +1,8 @@
 <page-bar
   #bar
   [descriptor]="descriptor"
+  [selected]="section()"
+  (selectedChange)="rememberSection($event)"
   ariaLabel="Mousemat sections"
 ></page-bar>
 

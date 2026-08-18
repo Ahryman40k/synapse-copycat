@@ -1,4 +1,5 @@
 import { inject, provideAppInitializer } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { provideBackendApi, withMock } from '@synapse-copycat/backend-api';
 import { render, screen } from '@testing-library/angular';
 import { ApplicationStore } from '../../../core/stores/application-store';
@@ -92,5 +93,33 @@ describe('KeyboardPage', () => {
 		expect(
 			screen.getByRole('combobox', { name: 'Lighting effect' }),
 		).toBeVisible();
+	});
+
+	it('records the section that is opened', async () => {
+		const { fixture } = await setup();
+
+		screen.getByRole('tab', { name: 'lighting' }).click();
+		fixture.detectChanges();
+
+		// In the store rather than the page: the page is destroyed on the way
+		// out, so anything it held would be gone on the way back.
+		expect(TestBed.inject(ApplicationStore).sectionFor('5426-0550')).toBe(
+			'lighting',
+		);
+	});
+
+	it('opens on the section this device was left on', async () => {
+		const { fixture } = await setup();
+		TestBed.inject(ApplicationStore).setSection('5426-0550', 'lighting');
+		fixture.detectChanges();
+
+		expect(screen.getByRole('tab', { name: 'lighting' })).toHaveAttribute(
+			'aria-selected',
+			'true',
+		);
+		expect(screen.getByRole('tab', { name: 'customize' })).toHaveAttribute(
+			'aria-selected',
+			'false',
+		);
 	});
 });

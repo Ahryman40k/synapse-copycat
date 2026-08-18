@@ -1,4 +1,10 @@
-<page-bar #bar [descriptor]="descriptor" ariaLabel="Mouse sections">
+<page-bar
+  #bar
+  [descriptor]="descriptor"
+  [selected]="section()"
+  (selectedChange)="rememberSection($event)"
+  ariaLabel="Mouse sections"
+>
   <!--
     Nothing when the device has no battery to report — which is also what a
     wired mouse will look like once this is read from the device rather than

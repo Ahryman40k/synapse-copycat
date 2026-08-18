@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
 import { ApplicationStore } from '../../../core/stores/application-store';
 import {
+	type DescriptorItem,
 	PageBarComponent,
 	type PageBarDescriptor,
 } from '../../page-bar/page-bar';
@@ -33,6 +34,18 @@ export class MousematPageComponent {
 	 */
 	protected readonly device = computed(() => this.#store.deviceById(this.id()));
 
+	/**
+	 * The section to open, from what was last read on this device.
+	 *
+	 * Undefined for a device never opened, and `page-bar` then falls back to
+	 * its first tab — which is why nothing has to seed it.
+	 */
+	protected readonly section = computed(() =>
+		this.descriptor.find(
+			(item) => item.title === this.#store.sectionFor(this.id()),
+		),
+	);
+
 	/** What `ngComponentOutlet` hands to the section it renders. */
 	protected readonly sectionInputs = computed(() => ({
 		device: this.device(),
@@ -44,4 +57,14 @@ export class MousematPageComponent {
 			component: MousematLightingSection,
 		},
 	];
+
+	/**
+	 * `selected` is a `model<DescriptorItem | undefined>`, so its output can
+	 * carry the empty case — the bar clearing its selection rather than moving
+	 * it. There is nothing to remember then.
+	 */
+	protected rememberSection(item: DescriptorItem | undefined): void {
+		const id = this.id();
+		if (id && item) this.#store.setSection(id, item.title);
+	}
 }

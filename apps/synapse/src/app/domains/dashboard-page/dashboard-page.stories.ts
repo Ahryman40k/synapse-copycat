@@ -69,6 +69,7 @@ const MockedStore = signalStore(
 		lighting: {},
 		syncEffect: false,
 		syncBrightness: false,
+		activeSection: {},
 	}),
 );
 

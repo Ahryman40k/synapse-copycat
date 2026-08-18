@@ -1,4 +1,10 @@
-<page-bar #bar [descriptor]="descriptor" ariaLabel="Camera sections"></page-bar>
+<page-bar
+  #bar
+  [descriptor]="descriptor"
+  [selected]="section()"
+  (selectedChange)="rememberSection($event)"
+  ariaLabel="Camera sections"
+></page-bar>
 
 <!--
   Closes the tabs pattern: the bar owns the tab ids and the selection, the page

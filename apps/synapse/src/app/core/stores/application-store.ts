@@ -35,6 +35,15 @@ export type ApplicationState = {
 	 */
 	syncEffect: boolean;
 	syncBrightness: boolean;
+
+	/**
+	 * Which section of each device page was last open, by device id.
+	 *
+	 * Here rather than in the page because the page is destroyed on the way
+	 * out: walking to another device and back would otherwise always land on
+	 * the first tab, however long you had spent on another.
+	 */
+	activeSection: Record<string, string>;
 };
 
 export const ApplicationStore = signalStore(
@@ -46,6 +55,7 @@ export const ApplicationStore = signalStore(
 		lighting: {},
 		syncEffect: false,
 		syncBrightness: false,
+		activeSection: {},
 	}),
 
 	withMethods((store, backendApi = inject(BackendApi)) => ({
@@ -60,6 +70,20 @@ export const ApplicationStore = signalStore(
 		 */
 		deviceById(id: string | undefined): Device | undefined {
 			return store.devices().find((device) => device.id === id);
+		},
+
+		// ── sections ──────────────────────────────────────────────────────────
+
+		/** Undefined for a device never opened, which lands on the first tab. */
+		sectionFor(deviceId: string | undefined): string | undefined {
+			if (!deviceId) return undefined;
+			return store.activeSection()[deviceId];
+		},
+
+		setSection(deviceId: string, title: string): void {
+			patchState(store, (state) => ({
+				activeSection: { ...state.activeSection, [deviceId]: title },
+			}));
 		},
 
 		// ── lighting ──────────────────────────────────────────────────────────

@@ -175,4 +175,35 @@ describe('ApplicationStore', () => {
 			expect(store.lightingFor(undefined).effect).toBe('spectrum');
 		},
 	));
+
+	it('remembers nothing about a device never opened', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			// Undefined is what makes the bar fall back to its first tab, so
+			// nothing has to be seeded.
+			expect(store.sectionFor('0002-0001')).toBeUndefined();
+			expect(store.sectionFor(undefined)).toBeUndefined();
+		},
+	));
+
+	it('remembers a section per device, not one for all of them', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			store.setSection('0002-0001', 'lighting');
+			store.setSection('1236-5432', 'customize');
+
+			expect(store.sectionFor('0002-0001')).toBe('lighting');
+			expect(store.sectionFor('1236-5432')).toBe('customize');
+		},
+	));
+
+	it('replaces what it remembered for a device', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			store.setSection('0002-0001', 'lighting');
+			store.setSection('0002-0001', 'power');
+
+			expect(store.sectionFor('0002-0001')).toBe('power');
+		},
+	));
 });
