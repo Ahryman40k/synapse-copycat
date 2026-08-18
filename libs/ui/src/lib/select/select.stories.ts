@@ -156,6 +156,6 @@ export const Keyboard: Story = {
 		control.value = 'breathe';
 		control.dispatchEvent(new Event('change'));
 
-		await expect(canvas.getByText(/bound value: breathe/)).toBeVisible();
+		await expect(await canvas.findByText(/bound value: breathe/)).toBeVisible();
 	},
 };

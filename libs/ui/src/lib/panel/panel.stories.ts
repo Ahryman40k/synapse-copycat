@@ -35,9 +35,12 @@ export const Default: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
+		// Present and named, not *visible*: the native control is deliberately
+		// invisible — the pill beside it is what is seen — and a real browser,
+		// unlike jsdom, computes that.
 		await expect(
 			canvas.getByRole('switch', { name: 'Brightness' }),
-		).toBeVisible();
+		).toBeInTheDocument();
 		// The container announces nothing of its own.
 		await expect(canvasElement.querySelector('syn-panel')).not.toHaveAttribute(
 			'role',

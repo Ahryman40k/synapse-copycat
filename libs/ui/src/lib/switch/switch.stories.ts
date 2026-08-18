@@ -80,9 +80,12 @@ export const WithoutLabel: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
+		// Present and named, not *visible*: the native control is deliberately
+		// invisible — the pill beside it is what is seen — and a real browser,
+		// unlike jsdom, computes that.
 		await expect(
 			canvas.getByRole('switch', { name: 'Enable lighting' }),
-		).toBeVisible();
+		).toBeInTheDocument();
 	},
 };
 
@@ -120,7 +123,7 @@ export const Keyboard: Story = {
 
 		control.click();
 		await expect(control).toBeChecked();
-		await expect(canvas.getByText(/bound value: true/)).toBeVisible();
+		await expect(await canvas.findByText(/bound value: true/)).toBeVisible();
 
 		control.click();
 		await expect(control).not.toBeChecked();

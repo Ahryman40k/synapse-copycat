@@ -36,9 +36,11 @@ export const Staged: Story = {
 		const canvas = within(canvasElement);
 
 		await expect(canvas.getAllByRole('slider')).toHaveLength(5);
-		// Bounded by the stage below and the stage above.
+
+		// Every stage keeps the sensor's whole scale, so the five can be read
+		// against each other; it is the thumb that stops at the neighbours.
 		const third = canvas.getByRole('slider', { name: 'Stage 3 DPI' });
-		await expect(third).toHaveAttribute('min', '1800');
-		await expect(third).toHaveAttribute('max', '9700');
+		await expect(third).toHaveAttribute('min', '100');
+		await expect(third).toHaveAttribute('max', '20000');
 	},
 };

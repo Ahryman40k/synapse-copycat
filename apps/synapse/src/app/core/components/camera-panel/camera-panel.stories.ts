@@ -57,10 +57,9 @@ export const Default: Story = {
 			canvas.getByRole('switch', { name: 'Preview' }),
 		).not.toBeChecked();
 		await expect(canvas.getByText('Preview disabled')).toBeVisible();
-		// Two cameras here, so there is a choice to make.
-		await expect(
-			canvas.getByRole('combobox', { name: 'Camera' }),
-		).toBeVisible();
+		// Nothing to pick: the page is already about one camera, and the panel
+		// opens the one its device names.
+		await expect(canvas.queryByRole('combobox')).not.toBeInTheDocument();
 	},
 };
 

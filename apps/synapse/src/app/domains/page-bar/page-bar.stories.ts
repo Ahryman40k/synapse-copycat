@@ -4,7 +4,7 @@ import { type Meta, moduleMetadata, type StoryObj } from '@storybook/angular';
 // query and event shows up as a replayable step in the Interactions panel.
 // Importing @testing-library/angular directly here loses that, which is what
 // the storybook/use-storybook-testing-library rule protects.
-import { expect, fireEvent, fn, within } from 'storybook/test';
+import { expect, fireEvent, fn, waitFor, within } from 'storybook/test';
 import { PageBarComponent, type PageBarDescriptor } from './page-bar';
 
 @Component({
@@ -45,6 +45,25 @@ const meta: Meta<PageBarComponent> = {
 		}),
 	],
 };
+/**
+ * The bar moves its selection inside a view transition, which is asynchronous
+ * in a browser that has one. jsdom has none, so the fallback path runs
+ * synchronously there and the specs never had to wait — here they do.
+ */
+const untilSelected = (tab: HTMLElement) =>
+	waitFor(() => {
+		if (tab.getAttribute('aria-selected') !== 'true') {
+			throw new Error(`not selected yet: ${tab.textContent?.trim()}`);
+		}
+	});
+
+const untilPanelReads = (panel: HTMLElement, text: string) =>
+	waitFor(() => {
+		if (!panel.textContent?.includes(text)) {
+			throw new Error(`panel still reads: ${panel.textContent?.trim()}`);
+		}
+	});
+
 export default meta;
 
 type Story = StoryObj<PageBarComponent>;
@@ -109,14 +128,14 @@ export const Keyboard: Story = {
 		fireEvent.keyDown(first, { key: 'ArrowRight' });
 
 		const second = canvas.getByRole('tab', { name: 'lighting' });
+		await untilSelected(second);
 		await expect(second).toHaveAttribute('aria-selected', 'true');
 		await expect(second).toHaveFocus();
 
 		fireEvent.keyDown(second, { key: 'End' });
-		await expect(canvas.getByRole('tab', { name: 'power' })).toHaveAttribute(
-			'aria-selected',
-			'true',
-		);
+		const last = canvas.getByRole('tab', { name: 'power' });
+		await untilSelected(last);
+		await expect(last).toHaveAttribute('aria-selected', 'true');
 	},
 };
 
@@ -157,6 +176,7 @@ export const WithPanel: Story = {
 		await expect(panel).toHaveTextContent('customize');
 
 		canvas.getByRole('tab', { name: 'power' }).click();
+		await untilPanelReads(panel, 'power');
 		await expect(canvas.getByRole('tabpanel')).toHaveTextContent('power');
 
 		// The panel is labelled by the selected tab, which is what makes a

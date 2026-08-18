@@ -15,9 +15,8 @@ export const Default: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
-		await expect(
-			canvas.getByRole('button', { name: '1000 Hz' }),
-		).toHaveAttribute('aria-pressed', 'true');
+		// A radio group rather than three buttons — see `syn-button-group`.
+		await expect(canvas.getByRole('radio', { name: '1000 Hz' })).toBeChecked();
 	},
 };
 

@@ -67,6 +67,6 @@ export const TwoWay: Story = {
 		field.value = '6200';
 		field.dispatchEvent(new Event('input'));
 
-		await expect(canvas.getByText(/bound value: 6200 K/)).toBeVisible();
+		await expect(await canvas.findByText(/bound value: 6200 K/)).toBeVisible();
 	},
 };

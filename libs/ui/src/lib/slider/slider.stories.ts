@@ -238,7 +238,7 @@ export const TwoWayBinding: StoryObj<SliderStoryHost> = {
 		const canvas = within(canvasElement);
 		const slider = canvas.getByRole('slider', { name: 'Brightness' });
 
-		await expect(canvas.getByText(/bound value: 40/)).toBeVisible();
+		await expect(await canvas.findByText(/bound value: 40/)).toBeVisible();
 
 		fireEvent.input(slider, { target: { value: '85' } });
 
@@ -249,7 +249,7 @@ export const TwoWayBinding: StoryObj<SliderStoryHost> = {
 				throw new Error('parent signal has not caught up');
 			}
 		});
-		await expect(canvas.getByText(/bound value: 85/)).toBeVisible();
+		await expect(await canvas.findByText(/bound value: 85/)).toBeVisible();
 		await expectBubbleText(canvasElement, '85');
 	},
 };

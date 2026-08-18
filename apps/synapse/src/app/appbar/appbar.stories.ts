@@ -161,7 +161,7 @@ export const Narrow: Story = {
 			(moduleActivated)="activeId.set($event.kind)"
 		></syn-bar>
 		<p style="padding:1rem; font:13px system-ui; opacity:0.7">
-			current: <strong>{{ activeId() ?? 'home' }}</strong>
+			current: {{ activeId() ?? 'home' }}
 		</p>
 	`,
 })
@@ -184,11 +184,11 @@ export const Interactive: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
-		await expect(canvas.getByText(/current: home/)).toBeVisible();
+		await expect(await canvas.findByText(/current: home/)).toBeVisible();
 
 		canvas.getByRole('button', { name: 'mousemat' }).click();
 
-		await expect(canvas.getByText(/current: 5426-3074/)).toBeVisible();
+		await expect(await canvas.findByText(/current: 5426-3074/)).toBeVisible();
 		await expect(
 			canvas.getByRole('button', { name: 'mousemat' }),
 		).toHaveAttribute('aria-current', 'page');

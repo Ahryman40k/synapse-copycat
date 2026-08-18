@@ -96,6 +96,6 @@ export const Keyboard: Story = {
 		const canvas = within(canvasElement);
 
 		canvas.getByRole('radio', { name: '125 Hz' }).click();
-		await expect(canvas.getByText(/bound value: 125/)).toBeVisible();
+		await expect(await canvas.findByText(/bound value: 125/)).toBeVisible();
 	},
 };
