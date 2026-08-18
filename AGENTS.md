@@ -97,6 +97,7 @@ pnpm exec nx build synapse
 pnpm exec nx serve synapse            # Angular dev server, browser + mock backend
 pnpm exec nx run synapse:tauri        # full desktop app, real Rust backend
 pnpm exec nx run synapse:storybook    # Storybook on :4400
+pnpm exec nx run synapse:test-storybook  # every story's play, in a real Chromium
 pnpm docs:dev                         # VitePress docs
 
 # e2e (targets are inferred by the @nx/playwright plugin)
@@ -119,6 +120,29 @@ pnpm format:check   # same, read-only
 `nx format:write` is Prettier-only and therefore covers just half the repo. It
 is now harmless — `.prettierignore` keeps it off Biome's files — but prefer
 `pnpm format`, which does both.
+
+`test-storybook` is the only target that needs a browser. It builds Storybook,
+then `start-server-and-test` serves it with `@nx/web:file-server` on 6006,
+waits for it to answer, runs the Storybook test runner and stops the server
+afterwards — including when the tests fail, which is the part worth having a
+dependency for. Storybook's own documentation reaches for `concurrently` +
+`http-server` + `wait-on`; one package doing all three is the same idea with
+less to wire, and `http-server` is unnecessary because the Nx file-server is
+already here.
+
+The port check in front of it is ours: `start-server-and-test` is happy to test
+a server that was already running, which after a crashed run means passing
+against stale stories. It waits ten seconds before giving up, because two
+commits in a row can catch the previous run still letting go of the port.
+
+Chromium comes from the `postinstall`. `install-deps` there needs root and only
+warns without it, so a machine that never ran it will download the browser and
+still fail to launch it.
+
+The Vitest addon is not an option: it is a Vite plugin, and `@storybook/angular`
+builds with webpack. Portable stories are not either — `composeStories` is not
+exported by the Angular framework. So the plays cannot join `nx test`, and this
+is a second suite.
 
 There is **no `typecheck` target**. Until one exists, typecheck with:
 
