@@ -1,12 +1,18 @@
-import { Component, input, model } from '@angular/core';
-import type { Device } from '@synapse-copycat/backend-api';
 import {
-	type BrightnessChange,
-	BrightnessPanelComponent,
-} from '../../../../core/components/brightness-panel/brightness-panel';
+	ChangeDetectionStrategy,
+	Component,
+	computed,
+	inject,
+	input,
+} from '@angular/core';
+import type { Device } from '@synapse-copycat/backend-api';
+import { BrightnessPanelComponent } from '../../../../core/components/brightness-panel/brightness-panel';
 import { EffectsPanel } from '../../../../core/components/effects-panel/effects-panel';
 import { LightingSwitchOffPanelComponent } from '../../../../core/components/lighting-switch-off-panel/lighting-switch-off-panel';
 import { DeviceLayout } from '../../../../core/layout/device-layout/device-layout';
+import type { ChromaEffect } from '../../../../core/models/chroma-effect';
+import type { BrightnessChange } from '../../../../core/models/lighting';
+import { ApplicationStore } from '../../../../core/stores/application-store';
 
 /**
  * The lighting section of the mousemat page.
@@ -14,8 +20,11 @@ import { DeviceLayout } from '../../../../core/layout/device-layout/device-layou
  * Deliberately its own copy rather than one section shared by every device:
  * they start identical and are expected to diverge, and a component shared by
  * three pages is the awkward thing to split later. What they do share — the
- * portrait, the grid, the reflow — is `device-layout`, and the panels
- * themselves are components.
+ * portrait, the grid, the panels — is factored out already.
+ *
+ * The lighting itself lives in the store, not here. Two reasons: it has to
+ * survive leaving the page, and "apply to all devices" cannot be honoured by a
+ * component that only knows its own.
  */
 @Component({
 	selector: 'mousemat-lighting-section',
@@ -26,18 +35,41 @@ import { DeviceLayout } from '../../../../core/layout/device-layout/device-layou
 		LightingSwitchOffPanelComponent,
 		EffectsPanel,
 	],
+	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MousematLightingSection {
+	readonly #store = inject(ApplicationStore);
+
 	/**
 	 * Handed down by the page, which owns the route and so owns the answer.
-	 * `ngComponentOutlet` sets it, leaving the page-bar descriptor untouched —
-	 * that array has to keep its identity, since the bar holds the selected tab
-	 * by reference.
+	 * `ngComponentOutlet` sets it, leaving the page-bar descriptor untouched.
 	 */
 	readonly device = input<Device | undefined>(undefined);
 
-	readonly brightness = model<BrightnessChange>({
-		value: 100,
-		activated: true,
-	});
+	protected readonly lighting = computed(() =>
+		this.#store.lightingFor(this.device()?.id),
+	);
+
+	protected readonly syncEffect = this.#store.syncEffect;
+	protected readonly syncBrightness = this.#store.syncBrightness;
+
+	protected onEffectChange(effect: ChromaEffect): void {
+		const id = this.device()?.id;
+		if (id) this.#store.setEffect(id, effect);
+	}
+
+	protected onBrightnessChange(brightness: BrightnessChange): void {
+		const id = this.device()?.id;
+		if (id) this.#store.setBrightness(id, brightness);
+	}
+
+	protected onSyncEffectChange(enabled: boolean): void {
+		const id = this.device()?.id;
+		if (id) this.#store.setSyncEffect(enabled, id);
+	}
+
+	protected onSyncBrightnessChange(enabled: boolean): void {
+		const id = this.device()?.id;
+		if (id) this.#store.setSyncBrightness(enabled, id);
+	}
 }

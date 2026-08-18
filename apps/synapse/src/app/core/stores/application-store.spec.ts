@@ -63,4 +63,116 @@ describe('ApplicationStore', () => {
 			expect(store.deviceById(undefined)).toBeUndefined();
 		},
 	));
+
+	it('changes one device only, while nothing is synced', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getDevices();
+
+			store.setEffect('0002-0001', 'wave');
+
+			expect(store.lightingFor('0002-0001').effect).toBe('wave');
+			expect(store.lightingFor('1236-5432').effect).toBe('spectrum');
+		},
+	));
+
+	it('changes every device once the effect is synced', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getDevices();
+			store.setSyncEffect(true, '0002-0001');
+
+			store.setEffect('0002-0001', 'wave');
+
+			expect(store.lightingFor('0002-0001').effect).toBe('wave');
+			expect(store.lightingFor('1236-5432').effect).toBe('wave');
+		},
+	));
+
+	it('aligns the others the moment syncing is turned on', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getDevices();
+			store.setEffect('0002-0001', 'breathe');
+
+			store.setSyncEffect(true, '0002-0001');
+
+			// Waiting for the next change would leave the box ticked over devices
+			// that disagree — the state it claims would not be true.
+			expect(store.lightingFor('1236-5432').effect).toBe('breathe');
+		},
+	));
+
+	it('makes the devices independent again when syncing stops', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getDevices();
+			store.setSyncEffect(true, '0002-0001');
+			store.setEffect('0002-0001', 'wave');
+
+			store.setSyncEffect(false, '0002-0001');
+			store.setEffect('0002-0001', 'static');
+
+			// Each keeps what it had; only what comes next stops propagating.
+			expect(store.lightingFor('0002-0001').effect).toBe('static');
+			expect(store.lightingFor('1236-5432').effect).toBe('wave');
+		},
+	));
+
+	it('holds one flag for every panel, on every page', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getDevices();
+
+			// Ticked on one device's page, ticked on the next one's: the flag says
+			// how the devices relate, so it cannot belong to a panel.
+			store.setSyncEffect(true, '0002-0001');
+
+			expect(store.syncEffect()).toBe(true);
+		},
+	));
+
+	it('keeps brightness and effect syncing apart', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getDevices();
+			store.setSyncEffect(true, '0002-0001');
+
+			store.setBrightness('0002-0001', { activated: true, value: 40 });
+
+			// A keyboard under the eyes is usually dimmer than a mousemat beside
+			// them, so one effect everywhere does not mean one level everywhere.
+			expect(store.syncBrightness()).toBe(false);
+			expect(store.lightingFor('1236-5432').brightness.value).toBe(100);
+			expect(store.lightingFor('0002-0001').brightness.value).toBe(40);
+		},
+	));
+
+	it('syncs the level too, when asked', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getDevices();
+			store.setSyncBrightness(true, '0002-0001');
+
+			store.setBrightness('0002-0001', { activated: false, value: 25 });
+
+			expect(store.lightingFor('1236-5432').brightness).toEqual({
+				activated: false,
+				value: 25,
+			});
+		},
+	));
+
+	it('leaves a device it has never heard of on the defaults', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getDevices();
+
+			expect(store.lightingFor('9999-9999')).toEqual({
+				effect: 'spectrum',
+				brightness: { activated: true, value: 100 },
+			});
+			expect(store.lightingFor(undefined).effect).toBe('spectrum');
+		},
+	));
 });

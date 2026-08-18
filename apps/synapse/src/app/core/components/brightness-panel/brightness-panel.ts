@@ -4,27 +4,35 @@ import {
 	computed,
 	model,
 } from '@angular/core';
-import { Panel, SliderComponent, SwitchComponent } from '@synapse-copycat/ui';
+import {
+	CheckboxComponent,
+	Panel,
+	SliderComponent,
+	SwitchComponent,
+} from '@synapse-copycat/ui';
+import {
+	BRIGHTNESS_DEFAULT,
+	type BrightnessChange,
+} from '../../models/lighting';
 
-const MAX_BRIGHTNESS_VALUE = 100;
-
-export type BrightnessChange = {
-	activated: boolean;
-	value: number;
-};
+export type { BrightnessChange };
 
 @Component({
 	selector: 'brightness-panel',
 	templateUrl: './brightness-panel.html',
 	styleUrl: './brightness-panel.scss',
-	imports: [Panel, SwitchComponent, SliderComponent],
+	imports: [Panel, SwitchComponent, SliderComponent, CheckboxComponent],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BrightnessPanelComponent {
-	readonly value = model<BrightnessChange>({
-		activated: true,
-		value: MAX_BRIGHTNESS_VALUE,
-	});
+	readonly value = model<BrightnessChange>(BRIGHTNESS_DEFAULT);
+
+	/**
+	 * A mode, not an action: while it is on, the brightness set here is the
+	 * brightness of every device. Held by the store, so ticking it on one
+	 * device shows it ticked on the next.
+	 */
+	readonly applyToAll = model(false);
 
 	/** Split out so the template reads the state rather than destructuring it. */
 	protected readonly activated = computed(() => this.value().activated);

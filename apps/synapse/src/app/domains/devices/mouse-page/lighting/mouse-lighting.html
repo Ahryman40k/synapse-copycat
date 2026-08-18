@@ -1,5 +1,17 @@
 <device-layout [device]="device()">
-  <brightness-panel [(value)]="brightness"></brightness-panel>
+  <brightness-panel
+    [value]="lighting().brightness"
+    [applyToAll]="syncBrightness()"
+    (valueChange)="onBrightnessChange($event)"
+    (applyToAllChange)="onSyncBrightnessChange($event)"
+  ></brightness-panel>
+
   <lighting-switch-off-panel></lighting-switch-off-panel>
-  <effects-panel></effects-panel>
+
+  <effects-panel
+    [effect]="lighting().effect"
+    [applyToAll]="syncEffect()"
+    (effectChange)="onEffectChange($event)"
+    (applyToAllChange)="onSyncEffectChange($event)"
+  ></effects-panel>
 </device-layout>

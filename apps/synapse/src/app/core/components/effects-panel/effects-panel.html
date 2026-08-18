@@ -7,4 +7,15 @@
     [value]="effect()"
     (valueChange)="onEffectChange($event)"
   ></syn-select>
+
+  <!--
+    Ticked, the choice above stops belonging to this device: it is made for
+    every one of them, and stays that way until it is unticked.
+  -->
+  <syn-checkbox
+    [checked]="applyToAll()"
+    (checkedChange)="applyToAll.set($event)"
+  >
+    Apply to all devices
+  </syn-checkbox>
 </syn-panel>

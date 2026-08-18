@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/angular';
-import { CHROMA_EFFECTS, EffectsPanel } from './effects-panel';
+import { CHROMA_EFFECTS } from '../../models/chroma-effect';
+import { EffectsPanel } from './effects-panel';
 
 const setup = (inputs: Record<string, unknown> = {}) =>
 	render(EffectsPanel, { inputs });
@@ -57,5 +58,27 @@ describe('EffectsPanel', () => {
 		fixture.detectChanges();
 
 		expect(fixture.componentInstance.effect()).toBe('static');
+	});
+
+	it('offers to make the choice for every device at once', async () => {
+		const { fixture } = await setup();
+
+		const box = screen.getByRole('checkbox', { name: 'Apply to all devices' });
+		expect(box).not.toBeChecked();
+
+		box.click();
+		fixture.detectChanges();
+
+		// A mode, not an action: the panel only says what was asked, and the
+		// store is what holds it for every panel on every page.
+		expect(fixture.componentInstance.applyToAll()).toBe(true);
+	});
+
+	it('shows the mode as already on when the store says so', async () => {
+		await setup({ applyToAll: true });
+
+		expect(
+			screen.getByRole('checkbox', { name: 'Apply to all devices' }),
+		).toBeChecked();
 	});
 });

@@ -80,4 +80,16 @@ describe('BrightnessPanel', () => {
 			value: 35,
 		});
 	});
+
+	it('offers to make the level the level of every device', async () => {
+		const { fixture } = await setup();
+
+		const box = screen.getByRole('checkbox', { name: 'Apply to all devices' });
+		expect(box).not.toBeChecked();
+
+		box.click();
+		fixture.detectChanges();
+
+		expect(fixture.componentInstance.applyToAll()).toBe(true);
+	});
 });

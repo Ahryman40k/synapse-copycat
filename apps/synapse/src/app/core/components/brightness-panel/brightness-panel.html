@@ -24,4 +24,15 @@
     [disabled]="!activated()"
     (valueChange)="onValueChange($event)"
   ></syn-slider>
+
+  <!--
+    Ticked, the level above stops belonging to this device: it is the level of
+    every one of them, and stays that way until it is unticked.
+  -->
+  <syn-checkbox
+    [checked]="applyToAll()"
+    (checkedChange)="applyToAll.set($event)"
+  >
+    Apply to all devices
+  </syn-checkbox>
 </syn-panel>
