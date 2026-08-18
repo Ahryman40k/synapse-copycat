@@ -7,8 +7,10 @@ allowBuilds:
   lmdb: false
   msgpackr-extract: false
   nx: true
+  unrs-resolver: true
 onlyBuiltDependencies:
   - '@compodoc/compodoc'
+  - unrs-resolver
   - esbuild
   - lefthook
   - lmdb
