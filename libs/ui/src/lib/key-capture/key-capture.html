@@ -1,0 +1,26 @@
+<button
+  class="syn-key-capture__field"
+  type="button"
+  [attr.aria-label]="ariaLabel()"
+  [attr.aria-describedby]="null"
+  (click)="arm()"
+  (blur)="disarm()"
+  (keydown)="onKeydown($event)"
+>
+  <!--
+		Announced as it changes, because the whole point is that pressing a key
+		does not move focus or produce visible text anywhere else.
+	-->
+  <span class="syn-key-capture__value" aria-live="polite">{{ display() }}</span>
+</button>
+
+@if (value() && !recording()) {
+  <button
+    class="syn-key-capture__clear"
+    type="button"
+    aria-label="Clear the key combination"
+    (click)="clear($event)"
+  >
+    ×
+  </button>
+}

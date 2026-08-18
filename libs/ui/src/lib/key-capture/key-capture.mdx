@@ -1,0 +1,44 @@
+{/* key-capture.mdx */}
+
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as stories from './key-capture.stories.ts';
+
+<Meta of={stories} />
+
+# Key capture
+
+A field that records a key combination instead of being typed into.
+
+```html
+<syn-key-capture [(value)]="combination" />
+```
+
+<Canvas of={stories.Default} />
+
+<Controls of={stories.Default} />
+
+## Armed, not always listening
+
+It captures only after it is clicked or activated. A field that listened all
+the time would swallow every keystroke on the page — including Tab, the one
+the user needs to leave it.
+
+While armed it takes **everything**: `preventDefault` and `stopPropagation` on
+each press, or Tab would move focus and Enter would submit rather than being
+recorded, which is the whole point.
+
+- **Escape** gives up and leaves the previous combination alone.
+- **The ×** empties it.
+
+<Canvas of={stories.Live} />
+
+## Codes, not characters
+
+The name comes from `KeyboardEvent.code`, never from `key`. The same physical
+key types `q` on QWERTY and `a` on AZERTY; a remapping has to name the key, so
+`KeyQ` becomes **Q** on both.
+
+Modifiers are always listed in reading order — `Ctrl + Alt + Shift + K` — so
+the same combination never appears written two ways.
+
+<Canvas of={stories.Set} />

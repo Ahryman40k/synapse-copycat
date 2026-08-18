@@ -1,0 +1,36 @@
+// Colour only — every dimension lives in key-capture.scss.
+//
+// `$theme` is accepted for compatibility with `ui.scss`, which still passes the
+// legacy map, and is deliberately unused.
+
+@mixin apply($theme: null) {
+  syn-key-capture {
+    .syn-key-capture__field {
+      border-color: color-mix(
+        in srgb,
+        var(--syn-primary) 45%,
+        var(--syn-surface-container)
+      );
+      color: var(--syn-on-surface);
+
+      &:focus-visible {
+        outline: 2px solid var(--syn-primary);
+      }
+    }
+
+    // Armed: the frame goes to full primary, so it is obvious the next key
+    // press is being taken rather than reaching the page.
+    &.syn-key-capture--recording .syn-key-capture__field {
+      border-color: var(--syn-primary);
+      color: var(--syn-primary);
+    }
+
+    .syn-key-capture__clear {
+      color: var(--syn-on-surface-variant);
+
+      &:hover {
+        color: var(--syn-error);
+      }
+    }
+  }
+}
