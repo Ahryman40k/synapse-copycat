@@ -1,0 +1,61 @@
+<syn-panel>
+  @if (control(); as picked) {
+    <h2>{{ picked.label }}</h2>
+
+    <syn-select
+      ariaLabel="Assign to"
+      [options]="kinds"
+      [value]="kind()"
+      (valueChange)="onKindChange($event)"
+    ></syn-select>
+
+    @switch (kind()) {
+      @case ('keyboard') {
+        <syn-key-capture
+          ariaLabel="Key combination"
+          [value]="keys()"
+          (valueChange)="onKeysChange($event)"
+        ></syn-key-capture>
+      }
+      @case ('mouse') {
+        <syn-select
+          ariaLabel="Mouse function"
+          [options]="mouseActions"
+          [value]="mouseAction()"
+          (valueChange)="onMouseActionChange($event)"
+        ></syn-select>
+      }
+      @case ('sensitivity') {
+        <!-- The stages these move between are set in the performance tab. -->
+        <syn-select
+          ariaLabel="Sensitivity function"
+          [options]="sensitivityActions"
+          [value]="sensitivityAction()"
+          (valueChange)="onSensitivityActionChange($event)"
+        ></syn-select>
+      }
+      @case ('text') {
+        <input
+          class="assignment-editor__text"
+          type="text"
+          aria-label="Text to type"
+          [value]="text()"
+          (input)="onTextChange($event)"
+        />
+      }
+      @case ('disabled') {
+        <p class="assignment-editor__note">
+          The control does nothing at all while this is set.
+        </p>
+      }
+      @default {
+        <p class="assignment-editor__note">
+          The control does what it says on the device.
+        </p>
+      }
+    }
+  } @else {
+    <h2>Assignment</h2>
+    <p class="assignment-editor__note">Pick a control to assign it.</p>
+  }
+</syn-panel>

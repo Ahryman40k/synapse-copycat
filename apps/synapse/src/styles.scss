@@ -30,6 +30,13 @@
   as sensitivity-panel;
 @use '../src/app/core/components/polling-rate-panel/_polling-rate-panel.theme.scss'
   as polling-rate-panel;
+@use '../src/app/core/components/key-grid/_key-grid.theme.scss' as key-grid;
+@use '../src/app/core/components/assignment-editor/_assignment-editor.theme.scss'
+  as assignment-editor;
+@use '../src/app/domains/devices/mouse-page/customize/_mouse-customize.theme.scss'
+  as mouse-customize;
+@use '../src/app/domains/devices/keyboard-page/customize/_keyboard-customize.theme.scss'
+  as keyboard-customize;
 
 $primary-color: #00ff00;
 // Text drawn *on* the primary colour. create-theme-dark() defaults it to the
@@ -83,4 +90,8 @@ $theme-dark: theme.create-theme-dark(
   @include low-power-mode-panel.apply($theme-dark);
   @include sensitivity-panel.apply($theme-dark);
   @include polling-rate-panel.apply($theme-dark);
+  @include key-grid.apply($theme-dark);
+  @include assignment-editor.apply($theme-dark);
+  @include mouse-customize.apply($theme-dark);
+  @include keyboard-customize.apply($theme-dark);
 }

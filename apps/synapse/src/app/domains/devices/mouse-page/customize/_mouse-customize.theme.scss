@@ -1,0 +1,29 @@
+// Colour only — every dimension lives in mouse-customize.scss.
+
+/// $theme is accepted for compatibility with the call in styles.scss, which
+/// still passes the legacy map. Unused here.
+@mixin apply($theme: null) {
+  mouse-customize-section {
+    h2 {
+      color: var(--syn-primary);
+    }
+
+    .mouse-customize__input:hover + .mouse-customize__name {
+      color: var(--syn-primary);
+    }
+
+    .mouse-customize__control:has(.mouse-customize__input:checked) {
+      background-color: var(--syn-surface-variant);
+    }
+
+    .mouse-customize__control:has(.mouse-customize__input:focus-visible) {
+      outline: 2px solid var(--syn-primary);
+    }
+
+    // Not the primary colour: a changed control has to stand out from the one
+    // that is selected, and it is often the same row.
+    .mouse-customize__dot {
+      background-color: var(--syn-warning);
+    }
+  }
+}

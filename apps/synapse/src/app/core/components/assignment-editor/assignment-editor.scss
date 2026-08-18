@@ -1,0 +1,22 @@
+// Structure only — the colour lives in _assignment-editor.theme.scss.
+
+h2 {
+  margin: 0;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.assignment-editor__note {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+// ⚠️ A bare input: `libs/ui` has no text field yet. It is the next component
+// the library owes, and this rule goes when it arrives.
+.assignment-editor__text {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid;
+  border-radius: 0.375rem;
+  background: none;
+  font: inherit;
+}

@@ -1,0 +1,34 @@
+// Colour only — every dimension lives in key-grid.scss.
+
+/// $theme is accepted for compatibility with the call in styles.scss, which
+/// still passes the legacy map. Unused here.
+@mixin apply($theme: null) {
+  key-grid {
+    .key-grid__cap {
+      border-color: var(--syn-surface-variant);
+      background-color: var(--syn-surface-container);
+      color: var(--syn-on-surface-variant);
+    }
+
+    .key-grid__input:hover + .key-grid__cap {
+      border-color: color-mix(in srgb, var(--syn-primary) 45%, transparent);
+    }
+
+    .key-grid__input:checked + .key-grid__cap {
+      border-color: var(--syn-primary);
+      background-color: var(--syn-primary);
+      color: var(--syn-on-primary);
+    }
+
+    .key-grid__input:focus-visible + .key-grid__cap {
+      outline: 2px solid var(--syn-primary);
+      outline-offset: 1px;
+    }
+
+    // Not the primary colour: a changed key must stand out from the selected
+    // one, and the two are often the same key.
+    .key-grid__dot {
+      background-color: var(--syn-warning);
+    }
+  }
+}

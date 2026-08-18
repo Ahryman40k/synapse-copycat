@@ -1,0 +1,31 @@
+@for (row of rows(); track $index) {
+  <div class="key-grid__row">
+    @for (cell of row; track $index) {
+      @if (isGap(cell)) {
+        <span class="key-grid__gap" [style.width.rem]="width(cell)"></span>
+      } @else {
+        <label class="key-grid__key" [style.width.rem]="width(cell)">
+          <!--
+            Hidden from sight, never from the keyboard: with 104 keys the one
+            tab stop a radio group gives is worth more here than anywhere.
+          -->
+          <input
+            class="key-grid__input"
+            type="radio"
+            [name]="name"
+            [value]="cell.code"
+            [checked]="cell.code === selected()"
+            (change)="onChange(cell.code)"
+          />
+          <span class="key-grid__cap">
+            {{ cell.label }}
+            @if (isChanged(cell.code)) {
+              <!-- Marks a key that is no longer doing what it says. -->
+              <span class="key-grid__dot" aria-hidden="true"></span>
+            }
+          </span>
+        </label>
+      }
+    }
+  </div>
+}

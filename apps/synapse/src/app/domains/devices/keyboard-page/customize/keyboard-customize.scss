@@ -1,0 +1,21 @@
+// Structure only — the colour lives in _keyboard-customize.theme.scss.
+
+h2 {
+  margin: 0;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+// A full-size keyboard is about 50rem across and will not sit in one column of
+// the two-column grid `device-layout` lays out.
+//
+// The panel is in *this* component's template, so this stylesheet reaches it:
+// projected content carries the ngcontent of where it is written, not of where
+// it lands.
+.keyboard-customize__keys {
+  grid-column: 1 / -1;
+}
+
+.keyboard-customize__layer {
+  align-self: flex-start;
+}

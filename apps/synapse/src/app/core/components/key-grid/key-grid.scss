@@ -1,0 +1,63 @@
+// Structure only — every colour lives in _key-grid.theme.scss.
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  // A full-size keyboard is about 50rem wide and will not fold; scrolling it
+  // is honest, where wrapping would make it stop being a keyboard.
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.key-grid__row {
+  display: flex;
+  gap: 0.25rem;
+  // Keeps the rows aligned with each other while the host scrolls.
+  width: max-content;
+}
+
+.key-grid__gap {
+  flex: 0 0 auto;
+}
+
+.key-grid__key {
+  position: relative;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+
+.key-grid__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.key-grid__cap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.1rem;
+  border: 1px solid;
+  border-radius: 0.25rem;
+
+  font-size: 0.6875rem;
+  line-height: 1;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.key-grid__dot {
+  position: absolute;
+  top: 0.1875rem;
+  right: 0.1875rem;
+  width: 0.3125rem;
+  height: 0.3125rem;
+  border-radius: 50%;
+}

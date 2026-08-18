@@ -1,0 +1,50 @@
+<device-layout [device]="device()">
+  <syn-panel class="mouse-customize__controls">
+    <h2>Controls</h2>
+
+    <!--
+      The layer applies to the whole screen, but it belongs above the list:
+      what it changes is which set of assignments you are looking at.
+    -->
+    <syn-button-group
+      class="mouse-customize__layer"
+      ariaLabel="Assignment layer"
+      [options]="layers"
+      [value]="layer()"
+      (valueChange)="onLayerChange($event)"
+    ></syn-button-group>
+
+    <!--
+      Radios: one control at a time, one tab stop for the list, and the arrow
+      keys to walk it.
+    -->
+    <div
+      class="mouse-customize__list"
+      role="radiogroup"
+      aria-label="Mouse controls"
+    >
+      @for (control of controls; track control.id) {
+        <label class="mouse-customize__control">
+          <input
+            class="mouse-customize__input"
+            type="radio"
+            name="mouse-control"
+            [value]="control.id"
+            [checked]="control.id === selectedId()"
+            (change)="selectedId.set(control.id)"
+          />
+          <span class="mouse-customize__name">{{ control.label }}</span>
+          @if (isChanged(control.id)) {
+            <span class="mouse-customize__dot" aria-hidden="true"></span>
+          }
+        </label>
+      }
+    </div>
+  </syn-panel>
+
+  <assignment-editor
+    [control]="selected()"
+    [assignment]="assignment()"
+    (assignmentChange)="onAssignmentChange($event)"
+  ></assignment-editor>
+</device-layout>

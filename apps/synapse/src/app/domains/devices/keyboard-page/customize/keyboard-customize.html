@@ -1,0 +1,29 @@
+<device-layout [device]="device()">
+  <syn-panel class="keyboard-customize__keys">
+    <h2>Keys</h2>
+
+    <syn-button-group
+      class="keyboard-customize__layer"
+      ariaLabel="Assignment layer"
+      [options]="layers"
+      [value]="layer()"
+      (valueChange)="onLayerChange($event)"
+    ></syn-button-group>
+
+    <key-grid
+      ariaLabel="Keyboard keys"
+      [changed]="changed()"
+      [selected]="selectedCode()"
+      (selectedChange)="selectedCode.set($event)"
+    ></key-grid>
+  </syn-panel>
+
+  <assignment-editor
+    [control]="selected()"
+    [assignment]="assignment()"
+    (assignmentChange)="onAssignmentChange($event)"
+  ></assignment-editor>
+
+  <gaming-mode-panel></gaming-mode-panel>
+  <snap-tap-panel></snap-tap-panel>
+</device-layout>
