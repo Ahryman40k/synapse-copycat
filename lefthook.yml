@@ -23,11 +23,16 @@ pre-commit:
     build:
       run: pnpm nx run-many -t build --outputStyle=stream
 
-    # Every story's `play`, in a real Chromium. It is the slowest step by far —
-    # it builds Storybook and drives a browser — so it is skipped entirely
-    # unless the commit touches something a story could render. It catches what
-    # jsdom structurally cannot: computed styles, view transitions, and change
-    # detection that is not synchronous.
+# Every story's `play`, in a real Chromium. It catches what jsdom structurally
+# cannot: computed styles, view transitions, and change detection that is not
+# synchronous — it found an unhandled promise rejection in the page bar the
+# first time it ran.
+#
+# On push rather than on commit: it builds Storybook and drives a browser, so
+# it takes about thirty seconds against five for everything else. That is worth
+# paying once before the work leaves the machine, not on every commit of a
+# session.
+pre-push:
+  commands:
     test-storybook:
-      glob: '*.{ts,html,scss}'
       run: pnpm nx run synapse:test-storybook --outputStyle=stream
