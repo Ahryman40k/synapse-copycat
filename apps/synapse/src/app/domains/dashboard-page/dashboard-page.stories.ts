@@ -7,11 +7,14 @@ import {
 import {
 	type ApplicationState,
 	ApplicationStore,
+	INITIAL_STATE,
 } from '../../core/stores/application-store';
 import { DashboardPage } from './dashboard-page';
 
 const MockedStore = signalStore(
 	withState<ApplicationState>({
+		// Spread, so a field added to the store no longer breaks this story.
+		...INITIAL_STATE,
 		devices: [
 			{
 				__type: 'device',
@@ -63,13 +66,6 @@ const MockedStore = signalStore(
 				visual: 'assets/modules/goove.png',
 			},
 		],
-
-		// The state grew: `ApplicationState` now carries the lighting of each
-		// device and whether a choice on one is a choice on all.
-		lighting: {},
-		syncEffect: false,
-		syncBrightness: false,
-		activeSection: {},
 	}),
 );
 

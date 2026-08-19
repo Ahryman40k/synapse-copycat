@@ -7,6 +7,7 @@ import { CameraPageComponent } from './domains/devices/camera-page/camera-page';
 import { KeyboardPageComponent } from './domains/devices/keyboard-page/keyboard-page';
 import { MousePageComponent } from './domains/devices/mouse-page/mouse-page';
 import { MousematPageComponent } from './domains/devices/mousemat-page/mousemat-page';
+import { SettingsPage } from './domains/settings-page/settings-page';
 
 export const devicesResolver: ResolveFn<Device[]> = () => {
 	const store = inject(ApplicationStore);
@@ -29,6 +30,10 @@ export const appRoutes: Route[] = [
 			devices: devicesResolver,
 			modules: modulesResolver,
 		},
+	},
+	{
+		path: 'settings',
+		component: SettingsPage,
 	},
 	{
 		path: 'device',

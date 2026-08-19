@@ -1,4 +1,5 @@
 import {
+	booleanAttribute,
 	ChangeDetectionStrategy,
 	Component,
 	computed,
@@ -97,6 +98,14 @@ export class AppBar {
 	readonly deviceActivated = output<Device>();
 	readonly moduleActivated = output<Module>();
 	readonly homeRequested = output<void>();
+	readonly settingsRequested = output<void>();
+
+	/**
+	 * Marks the gear as the current page. Not derivable from `activeId`, which
+	 * only names devices and modules — without it, Home would light up while
+	 * the settings page is open.
+	 */
+	readonly settingsActive = input(false, { transform: booleanAttribute });
 
 	// ── overflow ──────────────────────────────────────────────────────────────
 	// Entries that do not fit move into a `⋯` menu instead of scrolling out of
@@ -190,6 +199,10 @@ export class AppBar {
 		this.closeOverflow();
 		if (item.__type === 'device') this.activateDevice(item);
 		else this.activateModule(item);
+	}
+
+	protected goSettings(): void {
+		this.settingsRequested.emit();
 	}
 
 	protected goHome(): void {

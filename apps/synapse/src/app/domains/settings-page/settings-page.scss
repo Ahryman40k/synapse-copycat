@@ -1,0 +1,30 @@
+// Structure only — the colour lives in _settings-page.theme.scss.
+
+// A track floor above a third of the row is what caps the grid at two
+// columns: three of them would need 120% plus two gaps.
+$two-column-floor: 40%;
+$min-column: 18rem;
+
+:host {
+  display: block;
+  padding: 0 1.5rem 1.5rem;
+}
+
+h1 {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+  text-transform: uppercase;
+}
+
+.settings-page__panels {
+  display: grid;
+  gap: 1em;
+
+  // The same reflow as `device-layout`, without the device portrait — two
+  // columns, then one, never three.
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, max($min-column, $two-column-floor)), 1fr)
+  );
+  align-content: start;
+}

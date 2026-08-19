@@ -37,6 +37,12 @@
   as mouse-customize;
 @use '../src/app/domains/devices/keyboard-page/customize/_keyboard-customize.theme.scss'
   as keyboard-customize;
+@use '../src/app/core/components/language-panel/_language-panel.theme.scss' as
+  language-panel;
+@use '../src/app/core/components/about-panel/_about-panel.theme.scss' as
+  about-panel;
+@use '../src/app/domains/settings-page/_settings-page.theme.scss' as
+  settings-page;
 
 $primary-color: #00ff00;
 // Text drawn *on* the primary colour. create-theme-dark() defaults it to the
@@ -94,4 +100,7 @@ $theme-dark: theme.create-theme-dark(
   @include assignment-editor.apply($theme-dark);
   @include mouse-customize.apply($theme-dark);
   @include keyboard-customize.apply($theme-dark);
+  @include language-panel.apply($theme-dark);
+  @include about-panel.apply($theme-dark);
+  @include settings-page.apply($theme-dark);
 }

@@ -1,0 +1,28 @@
+// Structure only — every colour lives in _about-panel.theme.scss.
+
+h2 {
+  margin: 0;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.about-panel__caption {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.about-panel__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  // Hugs its text instead of stretching across the panel, which `syn-panel`
+  // would otherwise have it do.
+  align-self: flex-start;
+  text-decoration: none;
+}
+
+.about-panel__icon {
+  width: 1.25em;
+  height: 1.25em;
+  flex: 0 0 auto;
+}

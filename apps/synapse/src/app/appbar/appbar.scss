@@ -144,3 +144,19 @@ button[navbar][hidden] {
     transition: none;
   }
 }
+
+// Outside the clipped region, so it is never what scrolls away.
+.settings {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0 0.875rem;
+}
+
+.settings__icon {
+  width: 1.125em;
+  height: 1.125em;
+  display: block;
+}

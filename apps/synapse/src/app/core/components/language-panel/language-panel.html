@@ -1,0 +1,15 @@
+<syn-panel>
+  <h2>Language</h2>
+
+  <!--
+    One entry today. It is a list rather than a fixed label because the shape
+    is what a second language will need, and because the choice is recorded
+    even though nothing is translated yet.
+  -->
+  <syn-select
+    ariaLabel="Interface language"
+    [options]="languages"
+    [value]="language()"
+    (valueChange)="onChange($event)"
+  ></syn-select>
+</syn-panel>

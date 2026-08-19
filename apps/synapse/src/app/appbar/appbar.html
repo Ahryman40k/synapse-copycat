@@ -14,7 +14,7 @@
   <button
     navbar
     type="button"
-    [attr.aria-current]="activeId() ? null : 'page'"
+    [attr.aria-current]="activeId() || settingsActive() ? null : 'page'"
     (click)="goHome()"
   >
     Synapse
@@ -107,7 +107,35 @@
   }
 </div>
 
-<!-- <ng-icon name="featherSettings"></ng-icon> -->
-<!-- <ng-icon name="featherMinimize2"></ng-icon> -->
-<!-- <ng-icon name="featherSquare"></ng-icon> -->
-<!-- <ng-icon name="featherX"></ng-icon> -->
+<!--
+  Outside `.bar__entries` for the same reason as the overflow menu: that region
+  is clipped, and the settings entry must never be the thing that scrolls out.
+
+  The gear is drawn here rather than pulled from an asset so it can take the
+  theme colour — an `<img>` is an isolated document no rule of ours reaches.
+-->
+<button
+  navbar
+  type="button"
+  class="settings"
+  title="Settings"
+  aria-label="Settings"
+  [attr.aria-current]="settingsActive() ? 'page' : null"
+  (click)="goSettings()"
+>
+  <svg
+    class="settings__icon"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="3" />
+    <path
+      d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+    />
+  </svg>
+</button>

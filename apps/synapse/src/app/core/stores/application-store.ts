@@ -6,6 +6,7 @@ import {
 	type Module,
 } from '@synapse-copycat/backend-api';
 import type { ChromaEffect } from '../models/chroma-effect';
+import { type Language, LANGUAGE_DEFAULT } from '../models/language';
 import {
 	type BrightnessChange,
 	type DeviceLighting,
@@ -44,19 +45,31 @@ export type ApplicationState = {
 	 * the first tab, however long you had spent on another.
 	 */
 	activeSection: Record<string, string>;
+
+	/** What the interface speaks. Recorded, not yet acted on. */
+	language: Language;
+};
+
+/**
+ * Exported so a test or a story can start from it and override a field or two.
+ * Rebuilding the whole object by hand means every field added here breaks them
+ * — which it did, three times, always found by the Storybook build rather than
+ * by `tsc`, since stories are in no tsconfig.
+ */
+export const INITIAL_STATE: ApplicationState = {
+	devices: [],
+	modules: [],
+	lighting: {},
+	syncEffect: false,
+	syncBrightness: false,
+	activeSection: {},
+	language: LANGUAGE_DEFAULT,
 };
 
 export const ApplicationStore = signalStore(
 	{ providedIn: 'root' },
 
-	withState<ApplicationState>({
-		devices: [],
-		modules: [],
-		lighting: {},
-		syncEffect: false,
-		syncBrightness: false,
-		activeSection: {},
-	}),
+	withState<ApplicationState>(INITIAL_STATE),
 
 	withMethods((store, backendApi = inject(BackendApi)) => ({
 		/**
@@ -70,6 +83,10 @@ export const ApplicationStore = signalStore(
 		 */
 		deviceById(id: string | undefined): Device | undefined {
 			return store.devices().find((device) => device.id === id);
+		},
+
+		setLanguage(language: Language): void {
+			patchState(store, { language });
 		},
 
 		// ── sections ──────────────────────────────────────────────────────────

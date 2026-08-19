@@ -58,7 +58,8 @@ describe('AppBar', () => {
 	it('lists home, every device and every module', async () => {
 		await setup();
 
-		expect(screen.getAllByRole('button')).toHaveLength(4);
+		// Home, three entries, and the settings gear, which is not an entry.
+		expect(screen.getAllByRole('button')).toHaveLength(5);
 		expect(entry('Synapse')).toBeVisible();
 		// Labelled by kind — short enough for a narrow window — with the full
 		// name carried by the title.
@@ -291,7 +292,44 @@ describe('AppBar', () => {
 	it('renders with nothing connected', async () => {
 		await setup({ devices: [], modules: [] });
 
-		expect(screen.getAllByRole('button')).toHaveLength(1);
+		// Home and the settings gear; the gear is there whether or not anything
+		// is plugged in.
+		expect(screen.getAllByRole('button')).toHaveLength(2);
 		expect(entry('Synapse')).toHaveAttribute('aria-current', 'page');
+	});
+
+	it('offers the settings, at the far end', async () => {
+		await setup();
+
+		// Outside the clipped region, so it is never what scrolls away.
+		const gear = screen.getByRole('button', { name: 'Settings' });
+		expect(gear).toBeVisible();
+
+		// The gear has no words of its own, so it says them on hover — and
+		// matching `aria-label` keeps WCAG 2.5.3 satisfied rather than giving
+		// voice control one name and the eye another.
+		expect(gear).toHaveAttribute('title', 'Settings');
+	});
+
+	it('asks for the settings when the gear is pressed', async () => {
+		const settingsRequested = vi.fn();
+		const { fixture } = await setup();
+		fixture.componentInstance.settingsRequested.subscribe(settingsRequested);
+
+		screen.getByRole('button', { name: 'Settings' }).click();
+
+		expect(settingsRequested).toHaveBeenCalled();
+	});
+
+	it('marks the gear, not Home, while the settings are open', async () => {
+		await setup({ settingsActive: true });
+
+		// `activeId` only names devices and modules, so without this Home would
+		// light up over a page that is not it.
+		expect(screen.getByRole('button', { name: 'Settings' })).toHaveAttribute(
+			'aria-current',
+			'page',
+		);
+		expect(entry('Synapse')).not.toHaveAttribute('aria-current');
 	});
 });

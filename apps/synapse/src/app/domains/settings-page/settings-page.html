@@ -1,0 +1,10 @@
+<h1>Settings</h1>
+
+<div class="settings-page__panels">
+  <language-panel
+    [language]="language()"
+    (languageChange)="onLanguageChange($event)"
+  ></language-panel>
+
+  <about-panel></about-panel>
+</div>
