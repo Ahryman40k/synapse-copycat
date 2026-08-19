@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import type { Device, Module } from '@synapse-copycat/backend-api';
 import { Card } from '@synapse-copycat/ui';
-import { DeviceNavigation } from '../../core/navigation/device-navigation';
+import { Navigation } from '../../core/navigation/navigation';
 import { ApplicationStore } from '../../core/stores/application-store';
 
 @Component({
@@ -13,7 +13,7 @@ import { ApplicationStore } from '../../core/stores/application-store';
 })
 export class DashboardPage {
 	readonly #store = inject(ApplicationStore);
-	readonly #navigation = inject(DeviceNavigation);
+	readonly #navigation = inject(Navigation);
 
 	protected devices = this.#store.devices;
 	protected modules = this.#store.modules;
