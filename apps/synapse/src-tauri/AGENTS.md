@@ -233,15 +233,41 @@ runtime error, not a compile error** — the frontend `invoke` just rejects.
    Reproduce it rather than reason about it: `scripts/openrazer-fake.sh start`,
    then run the app in Tauri mode — see *Developing without hardware* above.
 
-2. **`tauri-typegen` is configured but unused.** `tauri.conf.json` declares a
-   plugin generating TypeScript into `apps/synapse/src/generated` from
-   `libs/backend-api/src/lib/`, and `specta` / `tauri-specta` are dependencies
-   with `#[derive(Type)]` already on `Device` and `DeviceKind`. No generated
-   output is checked in. Wiring this up would make issue (1) structurally
-   impossible — worth doing before hand-writing more of `BackendCommands`.
+2. **`tauri-typegen` generates zod, which this repo does not use.** Running the
+   app in Tauri mode writes `libs/backend-api/src/lib/generated/` — and the
+   output imports `zod`, which is not a dependency: only `valibot` is (root
+   AGENTS.md §6). Nothing imports the generated code, so it does not break the
+   build; it simply sits there, untracked, written against a library that is
+   absent. That is the worst of the three possible states — adopt the
+   generation, or disarm it.
 
-3. **No tests.** There is not a single `#[cfg(test)]` in this crate. The pure
-   functions are the obvious starting point: `DeviceKind::from_type_str`, the
+   The point of wiring it up would be to end a three-way divergence that exists
+   today, all describing the same device:
+
+   | | generated (from Rust) | `backend-commands.ts`, by hand | app-facing `Device` |
+   | --- | --- | --- | --- |
+   | identity | `serial` | *absent* | `id`, built from vid+pid |
+   | image | `image` | *absent* | `visual` |
+   | ids | `vendor_id`, `product_id` | same | *absent* |
+   | `kind` | 6, incl. `unknown` | app's | 5, incl. `streaming` |
+
+   Two of those matter. The hand-written contract **drops `serial`**, which is
+   the only identifier OpenRazer knows and the argument `run_capability` takes;
+   the app synthesises `vendor_id-product_id` instead, which cannot tell two
+   units of one model apart — its own comment in `app.config.ts` says so, and
+   the real serial is already on the wire and thrown away. And the two `kind`
+   sets do not meet: a Rust `Unknown` is a value the frontend does not expect.
+
+   Three ways out, cheapest first: check whether the generator can emit valibot
+   (`tauri.conf.json` pins `"generator": "zod"`); or use `tauri-specta`, already
+   a dependency with `#[derive(Type)]` on `Device` and `DeviceKind`, which gives
+   types but no validator, so the valibot schemas stay hand-written; or keep the
+   manual contract and fix it. Whichever, it makes issue (1) structurally
+   impossible.
+
+3. **No unit tests.** `tests/` now covers the DBus backend and the no-daemon
+   path, but there is still not a single `#[cfg(test)]` in `src/`. The pure
+   functions are the obvious gap: `DeviceKind::from_type_str`, the
    `From<CapabilityRequest>` routing table, and the `BackendError` conversions —
    none of them need a daemon. `dispatch` can be tested against a fake
    `DeviceBackend`.
