@@ -8,6 +8,10 @@ out-tsc
 # dependencies
 node_modules
 
+# the fake OpenRazer daemon bootstraps itself here — see
+# apps/synapse/src-tauri/scripts/openrazer-fake.sh
+.openrazer-fake
+
 # IDEs and editors
 /.idea
 .project
