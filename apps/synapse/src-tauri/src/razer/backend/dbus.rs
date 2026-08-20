@@ -36,6 +36,10 @@ trait RazerDeviceMisc {
     fn resume_device(&self) -> zbus::Result<()>;
     #[zbus(name = "getDeviceImage")]
     fn get_device_image(&self) -> zbus::Result<String>;
+    #[zbus(name = "hasMatrix")]
+    fn has_matrix(&self) -> zbus::Result<bool>;
+    #[zbus(name = "getMatrixDimensions")]
+    fn get_matrix_dimensions(&self) -> zbus::Result<Vec<i32>>;
 }
 
 // ⚠️ Every method needs an explicit `#[zbus(name = "…")]`. Without one, zbus
@@ -84,6 +88,10 @@ trait RazerLightingChroma {
     fn set_breath_single(&self, r: u8, g: u8, b: u8) -> zbus::Result<()>;
     #[zbus(name = "setNone")]
     fn set_none(&self) -> zbus::Result<()>;
+    #[zbus(name = "setKeyRow")]
+    fn set_key_row(&self, payload: &[u8]) -> zbus::Result<()>;
+    #[zbus(name = "setCustom")]
+    fn set_custom(&self) -> zbus::Result<()>;
 }
 
 // `razer.device.battery` does not exist — introspected across all four devices
@@ -357,6 +365,59 @@ impl DeviceBackend for DbusBackend {
         Box::pin(async move {
             proxy_at!(RazerBatteryProxy, &self.conn, path)
                 .is_charging()
+                .await
+                .map_err(|e| BackendError::Transport(e.to_string()))
+        })
+    }
+
+    // ── the custom matrix ─────────────────────────────────────────────────────
+
+    fn has_matrix(&self, serial: &str) -> BoxFuture<'_, Result<bool, BackendError>> {
+        let path = Self::device_path(serial);
+        Box::pin(async move {
+            proxy_at!(RazerDeviceMiscProxy, &self.conn, path)
+                .has_matrix()
+                .await
+                .map_err(|e| BackendError::Transport(e.to_string()))
+        })
+    }
+
+    fn matrix_dimensions(&self, serial: &str) -> BoxFuture<'_, Result<(u8, u8), BackendError>> {
+        let path = Self::device_path(serial);
+        Box::pin(async move {
+            // `ai` on the wire, like `getDPI` and `getVidPid`. A device with no
+            // matrix answers an empty list rather than an error, which reads
+            // here as a 0x0 matrix — nothing to paint, which is the truth.
+            let dims = proxy_at!(RazerDeviceMiscProxy, &self.conn, path)
+                .get_matrix_dimensions()
+                .await
+                .map_err(|e| BackendError::Transport(e.to_string()))?;
+            Ok((
+                dims.first().copied().unwrap_or(0) as u8,
+                dims.get(1).copied().unwrap_or(0) as u8,
+            ))
+        })
+    }
+
+    fn set_key_row(
+        &self,
+        serial: &str,
+        payload: Vec<u8>,
+    ) -> BoxFuture<'_, Result<(), BackendError>> {
+        let path = Self::device_path(serial);
+        Box::pin(async move {
+            proxy_at!(RazerLightingChromaProxy, &self.conn, path)
+                .set_key_row(&payload)
+                .await
+                .map_err(|e| BackendError::Transport(e.to_string()))
+        })
+    }
+
+    fn show_custom_frame(&self, serial: &str) -> BoxFuture<'_, Result<(), BackendError>> {
+        let path = Self::device_path(serial);
+        Box::pin(async move {
+            proxy_at!(RazerLightingChromaProxy, &self.conn, path)
+                .set_custom()
                 .await
                 .map_err(|e| BackendError::Transport(e.to_string()))
         })

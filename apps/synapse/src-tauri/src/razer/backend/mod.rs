@@ -115,4 +115,31 @@ pub trait DeviceBackend: Send + Sync + 'static {
     // ── battery ───────────────────────────────────────────────────────────────
     fn get_battery_level(&self, serial: &str) -> BoxFuture<'_, Result<f64, BackendError>>;
     fn is_charging(&self, serial: &str) -> BoxFuture<'_, Result<bool, BackendError>>;
+
+    // ── the custom matrix ─────────────────────────────────────────────────────
+    //
+    // What the rendering engine draws through. Not every device has one: a
+    // Kraken answers false to `has_matrix` and publishes no `setKeyRow` at all,
+    // so a headset can only ever run a hardware effect.
+
+    fn has_matrix(&self, serial: &str) -> BoxFuture<'_, Result<bool, BackendError>>;
+
+    /// Rows and columns, in that order.
+    fn matrix_dimensions(&self, serial: &str) -> BoxFuture<'_, Result<(u8, u8), BackendError>>;
+
+    /// Writes one row into the pending frame. Nothing shows until
+    /// `show_custom_frame`; see `engine::frame::row_payload` for the encoding.
+    ///
+    /// The payload is owned rather than borrowed so the future does not hold a
+    /// second lifetime — every other method here takes copies for the same
+    /// reason.
+    fn set_key_row(
+        &self,
+        serial: &str,
+        payload: Vec<u8>,
+    ) -> BoxFuture<'_, Result<(), BackendError>>;
+
+    /// Shows the rows written so far, all at once. Drawing row by row without
+    /// this would tear the picture as it is built.
+    fn show_custom_frame(&self, serial: &str) -> BoxFuture<'_, Result<(), BackendError>>;
 }
