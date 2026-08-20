@@ -81,6 +81,26 @@ describe('ButtonGroup', () => {
 		expect(names.size).toBe(2);
 	});
 
+	it('keeps its name when a choice is drawn as an icon', async () => {
+		const { container } = await setup({
+			options: [
+				{ value: 'up', label: 'Upwards', icon: 'M12 19V5M5 12l7-7 7 7' },
+				{ value: 'down', label: 'Downwards', icon: 'M12 5v14M19 12l-7 7-7-7' },
+			],
+			ariaLabel: 'Wave direction',
+		});
+
+		// An icon-only choice that announces nothing is the usual way this
+		// pattern is got wrong: the pill holds no text, so the name has to come
+		// from the radio itself.
+		expect(option('Upwards')).toBeInTheDocument();
+		expect(container.querySelectorAll('svg')).toHaveLength(2);
+		// Decoration — the radio already carries the name.
+		for (const svg of container.querySelectorAll('svg')) {
+			expect(svg).toHaveAttribute('aria-hidden', 'true');
+		}
+	});
+
 	it('disables one option without disabling the group', async () => {
 		await setup({
 			options: [...RATES, { value: '8000', label: '8000 Hz', disabled: true }],

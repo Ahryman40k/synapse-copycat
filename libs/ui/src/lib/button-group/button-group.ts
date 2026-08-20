@@ -11,6 +11,15 @@ export type ButtonGroupOption = {
 	value: string;
 	label: string;
 	disabled?: boolean;
+	/**
+	 * Path data for a 24×24 icon, drawn instead of the label.
+	 *
+	 * Path data rather than markup: an `<svg>` string would have to go through
+	 * the sanitizer or around it, and this needs neither. `label` stays
+	 * required and becomes the accessible name — an icon-only choice that
+	 * announces nothing is the usual way this pattern is got wrong.
+	 */
+	icon?: string;
 };
 
 /** Keeps the radios of several groups on one page from sharing a name. */

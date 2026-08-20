@@ -47,10 +47,30 @@
   font-weight: 500;
   white-space: nowrap;
 
+  // Keeps an icon centred in the pill without changing the text case.
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
   // Nothing here changes size between states, so the row never shifts.
   transition:
     background-color 0.15s ease-in-out,
     color 0.15s ease-in-out;
+}
+
+// An icon has no text to set the pill's width, and the padding meant for words
+// leaves a small glyph adrift in a wide oblong.
+.syn-button-group__pill--icon {
+  padding-inline: 0.625rem;
+}
+
+// Square, and sized off the text so it matches a label pill's height.
+.syn-button-group__icon {
+  inline-size: 1.25em;
+  block-size: 1.25em;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 :host(.syn-button-group--disabled) {

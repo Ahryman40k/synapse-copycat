@@ -11,8 +11,28 @@
       [value]="option.value"
       [checked]="option.value === value()"
       [disabled]="disabled() || (option.disabled ?? false)"
+      [attr.aria-label]="option.icon ? option.label : null"
       (change)="onChange(option.value)"
     />
-    <span class="syn-button-group__pill">{{ option.label }}</span>
+    <span
+      class="syn-button-group__pill"
+      [class.syn-button-group__pill--icon]="!!option.icon"
+    >
+      @if (option.icon; as icon) {
+        <!-- Decoration: the radio carries the name through its aria-label. -->
+        <svg
+          class="syn-button-group__icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path [attr.d]="icon" />
+        </svg>
+      } @else {
+        {{ option.label }}
+      }
+    </span>
   </label>
 }
