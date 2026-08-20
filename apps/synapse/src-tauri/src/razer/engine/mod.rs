@@ -61,6 +61,15 @@ pub struct DeviceStatus {
     pub achieved: Achieved,
 }
 
+/// Everything a caller needs to show what the engine is doing.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Status {
+    pub ambience: Ambience,
+    pub cadence: Cadence,
+    pub devices: Vec<DeviceStatus>,
+    pub skipped: Vec<Skipped>,
+}
+
 /// A device the engine could not take on.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Skipped {
@@ -173,6 +182,15 @@ impl Engine {
 
     pub fn device_count(&self) -> usize {
         self.attached.len()
+    }
+
+    pub fn status(&self) -> Status {
+        Status {
+            ambience: self.ambience(),
+            cadence: self.cadence,
+            devices: self.statuses(),
+            skipped: self.skipped.clone(),
+        }
     }
 
     /// Stops every runner and waits for them.
