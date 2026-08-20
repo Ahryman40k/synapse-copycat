@@ -38,10 +38,23 @@ trait RazerDeviceMisc {
     fn get_device_image(&self) -> zbus::Result<String>;
 }
 
+// ⚠️ Every method needs an explicit `#[zbus(name = "…")]`. Without one, zbus
+// derives the DBus name from the Rust name in PascalCase — `set_static`
+// becomes `SetStatic` — and OpenRazer's are lowerCamelCase, with initialisms
+// left uppercase: `setStatic`, `setDPI`. A wrong name is not a compile error;
+// it is an `org.freedesktop.DBus.Error.UnknownMethod` at runtime, which is how
+// every one of these went unnoticed until a daemon answered.
+
 #[zbus::proxy(interface = "razer.device.dpi", default_service = "org.razer")]
 trait RazerDeviceDpi {
-    fn get_dpi(&self) -> zbus::Result<(i32, i32)>;
+    // `ai` on the wire, not `(ii)`: OpenRazer answers an array, exactly like
+    // `getVidPid`. Declaring the tuple compiles and fails at runtime with
+    // "Signature mismatch: got `ai`, expected `(ii)`".
+    #[zbus(name = "getDPI")]
+    fn get_dpi(&self) -> zbus::Result<Vec<i32>>;
+    #[zbus(name = "setDPI")]
     fn set_dpi(&self, x: i32, y: i32) -> zbus::Result<()>;
+    #[zbus(name = "maxDPI")]
     fn get_max_dpi(&self) -> zbus::Result<i32>;
 }
 
@@ -50,7 +63,9 @@ trait RazerDeviceDpi {
     default_service = "org.razer"
 )]
 trait RazerLightingBrightness {
+    #[zbus(name = "getBrightness")]
     fn get_brightness(&self) -> zbus::Result<f64>;
+    #[zbus(name = "setBrightness")]
     fn set_brightness(&self, v: f64) -> zbus::Result<()>;
 }
 
@@ -59,16 +74,26 @@ trait RazerLightingBrightness {
     default_service = "org.razer"
 )]
 trait RazerLightingChroma {
+    #[zbus(name = "setStatic")]
     fn set_static(&self, r: u8, g: u8, b: u8) -> zbus::Result<()>;
+    #[zbus(name = "setSpectrum")]
     fn set_spectrum(&self) -> zbus::Result<()>;
+    #[zbus(name = "setWave")]
     fn set_wave(&self, direction: i32) -> zbus::Result<()>;
+    #[zbus(name = "setBreathSingle")]
     fn set_breath_single(&self, r: u8, g: u8, b: u8) -> zbus::Result<()>;
+    #[zbus(name = "setNone")]
     fn set_none(&self) -> zbus::Result<()>;
 }
 
-#[zbus::proxy(interface = "razer.device.battery", default_service = "org.razer")]
+// `razer.device.battery` does not exist — introspected across all four devices
+// and found on none. The daemon carries battery on `razer.device.power`, and
+// the level is `getBattery`, not `getBatteryLevel`.
+#[zbus::proxy(interface = "razer.device.power", default_service = "org.razer")]
 trait RazerBattery {
+    #[zbus(name = "getBattery")]
     fn get_battery_level(&self) -> zbus::Result<f64>;
+    #[zbus(name = "isCharging")]
     fn is_charging(&self) -> zbus::Result<bool>;
 }
 
@@ -200,10 +225,14 @@ impl DeviceBackend for DbusBackend {
     fn get_dpi(&self, serial: &str) -> BoxFuture<'_, Result<(i32, i32), BackendError>> {
         let path = Self::device_path(serial);
         Box::pin(async move {
-            proxy_at!(RazerDeviceDpiProxy, &self.conn, path)
+            let dpi = proxy_at!(RazerDeviceDpiProxy, &self.conn, path)
                 .get_dpi()
                 .await
-                .map_err(|e| BackendError::Transport(e.to_string()))
+                .map_err(|e| BackendError::Transport(e.to_string()))?;
+            Ok((
+                dpi.first().copied().unwrap_or(0),
+                dpi.get(1).copied().unwrap_or(0),
+            ))
         })
     }
 
