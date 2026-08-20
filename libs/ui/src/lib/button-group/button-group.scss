@@ -3,6 +3,12 @@
 
 :host {
   display: inline-flex;
+  // `inline-flex` alone does not survive a flex or grid parent, which stretches
+  // its items across the cross axis by default — the frame then spans the whole
+  // panel around two pills. Every consumer so far has undone that with its own
+  // `align-self`; the hug is this component's intent, so it states it here.
+  align-self: start;
+
   // The frame hugs the pills; the padding is what keeps the taken one off it.
   padding: 0.25rem;
   border: 1px solid;
