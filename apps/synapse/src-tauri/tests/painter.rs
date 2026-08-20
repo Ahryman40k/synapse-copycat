@@ -96,8 +96,8 @@ async fn a_wave_redraws_only_the_rows_it_touches() {
     let mut painter = Painter::new(HUNTSMAN, geometry);
     let wave = Ambience {
         motion: MotionSource::Wave {
-            columns_per_second: 8.0,
-            width: 3.0,
+            laps_per_second: 0.5,
+            width: 0.2,
         },
         ..Ambience::still(Rgb::new(255, 255, 255))
     };

@@ -73,9 +73,17 @@ pub enum MotionSource {
     /// Everything lit, evenly. What "static" means.
     None,
     /// A band travelling along the columns.
+    ///
+    /// Both figures are **fractions of the device**, not columns, and that is
+    /// the whole point once a group holds more than one shape. In columns, the
+    /// same wave at 8 columns/second crosses a 14-column mouse in 1.75s, a
+    /// 22-column keyboard in 2.75s and a 100-LED strip in 12.5s: three waves
+    /// drifting apart, not one ambience. Normalised, they cross together and
+    /// the band covers the same proportion of each.
     Wave {
-        columns_per_second: f32,
-        /// Width of the lit band, in columns.
+        /// Full crossings of the device per second.
+        laps_per_second: f32,
+        /// Width of the lit band, as a fraction of the device.
         width: f32,
     },
     /// The whole matrix breathing together.
@@ -173,15 +181,21 @@ impl MotionSource {
             Self::None => 1.0,
 
             Self::Wave {
-                columns_per_second,
+                laps_per_second,
                 width,
             } => {
                 let columns = f32::from(geometry.columns.max(1));
-                let head = (tick.elapsed.as_secs_f32() * columns_per_second).rem_euclid(columns);
+                // Divided by the column count, not by `columns - 1`: positions
+                // then sit at 0, 1/n … (n-1)/n and the step from the last back
+                // to the first is 1/n like every other. Spreading them 0..1
+                // inclusive would make that one gap twice as wide, and the wave
+                // would hesitate once per lap.
+                let position = f32::from(column) / columns;
+                let head = (tick.elapsed.as_secs_f32() * laps_per_second).rem_euclid(1.0);
                 // Distance the short way round, so the band does not tear as it
                 // wraps from the last column back to the first.
-                let raw = (f32::from(column) - head).abs();
-                let distance = raw.min(columns - raw);
+                let raw = (position - head).abs();
+                let distance = raw.min(1.0 - raw);
                 (1.0 - distance / width.max(f32::EPSILON)).clamp(0.0, 1.0)
             }
 
@@ -300,53 +314,84 @@ mod tests {
         assert!(dusk > 20 && dusk < 100, "dusk was {dusk}");
     }
 
+    /// One crossing a second, a band covering a fifth of whatever it is on.
+    const CROSSING: MotionSource = MotionSource::Wave {
+        laps_per_second: 1.0,
+        width: 0.2,
+    };
+
     #[test]
     fn a_wave_lights_one_place_and_leaves_the_rest_dark() {
         let ambience = Ambience {
-            motion: MotionSource::Wave {
-                columns_per_second: 1.0,
-                width: 2.0,
-            },
+            motion: CROSSING,
             ..Ambience::still(RED)
         };
 
         let frame = ambience.compose(MOUSE, Tick::at(0.0));
-        assert_eq!(frame.get(0, 0), RED, "the head is at column 0");
+        assert_eq!(frame.get(0, 0), RED, "the head starts at the near edge");
         assert_eq!(frame.get(0, 7), Rgb::BLACK, "the far side is dark");
     }
 
     #[test]
     fn a_wave_travels() {
         let ambience = Ambience {
-            motion: MotionSource::Wave {
-                columns_per_second: 1.0,
-                width: 2.0,
-            },
+            motion: CROSSING,
             ..Ambience::still(RED)
         };
 
-        // One second, one column: the head has moved on and the pixel it left
-        // is dimmer than the one it reached.
-        let later = ambience.compose(MOUSE, Tick::at(1.0));
-        assert_eq!(later.get(0, 1), RED);
-        assert!(later.get(0, 0).r < 255);
+        // Half a lap: the head is at the middle and the edge it left is dark.
+        let later = ambience.compose(MOUSE, Tick::at(0.5));
+        assert_eq!(later.get(0, 7), RED);
+        assert_eq!(later.get(0, 0), Rgb::BLACK);
     }
 
     #[test]
     fn a_wave_wraps_without_tearing() {
         let ambience = Ambience {
-            motion: MotionSource::Wave {
-                columns_per_second: 1.0,
-                width: 3.0,
-            },
+            motion: CROSSING,
             ..Ambience::still(RED)
         };
 
-        // Head at the last column: the first column is its neighbour going the
-        // short way round, so it must be lit. Measuring the distance the long
-        // way would leave a dark seam once per lap.
-        let frame = ambience.compose(MOUSE, Tick::at(13.0));
+        // Head just short of a full lap: the first column is its neighbour
+        // going the short way round, so it must be lit. Measuring the distance
+        // the long way would leave a dark seam once per lap.
+        let frame = ambience.compose(MOUSE, Tick::at(0.95));
         assert!(frame.get(0, 0).r > 0, "the seam is dark");
+    }
+
+    /// The reason the wave is measured in fractions rather than columns.
+    ///
+    /// A group holds whatever the user puts in it — a keyboard, a mouse, a
+    /// light strip — and one ambience across them has to look like one
+    /// ambience. In columns it would not: the same 8 columns/second crosses a
+    /// 14-column mouse in 1.75s and a 22-column keyboard in 2.75s, and the two
+    /// drift apart within seconds.
+    #[test]
+    fn one_wave_reaches_the_same_place_on_devices_of_different_sizes() {
+        let ambience = Ambience {
+            motion: CROSSING,
+            ..Ambience::still(RED)
+        };
+
+        // Where the brightest column sits, as a fraction of the device.
+        let head_of = |geometry: Geometry, at: f32| {
+            let frame = ambience.compose(geometry, Tick::at(at));
+            let brightest = (0..geometry.columns)
+                .max_by_key(|column| frame.get(0, *column).r)
+                .unwrap();
+            f32::from(brightest) / f32::from(geometry.columns)
+        };
+
+        for moment in [0.0, 0.25, 0.5, 0.75] {
+            let mouse = head_of(MOUSE, moment);
+            let keyboard = head_of(KEYBOARD, moment);
+            // Within one column of the coarser device, which is as close as
+            // two different resolutions can agree.
+            assert!(
+                (mouse - keyboard).abs() < 1.0 / 14.0,
+                "at {moment}s the mouse is at {mouse} and the keyboard at {keyboard}"
+            );
+        }
     }
 
     #[test]
@@ -392,8 +437,8 @@ mod tests {
                 spread: 1.0,
             },
             motion: MotionSource::Wave {
-                columns_per_second: 4.0,
-                width: 3.0,
+                laps_per_second: 0.5,
+                width: 0.15,
             },
             brightness: BrightnessSource::Fixed(0.5),
         };
