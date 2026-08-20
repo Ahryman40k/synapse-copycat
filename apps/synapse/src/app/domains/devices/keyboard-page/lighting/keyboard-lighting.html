@@ -6,12 +6,22 @@
     (applyToAllChange)="onSyncBrightnessChange($event)"
   ></brightness-panel>
 
-  <lighting-switch-off-panel></lighting-switch-off-panel>
-
+  <!-- The same two wave values, left and right across the board — `razerkbd_driver.c`. -->
   <effects-panel
+    waveOrientation="horizontal"
     [effect]="lighting().effect"
+    [settings]="lighting().settings"
     [applyToAll]="syncEffect()"
     (effectChange)="onEffectChange($event)"
+    (settingsChange)="onSettingsChange($event)"
     (applyToAllChange)="onSyncEffectChange($event)"
   ></effects-panel>
+
+  <!--
+    Third on purpose. `synMasonry` pins panel N to column N, wrapping — so the
+    third lands under the first, putting the switch below the brightness it
+    turns off rather than beside it. It stays there whatever the effects panel
+    beside it does, which is what the masonry buys.
+  -->
+  <lighting-switch-off-panel></lighting-switch-off-panel>
 </device-layout>

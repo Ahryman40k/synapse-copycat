@@ -9,6 +9,67 @@
   ></syn-select>
 
   <!--
+    Only three of the five effects take anything further. `none` and `spectrum`
+    are complete as chosen — the device decides the rest — so nothing is shown
+    for them rather than a row of controls that do nothing.
+  -->
+  @switch (effect()) {
+    @case ('static') {
+      <syn-color-picker
+        [value]="settings().color"
+        (valueChange)="onColorChange($event)"
+      >
+        Colour
+      </syn-color-picker>
+    }
+
+    @case ('wave') {
+      <syn-button-group
+        ariaLabel="Wave direction"
+        [options]="directions()"
+        [value]="settings().direction"
+        (valueChange)="onDirectionChange($event)"
+      ></syn-button-group>
+    }
+
+    @case ('breathe') {
+      <!--
+        Two colours, and the second may be nothing: OpenRazer exposes
+        setBreathSingle and setBreathDual as two different calls, so an empty
+        second colour is a real state rather than a placeholder.
+
+        One row: the pair and the switch that overrides it are one decision.
+      -->
+      <div class="effects-panel__breathe">
+        <syn-color-picker
+          [disabled]="settings().breathe.random"
+          [value]="settings().breathe.first"
+          (valueChange)="onBreatheFirstChange($event)"
+        >
+          First colour
+        </syn-color-picker>
+
+        <syn-color-picker
+          clearable
+          [disabled]="settings().breathe.random"
+          [value]="settings().breathe.second"
+          (valueChange)="onBreatheSecondChange($event)"
+        >
+          Second colour
+        </syn-color-picker>
+
+        <!-- setBreathRandom: the device picks, so there is nothing to choose. -->
+        <syn-checkbox
+          [checked]="settings().breathe.random"
+          (checkedChange)="onBreatheRandomChange($event)"
+        >
+          Random
+        </syn-checkbox>
+      </div>
+    }
+  }
+
+  <!--
     Ticked, the choice above stops belonging to this device: it is made for
     every one of them, and stays that way until it is unticked.
   -->

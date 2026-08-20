@@ -11,7 +11,29 @@ import {
 	type BrightnessChange,
 	type DeviceLighting,
 	DEVICE_LIGHTING_DEFAULT,
+	type EffectSettings,
 } from '../models/lighting';
+
+/**
+ * Writes one part of the lighting onto every target, defaulting any device not
+ * in the map yet.
+ *
+ * Four setters were the same reduce with a different key; the shape of the
+ * write is the thing worth having once.
+ */
+function patchLighting(
+	lighting: Record<string, DeviceLighting>,
+	targets: readonly string[],
+	patch: Partial<DeviceLighting>,
+): Record<string, DeviceLighting> {
+	return targets.reduce(
+		(next, id) => ({
+			...next,
+			[id]: { ...(next[id] ?? DEVICE_LIGHTING_DEFAULT), ...patch },
+		}),
+		lighting,
+	);
+}
 
 export type ApplicationState = {
 	devices: Device[];
@@ -123,13 +145,24 @@ export const ApplicationStore = signalStore(
 				: [deviceId];
 
 			patchState(store, (state) => ({
-				lighting: targets.reduce(
-					(lighting, id) => ({
-						...lighting,
-						[id]: { ...(lighting[id] ?? DEVICE_LIGHTING_DEFAULT), effect },
-					}),
-					state.lighting,
-				),
+				lighting: patchLighting(state.lighting, targets, { effect }),
+			}));
+		},
+
+		/**
+		 * The colours and the direction an effect needs, on the same rule as the
+		 * effect itself: choosing green for one device with the box ticked means
+		 * choosing it for all of them. A settings change that did not follow the
+		 * effect would leave the devices agreeing on `static` and disagreeing on
+		 * what colour that is.
+		 */
+		setEffectSettings(deviceId: string, settings: EffectSettings): void {
+			const targets = store.syncEffect()
+				? store.devices().map((device) => device.id)
+				: [deviceId];
+
+			patchState(store, (state) => ({
+				lighting: patchLighting(state.lighting, targets, { settings }),
 			}));
 		},
 
@@ -139,13 +172,7 @@ export const ApplicationStore = signalStore(
 				: [deviceId];
 
 			patchState(store, (state) => ({
-				lighting: targets.reduce(
-					(lighting, id) => ({
-						...lighting,
-						[id]: { ...(lighting[id] ?? DEVICE_LIGHTING_DEFAULT), brightness },
-					}),
-					state.lighting,
-				),
+				lighting: patchLighting(state.lighting, targets, { brightness }),
 			}));
 		},
 
@@ -164,7 +191,10 @@ export const ApplicationStore = signalStore(
 		 */
 		setSyncEffect(enabled: boolean, referenceId: string): void {
 			patchState(store, { syncEffect: enabled });
-			this.setEffect(referenceId, this.lightingFor(referenceId).effect);
+
+			const reference = this.lightingFor(referenceId);
+			this.setEffect(referenceId, reference.effect);
+			this.setEffectSettings(referenceId, reference.settings);
 		},
 
 		setSyncBrightness(enabled: boolean, referenceId: string): void {

@@ -1,5 +1,6 @@
 import { inject, TestBed } from '@angular/core/testing';
 import { provideBackendApi, withMock } from '@synapse-copycat/backend-api';
+import { DEVICE_LIGHTING_DEFAULT } from '../models/lighting';
 import { ApplicationStore } from './application-store';
 
 describe('ApplicationStore', () => {
@@ -168,10 +169,9 @@ describe('ApplicationStore', () => {
 		async (store: ApplicationStore) => {
 			await store.getDevices();
 
-			expect(store.lightingFor('9999-9999')).toEqual({
-				effect: 'spectrum',
-				brightness: { activated: true, value: 100 },
-			});
+			// Against the constant, not a copy of it: every field added to the
+			// defaults used to break this test for no reason of its own.
+			expect(store.lightingFor('9999-9999')).toEqual(DEVICE_LIGHTING_DEFAULT);
 			expect(store.lightingFor(undefined).effect).toBe('spectrum');
 		},
 	));

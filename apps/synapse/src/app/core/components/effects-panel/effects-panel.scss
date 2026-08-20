@@ -7,3 +7,13 @@ h2 {
   // The label reads EFFECTS whatever the markup says, like every panel title.
   text-transform: uppercase;
 }
+
+// The two breathing colours and the switch that overrides them, on one line.
+// `end` rather than `center`: the pickers carry a label above their swatch and
+// the checkbox does not, so aligning the bottoms is what lines the controls up.
+.effects-panel__breathe {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.75rem 1.25rem;
+}

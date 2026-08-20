@@ -11,7 +11,10 @@ import { EffectsPanel } from '../../../../core/components/effects-panel/effects-
 import { LightingSwitchOffPanelComponent } from '../../../../core/components/lighting-switch-off-panel/lighting-switch-off-panel';
 import { DeviceLayout } from '../../../../core/layout/device-layout/device-layout';
 import type { ChromaEffect } from '../../../../core/models/chroma-effect';
-import type { BrightnessChange } from '../../../../core/models/lighting';
+import type {
+	BrightnessChange,
+	EffectSettings,
+} from '../../../../core/models/lighting';
 import { ApplicationStore } from '../../../../core/stores/application-store';
 
 /**
@@ -56,6 +59,12 @@ export class MousematLightingSection {
 	protected onEffectChange(effect: ChromaEffect): void {
 		const id = this.device()?.id;
 		if (id) this.#store.setEffect(id, effect);
+	}
+
+	/** The colours and direction the chosen effect needs; see `EffectSettings`. */
+	protected onSettingsChange(settings: EffectSettings): void {
+		const id = this.device()?.id;
+		if (id) this.#store.setEffectSettings(id, settings);
 	}
 
 	protected onBrightnessChange(brightness: BrightnessChange): void {

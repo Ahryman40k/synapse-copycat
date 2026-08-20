@@ -4,22 +4,25 @@ import type { SelectOption } from '@synapse-copycat/ui';
  * The chroma effects the Rust backend implements today.
  *
  * These are OpenRazer's, not ours: the DBus interface
- * `razer.device.lighting.chroma` exposes `setStatic`, `setSpectrum`, `setWave`,
- * `setBreathSingle` and `setNone`, and `src-tauri/src/razer/capabilities/
- * chroma.rs` has a capability for each. Probing a real device through OpenRGB
- * confirmed the same five and no more — the Chroma SDK claims `reactive` for
- * mice and keyboards, but no device here reports it.
+ * `razer.device.lighting.chroma` exposes `setStatic`, `setSpectrum`, `setWave`
+ * and `setBreathSingle`, and `src-tauri/src/razer/capabilities/chroma.rs` has a
+ * capability for each.
  *
- * Lives beside the model rather than inside the panel: the store keeps an
- * effect per device now, and a store reading a type out of a component would
- * have the dependency the wrong way round.
+ * ⚠️ `setNone` is deliberately **not** offered, though the backend implements
+ * it and OpenRazer exposes it. It puts the lighting out, which is what the
+ * brightness panel's switch already does — two controls for one outcome, and
+ * the one here is the worse of the pair: brightness remembers the effect and
+ * brings it back, `setNone` clears it and leaves nothing to return to.
+ *
+ * `reactive` is a different case: OpenRazer offers it on three of the four
+ * lit devices in the mock, but no Rust capability answers it yet. It belongs
+ * here the day one does.
  */
-export type ChromaEffect = 'none' | 'static' | 'spectrum' | 'wave' | 'breathe';
+export type ChromaEffect = 'static' | 'spectrum' | 'wave' | 'breathe';
 
 export const CHROMA_EFFECT_DEFAULT: ChromaEffect = 'spectrum';
 
 export const CHROMA_EFFECTS: readonly SelectOption[] = [
-	{ value: 'none', label: 'None' },
 	{ value: 'static', label: 'Static' },
 	{ value: 'spectrum', label: 'Spectrum' },
 	{ value: 'wave', label: 'Wave' },
