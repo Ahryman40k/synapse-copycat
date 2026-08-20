@@ -14,7 +14,9 @@ $min-column: 18rem;
 
 .device-layout__panels {
   display: grid;
-  gap: 1em;
+  // Column gap only: `synMasonry` reads this and carries the same value into
+  // each item's span, which is where the vertical gap comes from.
+  column-gap: 1em;
 
   // Fills the row and reflows — two columns, then one — never three.
   //
@@ -30,4 +32,9 @@ $min-column: 18rem;
   // Panels sit at the top of their row; nothing here should grow to match the
   // tallest one in a later row.
   align-content: start;
+
+  // The panels pack as a masonry rather than in rows — `synMasonry` on the
+  // element, which brings its own machinery with it. Nothing else is needed
+  // here: a grid row would otherwise be as tall as its tallest panel, and a
+  // control appearing in one would push the panel *below its neighbour* down.
 }

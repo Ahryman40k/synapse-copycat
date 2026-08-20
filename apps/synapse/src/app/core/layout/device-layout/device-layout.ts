@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import type { Device } from '@synapse-copycat/backend-api';
+import { Masonry } from '@synapse-copycat/ui';
 import { DeviceStage } from '../../components/device-stage/device-stage';
 
 /**
@@ -26,7 +27,7 @@ import { DeviceStage } from '../../components/device-stage/device-stage';
 	selector: 'device-layout',
 	templateUrl: './device-layout.html',
 	styleUrl: './device-layout.scss',
-	imports: [DeviceStage],
+	imports: [DeviceStage, Masonry],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DeviceLayout {
