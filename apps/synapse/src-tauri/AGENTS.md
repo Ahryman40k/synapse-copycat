@@ -30,7 +30,10 @@ scripts/openrazer-fake.sh env       # the export to give your own shell
 scripts/openrazer-fake.sh stop
 ```
 
-It bootstraps a clone and a virtualenv into `.openrazer-fake/` (gitignored) and
+It bootstraps a clone and a virtualenv into `.openrazer-fake/` at the repository
+root — gitignored, and deliberately not beside the script, since Storybook's
+`staticDirs` copies the whole of `apps/synapse` and chokes on the read-only
+sysfs endpoints. It
 serves the same four devices the frontend mocks, so both modes show the same
 hardware. `create_fake_device.py --all` in the clone gives all 268.
 

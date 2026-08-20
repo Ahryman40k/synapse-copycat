@@ -8,8 +8,9 @@
 #   ./openrazer-fake.sh env       # the export the Rust backend needs
 #   ./openrazer-fake.sh stop
 #
-# Everything is bootstrapped into .openrazer-fake/, which is gitignored. Nothing
-# is installed system wide and nothing is written to ~/.config.
+# Everything is bootstrapped into .openrazer-fake/ at the repository root, which
+# is gitignored. Nothing is installed system wide and nothing is written to
+# ~/.config.
 #
 # ⚠️ A fake device says yes to everything. This proves the shape of the calls
 # and the capability discovery — never the latency, the firmware, the wireless
@@ -17,7 +18,11 @@
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
-ROOT="$HERE/../.openrazer-fake"
+
+# At the repository root, not beside this script. Storybook's `staticDirs`
+# copies the whole of apps/synapse, and the fake tree emulates sysfs — its
+# read-only endpoints make that copy fail with EACCES and break the build.
+ROOT="$(git -C "$HERE" rev-parse --show-toplevel 2>/dev/null || echo "$HERE/..")/.openrazer-fake"
 REPO="$ROOT/openrazer"
 VENV="$ROOT/venv"
 TREE="$ROOT/devices"
