@@ -1,7 +1,7 @@
 //! The DBus backend against a live daemon.
 //!
-//! These run against the **fake** OpenRazer daemon, which serves the same four
-//! devices the frontend mocks:
+//! These run against the **fake** OpenRazer daemon, which serves one device of
+//! every type OpenRazer can report, bar `core`:
 //!
 //! ```sh
 //! scripts/openrazer-fake.sh start
@@ -19,12 +19,16 @@
 #![cfg(target_os = "linux")]
 
 use app_lib::razer::backend::{dbus::DbusBackend, BackendError, DeviceBackend};
+use app_lib::razer::device::DeviceKind;
 
-/// Serials the fake driver derives from each device's product id.
-const HUNTSMAN: &str = "XX0000000226";
-const GOLIATHUS: &str = "XX0000000C02";
-const VIPER: &str = "XX00000000A5";
-const BASILISK: &str = "XX0000000088";
+/// Serials the fake driver derives from each device's product id. One per
+/// device type OpenRazer can report, bar `core`.
+const HUNTSMAN: &str = "XX0000000226"; // keyboard
+const BASILISK: &str = "XX0000000088"; // mouse
+const GOLIATHUS: &str = "XX0000000C02"; // mousemat
+const BASE_STATION: &str = "XX0000000F08"; // accessory
+const KRAKEN: &str = "XX0000000527"; // headset
+const TARTARUS: &str = "XX000000022B"; // keypad
 
 async fn backend() -> DbusBackend {
     DbusBackend::new()
@@ -40,22 +44,28 @@ async fn enumerates_every_device() {
     let mut serials = backend.list_devices().await.expect("listing failed");
     serials.sort();
 
-    let mut expected = vec![HUNTSMAN, GOLIATHUS, VIPER, BASILISK];
+    let mut expected = vec![
+        HUNTSMAN,
+        BASILISK,
+        GOLIATHUS,
+        BASE_STATION,
+        KRAKEN,
+        TARTARUS,
+    ];
     expected.sort();
     assert_eq!(serials, expected);
 }
 
 #[tokio::test]
 #[ignore = "needs the fake daemon: scripts/openrazer-fake.sh start"]
-async fn reports_the_same_ids_the_frontend_mocks() {
+async fn names_and_identifies_every_device() {
     let backend = backend().await;
 
-    // The pairs in apps/synapse/src/app/app.config.ts, so the mock and the
-    // daemon describe the same hardware. 5426 is 0x1532, Razer.
+    // 5426 is 0x1532, Razer. The keyboard, mouse and mousemat are the three the
+    // frontend also mocks, with the same ids — the rest of the set is wider on
+    // purpose, since the mock cannot serve types the app has no page for.
     for (serial, name, kind, vid, pid) in [
         (HUNTSMAN, "Razer Huntsman Elite", "keyboard", 5426, 550),
-        (GOLIATHUS, "Razer Goliathus Extended", "mousemat", 5426, 3074),
-        (VIPER, "Razer Viper V2 Pro (Wired)", "mouse", 5426, 165),
         (
             BASILISK,
             "Razer Basilisk Ultimate (Receiver)",
@@ -63,6 +73,22 @@ async fn reports_the_same_ids_the_frontend_mocks() {
             5426,
             136,
         ),
+        (
+            GOLIATHUS,
+            "Razer Goliathus Extended",
+            "mousemat",
+            5426,
+            3074,
+        ),
+        (
+            BASE_STATION,
+            "Razer Base Station Chroma",
+            "accessory",
+            5426,
+            3848,
+        ),
+        (KRAKEN, "Razer Kraken Ultimate", "headset", 5426, 1319),
+        (TARTARUS, "Razer Tartarus V2", "keypad", 5426, 555),
     ] {
         assert_eq!(backend.get_device_name(serial).await.unwrap(), name);
         assert_eq!(backend.get_device_type(serial).await.unwrap(), kind);
@@ -109,32 +135,58 @@ async fn refuses_a_wave_the_device_does_not_have() {
     );
 }
 
-/// The Viper V2 Pro has no lighting at all — its `chroma` interface carries
-/// only `restoreLastEffect`. The Basilisk has lighting, but per zone: `.logo`,
-/// `.scroll`, `.left`, `.right`, and never the global `chroma` setters this
-/// backend calls.
+/// The Basilisk is lit per zone — `.logo`, `.scroll`, `.left`, `.right` — and
+/// never through the global `chroma` setters this backend calls. Being unlit
+/// and being lit differently look the same from here, and neither is a fault
+/// of the daemon.
 #[tokio::test]
 #[ignore = "needs the fake daemon: scripts/openrazer-fake.sh start"]
-async fn cannot_light_the_two_mice_through_the_global_interface() {
+async fn cannot_light_the_mouse_through_the_global_interface() {
     let backend = backend().await;
 
-    assert!(
-        backend.set_chroma_static(VIPER, 255, 0, 0).await.is_err(),
-        "the Viper reports no lighting"
-    );
-    assert!(
-        backend.set_chroma_static(BASILISK, 255, 0, 0).await.is_err(),
-        "the Basilisk is lit per zone, not through razer.device.lighting.chroma"
-    );
+    assert!(backend
+        .set_chroma_static(BASILISK, 255, 0, 0)
+        .await
+        .is_err());
 }
 
-/// DPI is the one capability both mice really have.
 #[tokio::test]
 #[ignore = "needs the fake daemon: scripts/openrazer-fake.sh start"]
 async fn sets_dpi_on_a_mouse() {
     let backend = backend().await;
 
-    backend.set_dpi(VIPER, 1600, 1600).await.expect("set_dpi");
-    assert_eq!(backend.get_dpi(VIPER).await.unwrap(), (1600, 1600));
-    assert!(backend.get_max_dpi(VIPER).await.unwrap() > 0);
+    backend
+        .set_dpi(BASILISK, 1600, 1600)
+        .await
+        .expect("set_dpi");
+    assert_eq!(backend.get_dpi(BASILISK).await.unwrap(), (1600, 1600));
+    assert!(backend.get_max_dpi(BASILISK).await.unwrap() > 0);
+}
+
+/// The daemon's vocabulary is wider than ours, and the two do not line up.
+///
+/// A keypad is now a keyboard — the Tartarus publishes the same interfaces as
+/// the Huntsman, so it belongs on the same page. What is left over is `core`,
+/// an external GPU enclosure, which still arrives as `Unknown`.
+///
+/// ⚠️ `headset` is the one that has nowhere to go: `DeviceKind` has it and the
+/// frontend union does not. Turn this round when the three vocabularies agree.
+#[tokio::test]
+#[ignore = "needs the fake daemon: scripts/openrazer-fake.sh start"]
+async fn speaks_a_wider_vocabulary_than_the_app() {
+    let backend = backend().await;
+
+    // What the daemon says, before any mapping.
+    assert_eq!(backend.get_device_type(TARTARUS).await.unwrap(), "keypad");
+    assert_eq!(backend.get_device_type(KRAKEN).await.unwrap(), "headset");
+
+    // And what we make of it.
+    assert!(matches!(
+        DeviceKind::from_type_str("keypad"),
+        DeviceKind::Keyboard
+    ));
+    assert!(matches!(
+        DeviceKind::from_type_str("core"),
+        DeviceKind::Unknown
+    ));
 }

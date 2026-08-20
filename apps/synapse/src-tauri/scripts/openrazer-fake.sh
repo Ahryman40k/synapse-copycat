@@ -27,14 +27,23 @@ REPO="$ROOT/openrazer"
 VENV="$ROOT/venv"
 TREE="$ROOT/devices"
 BUSFILE="$ROOT/bus-address"
+SOCKET="$ROOT/bus"
 
-# The four the frontend mocks in apps/synapse/src/app/app.config.ts, so both
-# modes show the same hardware. `create_fake_device.py --all` gives all 268.
+# One per device type OpenRazer can report, chosen so the awkward cases are
+# always present rather than only the comfortable ones.
+# `create_fake_device.py --all` gives all 268.
+#
+# ⚠️ There is no camera. OpenRazer reports seven device types — keyboard,
+# mouse, mousemat, accessory, keypad, headset, core — and a webcam is none of
+# them. The Kiyo appears in no hardware file and no fake config; the `streaming`
+# kind in the frontend mock matches nothing the daemon can ever serve.
 DEVICES=(
-  razerbasiliskultimatereceiver   # 0x0088 — per-zone lighting, battery
-  razerviperv2prowired            # 0x00A5 — no lighting at all
-  razergoliathusextended          # 0x0C02 — chroma, but no wave
-  razerhuntsmanelite              # 0x0226 — full 9x22 matrix, macros
+  razerbasiliskultimatereceiver   # mouse     — per-zone lighting, battery, DPI
+  razergoliathusextended          # mousemat  — chroma, but no wave
+  razerhuntsmanelite              # keyboard  — full 9x22 matrix, macros
+  razerbasestationchroma          # accessory
+  razerkrakenultimate             # headset   — Rust has the kind, the frontend does not
+  razertartarusv2                 # keypad    — neither has it; arrives as `unknown`
 )
 
 die() { echo "openrazer-fake: $*" >&2; exit 1; }
@@ -124,14 +133,26 @@ use_bus() {
 
 ensure_bus() {
   use_bus && return 0
-  dbus-daemon --session --print-address --fork > "$BUSFILE"
-  export DBUS_SESSION_BUS_ADDRESS="$(cat "$BUSFILE")"
+  # A fixed socket path, not one dbus-daemon invents. Letting it choose gave a
+  # new address on every restart, so every shell that had run `eval $(… env)`
+  # was pointing at a dead bus and saw no devices — with the daemon running
+  # perfectly well next to it. One `eval` should outlive any number of
+  # restarts, and /tmp should not fill with abandoned sockets.
+  dbus-daemon --session --address="unix:path=$SOCKET" --fork >/dev/null 2>&1 \
+    || die "could not start a session bus on $SOCKET"
+  # Without the guid dbus-daemon appends. It is informational — a client
+  # connects on the path alone, verified — and it changes with every instance,
+  # which would make the address *look* stale after a restart when it is not.
+  echo "unix:path=$SOCKET" > "$BUSFILE"
+  export DBUS_SESSION_BUS_ADDRESS="unix:path=$SOCKET"
 }
 
 # ── commands ─────────────────────────────────────────────────────────────────
 
 start() {
   bootstrap
+  # A socket file outlives the bus that made it, and blocks the next bind.
+  [ -S "$SOCKET" ] && ! bus_works "unix:path=$SOCKET" && rm -f "$SOCKET"
   ensure_bus
   export PYTHONPATH="$REPO/daemon:$REPO/pylib"
 
