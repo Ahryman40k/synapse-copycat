@@ -14,6 +14,13 @@ pub mod rest;
 
 #[derive(Debug, Error, Serialize)]
 pub enum BackendError {
+    /// No daemon to talk to — not installed, not started, or on a bus this
+    /// process cannot reach. Distinct from `Transport`, which is a live
+    /// connection going wrong: this one means there was never a connection,
+    /// and the frontend should say so rather than show an empty device list.
+    #[error("The OpenRazer daemon is unavailable: {0}")]
+    DaemonUnavailable(String),
+
     #[error("Device '{0}' does not support this capability")]
     InterfaceUnsupported(String),
 

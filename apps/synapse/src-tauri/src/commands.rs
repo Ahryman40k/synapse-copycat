@@ -1,7 +1,7 @@
 use tauri::State;
 
 use crate::razer::{
-    backend::BackendError,
+    backend::{BackendError, DeviceBackend},
     device::{Device, DeviceKind},
     dispatch::dispatch,
     request::{CapabilityRequest, CapabilityResponse},
@@ -17,18 +17,19 @@ pub async fn run_capability(
     request: CapabilityRequest,
     state: State<'_, RazerState>,
 ) -> Result<CapabilityResponse, BackendError> {
-    dispatch(state.backend.as_ref(), &serial, request).await
+    dispatch(state.backend()?, &serial, request).await
 }
 
 /// List all connected device serials.
 #[tauri::command]
-pub async fn list_devices(state: State<'_, RazerState>) -> Result<Vec<Device>, BackendError> {
-    let serials = state.backend.list_devices().await?;
+pub async fn devices(state: State<'_, RazerState>) -> Result<Vec<Device>, BackendError> {
+    let backend = state.backend()?;
+    let serials = backend.list_devices().await?;
 
     // Fetch misc info for all devices concurrently
     let futures: Vec<_> = serials
         .iter()
-        .map(|serial| fetch_device(state.clone(), serial))
+        .map(|serial| fetch_device(backend, serial))
         .collect();
 
     let results = futures::future::join_all(futures).await;
@@ -47,12 +48,15 @@ pub async fn list_devices(state: State<'_, RazerState>) -> Result<Vec<Device>, B
         .collect())
 }
 
-async fn fetch_device(state: State<'_, RazerState>, serial: &str) -> Result<Device, BackendError> {
+async fn fetch_device(
+    backend: &dyn DeviceBackend,
+    serial: &str,
+) -> Result<Device, BackendError> {
     let (name, type_str, vid_pid, image) = tokio::try_join!(
-        state.backend.get_device_name(serial),
-        state.backend.get_device_type(serial),
-        state.backend.get_vid_pid(serial),
-        state.backend.get_device_image(serial),
+        backend.get_device_name(serial),
+        backend.get_device_type(serial),
+        backend.get_vid_pid(serial),
+        backend.get_device_image(serial),
     )?;
 
     Ok(Device {
