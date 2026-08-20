@@ -17,16 +17,32 @@ manages RGB lighting and settings for Razer peripherals.
   over **REST** on Windows, behind a single trait
 - **Monorepo** — Nx 22 + pnpm 10
 
-The app runs in two modes and both must keep working:
+The app runs in three modes and all three must keep working:
 
-| Mode                              | How it is detected                      | Backend used                   |
-| --------------------------------- | --------------------------------------- | ------------------------------ |
-| Tauri desktop                     | `window.__TAURI_INTERNALS__` is present | real Rust backend via `invoke` |
-| Browser (dev / Storybook / tests) | it is absent                            | in-memory mock (`withMock`)    |
+| Mode                              | How it is selected                      | Backend                      | Devices                     |
+| --------------------------------- | --------------------------------------- | ---------------------------- | --------------------------- |
+| Browser (dev / Storybook / tests) | `window.__TAURI_INTERNALS__` is absent  | in-memory mock (`withMock`)  | invented in TypeScript      |
+| Tauri + **fake daemon**           | Tauri, with `openrazer-fake.sh` running | real Rust backend, real DBus | OpenRazer's fake sysfs tree |
+| Tauri + hardware                  | Tauri, with the distribution's daemon   | real Rust backend, real DBus | real                        |
 
-The detection lives in `apps/synapse/src/app/app.config.ts`. **Never break the
-browser path** — it is what makes the UI developable and testable without a
-Razer device plugged in.
+The frontend detection lives in `apps/synapse/src/app/app.config.ts` and only
+separates the first row from the other two — the Rust backend cannot tell a fake
+daemon from a real one, which is exactly the point.
+
+**Never break the browser path** — it is what makes the UI developable and
+testable without a Razer device plugged in.
+
+**The middle mode is what catches contract drift.** The mock validates the
+interface and says nothing about the Rust ↔ OpenRazer conversation — §13.8
+exists because nothing could see that conversation. Start it with:
+
+```sh
+apps/synapse/src-tauri/scripts/openrazer-fake.sh start
+```
+
+⚠️ A fake device says yes to everything. It proves the shape of the calls and
+the capability discovery — never the latency, the firmware, the wireless link,
+or what a frame actually looks like. See `src-tauri/AGENTS.md`.
 
 ---
 
@@ -108,6 +124,11 @@ cd apps/synapse/src-tauri
 cargo check
 cargo clippy --all-targets
 cargo test
+
+# the OpenRazer daemon against fake devices: no hardware, no kernel module,
+# no root. This is what lets the Rust backend be developed at all here.
+apps/synapse/src-tauri/scripts/openrazer-fake.sh start
+apps/synapse/src-tauri/scripts/openrazer-fake.sh stop
 ```
 
 Formatting is two tools with disjoint scopes (§11):
@@ -547,6 +568,9 @@ worse than no list._
    the other two are commented out. Only the browser/mock path works today.
    `BackendCommands` is hand-written and nothing verifies it against Rust,
    so the type system cannot catch this. See `src-tauri/AGENTS.md`.
+   **Now observable**: `scripts/openrazer-fake.sh` runs the real daemon against
+   fake devices, so the divergence can be reproduced rather than reasoned
+   about (§1).
 9. **`tauri.conf.json` `frontendDist` looks wrong** —
    `"../../../../dist/apps/synapse"` resolves one level above the repo root and
    omits the `browser/` subdirectory that `@angular/build:application` emits

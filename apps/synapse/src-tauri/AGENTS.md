@@ -17,6 +17,65 @@ Crate name is `app`, library name `app_lib`, edition 2021, MSRV 1.77.2.
 
 ---
 
+## Developing without hardware
+
+The daemon this backend talks to can be run against **fake devices**: the real
+`openrazer-daemon`, the real `org.razer` DBus interface, a sysfs-shaped
+directory instead of a peripheral. No hardware, no kernel module, no root.
+
+```sh
+scripts/openrazer-fake.sh start     # bus + fake devices + daemon
+scripts/openrazer-fake.sh devices   # what the daemon sees
+scripts/openrazer-fake.sh env       # the export to give your own shell
+scripts/openrazer-fake.sh stop
+```
+
+It bootstraps a clone and a virtualenv into `.openrazer-fake/` (gitignored) and
+serves the same four devices the frontend mocks, so both modes show the same
+hardware. `create_fake_device.py --all` in the clone gives all 268.
+
+This is the middle of the three modes in the root `AGENTS.md` §1, and it is the
+only one that exercises the contract between this crate and OpenRazer. It is
+what makes the known issue below reproducible instead of theoretical.
+
+### What it is good for
+
+Capability discovery is the headline. Introspecting the four fake devices gives
+exactly what the daemon would report for the real ones:
+
+| Device            | Methods | Notable                                            |
+| ----------------- | ------- | -------------------------------------------------- |
+| Basilisk Ultimate | 86      | lighting is **per zone** — `.logo`, `.scroll`, `.left`, `.right` |
+| Huntsman Elite    | 48      | full `chroma` set, `custom`, macros                 |
+| Goliathus Ext.    | 33      | `chroma` **without `setWave`**                      |
+| Viper V2 Pro      | 30      | `chroma` exposes only `restoreLastEffect` — no lighting at all |
+
+So `razer.device.lighting.chroma.setStatic`, which `backend/dbus.rs` calls,
+does not exist on the Basilisk. Asking for one that is missing answers
+`org.freedesktop.DBus.Error.UnknownMethod` — a standard DBus error, not a Razer
+one, which is what an `InterfaceUnsupported` mapping has to catch.
+
+Writes land too: `setStatic(255, 0, 0)` puts `ff0000` in the device's
+`matrix_effect_static`, the same bytes the kernel driver would receive.
+
+### ⚠️ What it does not prove
+
+A fake device says yes to everything. Latency, firmware behaviour, the wireless
+link, and what a frame actually looks like are all outside it. It validates the
+contract, never the hardware.
+
+### Three things that will bite
+
+- **`DBUS_SESSION_BUS_ADDRESS` can be a lie.** Under WSLg it names a socket that
+  does not exist, so the script tests the bus rather than trusting the variable,
+  and forks a private one when it has to.
+- **The fake tree emulates sysfs**, so some endpoints are read-only and a plain
+  `rm -rf .openrazer-fake` fails on them. `stop` makes it removable again.
+- **The daemon is on the *session* bus**, not the system bus — `BUS_NAME =
+  'org.razer'`, `dbus.SessionBus()`.
+
+---
+
 ## Architecture
 
 The design goal: **command handlers know nothing about the platform.** Linux
@@ -168,6 +227,8 @@ runtime error, not a compile error** — the frontend `invoke` just rejects.
    catches this: `BackendCommands` is hand-written and unverified against Rust.
    Decide the direction (`devices` → `list_devices`, and implement `modules`)
    before building features on top.
+   Reproduce it rather than reason about it: `scripts/openrazer-fake.sh start`,
+   then run the app in Tauri mode — see *Developing without hardware* above.
 
 2. **`tauri-typegen` is configured but unused.** `tauri.conf.json` declares a
    plugin generating TypeScript into `apps/synapse/src/generated` from
