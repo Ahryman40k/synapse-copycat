@@ -101,6 +101,13 @@ impl Runner {
         let mut meter = Meter::default();
         let mut failures = 0u32;
 
+        // How many ticks between draws. Raised when this device turns out not
+        // to afford every one — see `Achieved::draw_every`. Never lowers the
+        // group: the keyboard keeps its smoothness while the strip takes every
+        // fourth tick, and both show the state at the instant they draw.
+        let mut every = 1u32;
+        let mut tick_number = 0u32;
+
         loop {
             ticker.tick().await;
 
@@ -110,6 +117,11 @@ impl Runner {
                 break;
             }
             let ambience_now = *ambience.borrow_and_update();
+
+            tick_number = tick_number.wrapping_add(1);
+            if every > 1 && tick_number % every != 0 {
+                continue;
+            }
 
             let began = Instant::now();
             let outcome = self.show(&ambience_now, started.elapsed()).await;
@@ -131,9 +143,13 @@ impl Runner {
                 }
             }
 
-            if let Some(report) = &report {
-                if let Some(achieved) = meter.due(cadence) {
-                    let _ = report.send(achieved);
+            if let Some(achieved) = meter.due(cadence, every) {
+                // Re-paced from what the last second actually cost, so a device
+                // that gets slower — a strip on a busy network — backs off, and
+                // one that recovers speeds up again.
+                every = achieved.draw_every();
+                if let Some(report) = &report {
+                    let _ = report.send(Achieved { every, ..achieved });
                 }
             }
         }
@@ -199,7 +215,7 @@ impl Meter {
     /// The window's result, if a window has elapsed. Resets when it reports, so
     /// each figure describes the last second rather than all of history — a
     /// runner that recovers should look recovered.
-    fn due(&mut self, requested: Cadence) -> Option<Achieved> {
+    fn due(&mut self, requested: Cadence, every: u32) -> Option<Achieved> {
         let since = self.since?;
         if since.elapsed() < REPORT_EVERY || self.frames == 0 {
             return None;
@@ -208,6 +224,7 @@ impl Meter {
             requested,
             per_frame: self.total / self.frames,
             frames: self.frames,
+            every,
         };
         *self = Self::default();
         Some(achieved)
@@ -259,7 +276,7 @@ mod tests {
         let mut meter = Meter::default();
         meter.record(Duration::from_millis(5));
 
-        assert!(meter.due(Cadence::Normal).is_none());
+        assert!(meter.due(Cadence::Normal, 1).is_none());
     }
 
     #[test]
@@ -270,7 +287,7 @@ mod tests {
         // Pretend the window has passed rather than sleeping through it.
         meter.since = Some(Instant::now() - REPORT_EVERY);
 
-        let achieved = meter.due(Cadence::Normal).expect("the window is up");
+        let achieved = meter.due(Cadence::Normal, 1).expect("the window is up");
         assert_eq!(achieved.per_frame, Duration::from_millis(6));
         assert_eq!(achieved.frames, 2);
     }
@@ -280,11 +297,11 @@ mod tests {
         let mut meter = Meter::default();
         meter.record(Duration::from_millis(4));
         meter.since = Some(Instant::now() - REPORT_EVERY);
-        meter.due(Cadence::Normal).unwrap();
+        meter.due(Cadence::Normal, 1).unwrap();
 
         // A runner that recovers should look recovered, not be averaged
         // against the second it spent failing.
         assert_eq!(meter.frames, 0);
-        assert!(meter.due(Cadence::Normal).is_none());
+        assert!(meter.due(Cadence::Normal, 1).is_none());
     }
 }

@@ -31,8 +31,8 @@ async fn every_device(backend: &Arc<dyn DeviceBackend>) -> Vec<String> {
 fn moving() -> Ambience {
     Ambience {
         motion: MotionSource::Wave {
-            columns_per_second: 10.0,
-            width: 4.0,
+            laps_per_second: 0.5,
+            width: 0.2,
         },
         ..Ambience::still(Rgb::new(0, 200, 255))
     }
@@ -115,7 +115,7 @@ async fn reports_what_each_device_costs() {
     for device in engine.statuses() {
         let a = device.achieved;
         println!(
-            "  {}  {:<12} {:>3} frames  {:>9.2?}/frame  keeps up: {}",
+            "  {}  {:<12} {:>3} frames  {:>9.2?}/frame  every {} tick(s)  {:>5.1} Hz",
             device.serial,
             if device.painted {
                 "painted"
@@ -124,7 +124,8 @@ async fn reports_what_each_device_costs() {
             },
             a.frames,
             a.per_frame,
-            a.keeps_up()
+            a.every,
+            a.effective_hertz()
         );
     }
     println!();

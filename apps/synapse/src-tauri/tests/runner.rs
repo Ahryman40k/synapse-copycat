@@ -33,8 +33,8 @@ async fn backend() -> Arc<dyn DeviceBackend> {
 fn moving() -> Ambience {
     Ambience {
         motion: MotionSource::Wave {
-            columns_per_second: 12.0,
-            width: 4.0,
+            laps_per_second: 0.5,
+            width: 0.2,
         },
         ..Ambience::still(Rgb::new(255, 64, 0))
     }
@@ -89,6 +89,7 @@ async fn reports_what_the_cadence_actually_cost() {
         requested: Cadence::Normal,
         per_frame: Duration::ZERO,
         frames: 0,
+        every: 1,
     });
 
     let task = tokio::spawn(runner.run(receiver, Cadence::Normal, Some(report)));
@@ -101,11 +102,11 @@ async fn reports_what_the_cadence_actually_cost() {
 
     let measured = *achieved.borrow_and_update();
     println!(
-        "\n  {} frames, {:?}/frame, {:.0} effective Hz, keeps up: {}\n",
+        "\n  {} frames, {:?}/frame, every {} tick(s), {:.1} effective Hz\n",
         measured.frames,
         measured.per_frame,
-        measured.effective_hertz(),
-        measured.keeps_up()
+        measured.every,
+        measured.effective_hertz()
     );
 
     // A 30Hz cadence over about a second.

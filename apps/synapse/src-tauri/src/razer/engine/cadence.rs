@@ -41,8 +41,11 @@ impl Cadence {
         Duration::from_nanos(1_000_000_000 / self.hertz() as u64)
     }
 
-    /// The next slower speed, or `None` at the bottom. What the engine steps
-    /// down to when it cannot keep up.
+    /// The next slower speed, or `None` at the bottom.
+    ///
+    /// For offering the user a gentler setting. The engine itself does not use
+    /// it: a device that cannot keep up skips ticks of its own accord rather
+    /// than slowing the group down — see `Achieved::draw_every`.
     pub const fn slower(self) -> Option<Self> {
         match self {
             Self::Fast => Some(Self::Normal),
@@ -63,6 +66,8 @@ pub struct Achieved {
     /// Mean time to draw one frame, sending only the rows that moved.
     pub per_frame: Duration,
     pub frames: u32,
+    /// How many ticks pass between draws. 1 is every tick.
+    pub every: u32,
 }
 
 impl Achieved {
@@ -77,10 +82,27 @@ impl Achieved {
     }
 
     pub fn effective_hertz(&self) -> f64 {
-        if self.per_frame.is_zero() {
-            return f64::from(self.requested.hertz());
+        f64::from(self.requested.hertz()) / f64::from(self.every.max(1))
+    }
+
+    /// How often this device should draw, in ticks, to stay inside its share.
+    ///
+    /// A device that cannot afford every tick takes every second or fourth
+    /// instead. It does not fall behind by doing so: a frame is a pure function
+    /// of the instant, so one drawn at t=0.4 shows the state at t=0.4 — not a
+    /// stale frame from t=0.2. A slow strip and a fast keyboard in the same
+    /// group stay in step, one simply sampling the ambience less often.
+    ///
+    /// Slowing the whole group to its slowest member was the alternative, and
+    /// it is worse: it costs the keyboard its smoothness to spare the strip.
+    pub fn draw_every(&self) -> u32 {
+        if self.frames == 0 || self.per_frame.is_zero() {
+            return 1;
         }
-        (1.0 / self.per_frame.as_secs_f64()).min(f64::from(self.requested.hertz()))
+        // Doubled for the same reason `keeps_up` halves the budget: a device
+        // shares the bus, and filling its interval exactly leaves nothing.
+        let needed = self.per_frame.as_secs_f64() * 2.0 / self.requested.budget().as_secs_f64();
+        (needed.ceil() as u32).max(1)
     }
 }
 
@@ -109,6 +131,7 @@ mod tests {
             requested,
             per_frame: Duration::from_micros(7_800),
             frames: 100,
+            every: 1,
         };
 
         assert!(keyboard(Cadence::Slow).keeps_up());
@@ -123,6 +146,7 @@ mod tests {
             requested: Cadence::Fast,
             per_frame: Duration::from_micros(9_000),
             frames: 100,
+            every: 1,
         };
         assert!(!slower_hardware.keeps_up(), "1.2ms more and 60Hz is gone");
     }
@@ -135,9 +159,50 @@ mod tests {
             requested: Cadence::Fast,
             per_frame: Duration::from_micros(1_300),
             frames: 100,
+            every: 1,
         };
 
         assert!(mouse.keeps_up());
+    }
+
+    #[test]
+    fn a_device_that_fits_draws_every_tick() {
+        let keyboard = Achieved {
+            requested: Cadence::Normal,
+            per_frame: Duration::from_micros(7_800),
+            frames: 100,
+            every: 1,
+        };
+
+        assert_eq!(keyboard.draw_every(), 1);
+    }
+
+    #[test]
+    fn a_device_that_cannot_keep_up_takes_every_fourth_tick() {
+        // A light strip over WiFi: 50ms a frame against a 33ms interval. It is
+        // not made to wait for the group, and the group is not slowed to it.
+        let strip = Achieved {
+            requested: Cadence::Normal,
+            per_frame: Duration::from_millis(50),
+            frames: 20,
+            every: 1,
+        };
+
+        assert_eq!(strip.draw_every(), 4);
+        let settled = Achieved { every: 4, ..strip };
+        assert_eq!(settled.effective_hertz(), 7.5);
+    }
+
+    #[test]
+    fn nothing_measured_yet_means_draw_every_tick() {
+        let fresh = Achieved {
+            requested: Cadence::Normal,
+            per_frame: Duration::ZERO,
+            frames: 0,
+            every: 1,
+        };
+
+        assert_eq!(fresh.draw_every(), 1);
     }
 
     #[test]
@@ -149,6 +214,7 @@ mod tests {
             requested: Cadence::Slow,
             per_frame: Duration::from_micros(1),
             frames: 100,
+            every: 1,
         };
 
         assert_eq!(idle.effective_hertz(), 10.0);

@@ -123,6 +123,7 @@ impl Engine {
                         requested: cadence,
                         per_frame: Duration::ZERO,
                         frames: 0,
+                        every: 1,
                     });
 
                     let task = tokio::spawn(runner.run(receiver.clone(), cadence, Some(report)));
