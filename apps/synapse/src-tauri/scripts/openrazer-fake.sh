@@ -102,15 +102,29 @@ bus_works() {
     --method org.freedesktop.DBus.ListNames >/dev/null 2>&1
 }
 
-ensure_bus() {
-  # Prefer the session's own bus. Under WSLg, DBUS_SESSION_BUS_ADDRESS is set to
-  # a socket that does not exist, so the variable alone cannot be trusted — it
-  # has to answer.
+# Adopt a bus that already works, or fail. Only `start` may create one — this
+# used to create one here too, and that was the bug: `env` or `devices` run
+# after the recorded bus died would fork a fresh empty one and *overwrite the
+# pointer to the live daemon*, so the devices vanished with no error anywhere.
+use_bus() {
+  # Under WSLg, DBUS_SESSION_BUS_ADDRESS names a socket that does not exist, so
+  # the variable alone proves nothing — it has to answer.
   if bus_works "${DBUS_SESSION_BUS_ADDRESS:-}"; then
-    echo "$DBUS_SESSION_BUS_ADDRESS" > "$BUSFILE"
-  elif ! bus_works "$(cat "$BUSFILE" 2>/dev/null)"; then
-    dbus-daemon --session --print-address --fork > "$BUSFILE"
+    export DBUS_SESSION_BUS_ADDRESS
+    return 0
   fi
+  local recorded
+  recorded="$(cat "$BUSFILE" 2>/dev/null || true)"
+  if bus_works "$recorded"; then
+    export DBUS_SESSION_BUS_ADDRESS="$recorded"
+    return 0
+  fi
+  return 1
+}
+
+ensure_bus() {
+  use_bus && return 0
+  dbus-daemon --session --print-address --fork > "$BUSFILE"
   export DBUS_SESSION_BUS_ADDRESS="$(cat "$BUSFILE")"
 }
 
@@ -140,12 +154,16 @@ start() {
   mkdir -p "$ROOT/run" "$ROOT/log"
   rm -f "$ROOT"/run/*.pid
 
+  # ⚠️ Do not record `$!`. The daemon double-forks and `setproctitle`s itself to
+  # "openrazer-daemon", so the pid launched here dies immediately and the real
+  # one is reparented. It writes its own pidfile into --run-dir; that is the
+  # only handle on it. Five orphans accumulated before this was understood,
+  # each holding a bus of its own.
   nohup "$VENV/bin/python" "$REPO/daemon/run_openrazer_daemon.py" \
     -F -v --test-dir "$TREE" --config "$ROOT/razer.conf" \
     --run-dir "$ROOT/run" --log-dir "$ROOT/log" \
     --persistence "$ROOT/persistence.conf" \
     > "$ROOT/daemon.log" 2>&1 &
-  echo $! > "$ROOT/daemon.pid"
   sleep 5
 
   grep -q "Serving DBus" "$ROOT/daemon.log" \
@@ -156,7 +174,7 @@ start() {
 }
 
 devices() {
-  ensure_bus
+  use_bus || die "no daemon on any known bus — run: $(basename "$0") start"
   local serials
   serials=$(gdbus call --session --dest org.razer --object-path /org/razer \
             --method razer.devices.getDevices | grep -o "'[^']*'" | tr -d "'")
@@ -173,11 +191,13 @@ devices() {
 
 stop() {
   # By recorded pid, never `pkill -f`: the pattern would also match the shell
-  # that is running this script, and the script would kill its own caller.
-  for pidfile in "$ROOT/daemon.pid" "$ROOT/devices.pid"; do
+  # running this script, and the script would kill its own caller. The daemon's
+  # pidfile is the one it writes itself — see the warning in `start`.
+  for pidfile in "$ROOT"/run/*.pid "$ROOT/devices.pid"; do
     alive "$pidfile" && kill "$(cat "$pidfile")" 2>/dev/null || true
     rm -f "$pidfile"
   done
+  rm -f "$BUSFILE"
   # The tree emulates sysfs, so a plain `rm -rf .openrazer-fake` fails on the
   # read-only endpoints. Leave it removable.
   chmod -R u+w "$TREE" 2>/dev/null || true
@@ -187,7 +207,8 @@ stop() {
 case "${1:-start}" in
   start)   start ;;
   devices) devices ;;
-  env)     ensure_bus; echo "export DBUS_SESSION_BUS_ADDRESS='$DBUS_SESSION_BUS_ADDRESS'" ;;
+  env)     use_bus || die "no daemon on any known bus — run: $(basename "$0") start"
+           echo "export DBUS_SESSION_BUS_ADDRESS='$DBUS_SESSION_BUS_ADDRESS'" ;;
   stop)    stop ;;
   *)       echo "usage: $(basename "$0") {start|devices|env|stop}" >&2; exit 1 ;;
 esac
