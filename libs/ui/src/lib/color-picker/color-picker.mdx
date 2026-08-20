@@ -1,0 +1,65 @@
+{/* color-picker.mdx */}
+
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as stories from './color-picker.stories.ts';
+
+<Meta of={stories} />
+
+# Color picker
+
+A real `<input type="color">`, framed — not replaced.
+
+```html
+<syn-color-picker [(value)]="colour">Static colour</syn-color-picker>
+```
+
+<Canvas of={stories.Default} />
+
+<Controls of={stories.Default} />
+
+## Why not a custom picker
+
+The same trade the select makes. Replacing the native input means
+reimplementing a colour wheel, the eyedropper every desktop provides, the
+recent-colours list, and the keyboard — while losing the accessible name that
+comes free from a labelled form control. The swatch is ours to paint; the
+dialog belongs to the platform.
+
+## The empty state
+
+`value` is `string | undefined`, and `undefined` means _no colour chosen_. The
+native input cannot hold that — it always reports a value, black by default —
+so the empty state is drawn rather than stored: a chequerboard shows through
+where the swatch would be.
+
+<Canvas of={stories.Empty} />
+
+This is what the second colour of a breathing effect starts as. OpenRazer
+exposes `setBreathSingle` and `setBreathDual` as two different calls, so
+"no second colour" is a real state, not a placeholder.
+
+Choosing a colour is otherwise a one-way door — the platform picker has no
+empty entry — so `clearable` offers the way back.
+
+<Canvas of={stories.Clearable} />
+
+## States
+
+<Canvas of={stories.Disabled} />
+
+<Canvas of={stories.TwoWay} />
+
+## Structure
+
+The label uses an explicit `for`/`id` pair rather than wrapping the input. The
+row carries a Clear button, and a button inside a `<label>` activates the
+labelled control too — clearing the colour would have opened the picker on the
+way out.
+
+## Theming
+
+The frame follows the select: `--syn-primary` mixed down at rest, full
+`--syn-primary` on hover and focus. The swatch itself is never themed — its
+colour _is_ the value. The chequerboard is the one exception to the
+structure/colour split: its geometry lives in `color-picker.scss`, its two
+greys arrive as custom properties from the theme file.

@@ -1,0 +1,61 @@
+// Colour only — every dimension lives in color-picker.scss.
+//
+// The swatch paints itself: its colour is the value, not a theme role. What is
+// themed here is everything around it — the frame, the label, the hex, and the
+// two greys of the chequerboard that shows through when nothing is chosen.
+
+/// $theme is accepted for compatibility with `ui.scss`, which still passes the
+/// legacy map to the components that have not migrated yet. Unused here.
+@mixin apply($theme: null) {
+  syn-color-picker {
+    color: var(--syn-on-surface);
+
+    // Read by the conic-gradient in color-picker.scss, which owns the geometry.
+    --syn-color-picker-check-a: var(--syn-surface-variant);
+    --syn-color-picker-check-b: color-mix(
+      in srgb,
+      var(--syn-on-surface-variant) 25%,
+      var(--syn-surface-variant)
+    );
+  }
+
+  syn-color-picker .syn-color-picker__label,
+  syn-color-picker .syn-color-picker__hex {
+    color: var(--syn-on-surface-variant);
+  }
+
+  syn-color-picker .syn-color-picker__input {
+    border-color: color-mix(
+      in srgb,
+      var(--syn-primary) 45%,
+      var(--syn-surface-container)
+    );
+
+    &:not(:disabled):hover {
+      border-color: var(--syn-primary);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--syn-primary);
+    }
+  }
+
+  syn-color-picker .syn-color-picker__clear {
+    color: var(--syn-on-surface-variant);
+
+    &:not(:disabled):hover {
+      color: var(--syn-primary);
+      background-color: var(--syn-surface-variant);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--syn-primary);
+    }
+  }
+
+  // The real case: a capability the device does not support — the Rust backend
+  // answers InterfaceUnsupported.
+  syn-color-picker.syn-color-picker--disabled {
+    opacity: 0.35;
+  }
+}

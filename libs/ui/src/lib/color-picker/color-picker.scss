@@ -1,0 +1,125 @@
+// Structure only — every colour lives in _color-picker.theme.scss.
+// See libs/ui/AGENTS.md for the split.
+//
+// The chequerboard is the exception that proves the split: its geometry is
+// here, its two greys are theme roles fed in as custom properties.
+
+$swatch-size: 2.25rem;
+$check-size: 0.5rem;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.syn-color-picker__label:empty {
+  display: none;
+}
+
+.syn-color-picker__field {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+// Holds the chequerboard. It cannot go on the input itself: the swatch the
+// browser paints is opaque and would cover it.
+.syn-color-picker__swatch {
+  position: relative;
+  display: block;
+  flex: none;
+  inline-size: $swatch-size;
+  block-size: $swatch-size;
+  border-radius: 0.5rem;
+
+  background-image: conic-gradient(
+    var(--syn-color-picker-check-a) 25%,
+    var(--syn-color-picker-check-b) 0 50%,
+    var(--syn-color-picker-check-a) 0 75%,
+    var(--syn-color-picker-check-b) 0
+  );
+  background-size: $check-size $check-size;
+}
+
+.syn-color-picker__input {
+  // Chrome and Firefox both draw their own inset swatch with padding and a
+  // border; zeroing them is what lets the colour reach the edge of the frame.
+  appearance: none;
+  padding: 0;
+  border: 1px solid;
+  border-radius: 0.5rem;
+
+  inline-size: 100%;
+  block-size: 100%;
+  display: block;
+  cursor: pointer;
+  background-color: transparent;
+
+  transition: border-color 0.15s ease-in-out;
+
+  // The two vendor spellings of the same box.
+  &::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+
+  &::-webkit-color-swatch,
+  &::-moz-color-swatch {
+    border: none;
+    border-radius: 0.375rem;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+// Nothing chosen: let the chequerboard through instead of painting black.
+:host(.syn-color-picker--empty) .syn-color-picker__input {
+  &::-webkit-color-swatch,
+  &::-moz-color-swatch {
+    opacity: 0;
+  }
+}
+
+.syn-color-picker__hex {
+  font-family: ui-monospace, monospace;
+  font-size: 0.875rem;
+  // Six characters wide whatever the colour; without this the row reflows as
+  // the digits change under the picker.
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+}
+
+.syn-color-picker__clear {
+  margin-inline-start: auto;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: none;
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+:host(.syn-color-picker--disabled) {
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .syn-color-picker__input {
+    transition: none;
+  }
+}

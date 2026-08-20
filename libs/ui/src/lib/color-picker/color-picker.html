@@ -1,0 +1,36 @@
+<!--
+  Explicit `for`/`id` rather than a wrapping label. The row holds a Clear
+  button, and a button inside a label activates the labelled control too —
+  clearing the colour would have opened the picker on the way out.
+-->
+<label class="syn-color-picker__label" [attr.for]="id"><ng-content /></label>
+
+<div class="syn-color-picker__field">
+  <span class="syn-color-picker__swatch">
+    <input
+      class="syn-color-picker__input"
+      type="color"
+      [id]="id"
+      [value]="shown()"
+      [disabled]="disabled()"
+      [attr.aria-label]="ariaLabel()"
+      (input)="onInput($event)"
+    />
+  </span>
+
+  <!-- The input already announces its value; this is the sighted copy. -->
+  <span class="syn-color-picker__hex" aria-hidden="true">
+    {{ value() ?? 'None' }}
+  </span>
+
+  @if (clearable() && value() !== undefined) {
+    <button
+      type="button"
+      class="syn-color-picker__clear"
+      [disabled]="disabled()"
+      (click)="clear()"
+    >
+      Clear
+    </button>
+  }
+</div>

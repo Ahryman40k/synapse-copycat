@@ -4,6 +4,7 @@
 @use '../../lib/button-group/_button-group.theme.scss' as button-group;
 @use '../../lib/switch/_switch.theme.scss' as switch;
 @use '../../lib/checkbox/_checkbox.theme.scss' as checkbox;
+@use '../../lib/color-picker/color-picker.theme' as color-picker;
 @use '../../lib/key-capture/_key-capture.theme.scss' as key-capture;
 @use '../../lib/panel/panel.theme' as panel;
 @use '../../lib/select/select.theme' as select;
@@ -18,6 +19,7 @@
   @include button-group.apply($theme);
   @include switch.apply($theme);
   @include checkbox.apply($theme);
+  @include color-picker.apply($theme);
   @include key-capture.apply($theme);
   @include panel.apply($theme);
   @include select.apply($theme);
