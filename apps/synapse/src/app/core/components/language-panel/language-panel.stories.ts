@@ -3,6 +3,8 @@ import { expect, within } from 'storybook/test';
 import { LanguagePanel } from './language-panel';
 
 const meta: Meta<LanguagePanel> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: LanguagePanel,
 	title: 'Synapse application / Components / language panel',
 };

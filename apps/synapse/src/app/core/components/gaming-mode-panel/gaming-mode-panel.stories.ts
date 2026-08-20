@@ -3,6 +3,8 @@ import { expect, within } from 'storybook/test';
 import { GamingModePanel } from './gaming-mode-panel';
 
 const meta: Meta<GamingModePanel> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: GamingModePanel,
 	title: 'Synapse application / Components / gaming mode panel',
 };

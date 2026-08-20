@@ -3,6 +3,8 @@ import { expect, within } from 'storybook/test';
 import { SensitivityPanel } from './sensitivity-panel';
 
 const meta: Meta<SensitivityPanel> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: SensitivityPanel,
 	title: 'Synapse application / Components / sensitivity panel',
 };

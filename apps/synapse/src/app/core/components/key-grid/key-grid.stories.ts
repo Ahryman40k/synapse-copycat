@@ -3,6 +3,8 @@ import { expect, within } from 'storybook/test';
 import { KeyGrid } from './key-grid';
 
 const meta: Meta<KeyGrid> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: KeyGrid,
 	title: 'Synapse application / Components / key grid',
 };

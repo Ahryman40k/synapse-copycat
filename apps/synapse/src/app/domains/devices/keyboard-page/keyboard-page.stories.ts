@@ -26,6 +26,8 @@ const mock = {
 } satisfies Mock;
 
 const meta: Meta<KeyboardPageComponent> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: KeyboardPageComponent,
 	title: 'Synapse Application / Pages / Keyboard',
 	decorators: [

@@ -43,6 +43,8 @@ const mock = {
  * dashboard route does in the running application.
  */
 const meta: Meta<DefaultLayout> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: DefaultLayout,
 	title: 'Synapse Application / Layout / default layout',
 	decorators: [

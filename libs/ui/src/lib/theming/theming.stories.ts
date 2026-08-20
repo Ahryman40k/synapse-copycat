@@ -124,6 +124,8 @@ export class PaletteStoryHost {
 }
 
 const meta: Meta<PaletteStoryHost> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	title: 'UI library / Theming',
 	decorators: [moduleMetadata({ imports: [PaletteStoryHost] })],
 };

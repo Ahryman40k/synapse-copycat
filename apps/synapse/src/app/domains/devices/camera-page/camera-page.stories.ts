@@ -26,6 +26,8 @@ const mock = {
 } satisfies Mock;
 
 const meta: Meta<CameraPageComponent> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: CameraPageComponent,
 	title: 'Synapse Application / Pages / Camera',
 	decorators: [

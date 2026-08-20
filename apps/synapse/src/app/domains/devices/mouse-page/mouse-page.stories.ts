@@ -26,6 +26,8 @@ const mock = {
 } satisfies Mock;
 
 const meta: Meta<MousePageComponent> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: MousePageComponent,
 	title: 'Synapse Application / Pages / Mouse',
 	decorators: [

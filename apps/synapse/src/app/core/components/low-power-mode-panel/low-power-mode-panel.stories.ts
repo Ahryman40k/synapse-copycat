@@ -3,6 +3,8 @@ import { expect, within } from 'storybook/test';
 import { LowPowerModePanel } from './low-power-mode-panel';
 
 const meta: Meta<LowPowerModePanel> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: LowPowerModePanel,
 	title: 'Synapse application / Components / low power mode panel',
 };

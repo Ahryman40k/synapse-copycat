@@ -3,6 +3,8 @@ import { expect, within } from 'storybook/test';
 import { RazerLogo } from './razer-logo';
 
 const meta: Meta<RazerLogo> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: RazerLogo,
 	title: 'Synapse application / Components / Razer logo',
 };

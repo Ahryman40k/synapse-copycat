@@ -16,6 +16,8 @@ const MOUSEMAT = `data:image/svg+xml;utf8,${encodeURIComponent(
 )}`;
 
 const meta: Meta<DeviceStage> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: DeviceStage,
 	title: 'Synapse application / Components / device stage',
 	args: {

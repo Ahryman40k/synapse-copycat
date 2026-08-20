@@ -3,6 +3,8 @@ import { expect, within } from 'storybook/test';
 import { WirelessPowerSavingPanel } from './wireless-power-saving-panel';
 
 const meta: Meta<WirelessPowerSavingPanel> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: WirelessPowerSavingPanel,
 	title: 'Synapse application / Components / wireless power saving panel',
 };

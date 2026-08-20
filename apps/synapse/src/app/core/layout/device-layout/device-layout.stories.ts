@@ -17,6 +17,8 @@ const DEVICE: Device = {
 };
 
 const meta: Meta<DeviceLayout> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: DeviceLayout,
 	title: 'Synapse application / Templates / device layout',
 	decorators: [

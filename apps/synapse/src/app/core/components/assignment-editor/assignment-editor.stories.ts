@@ -3,6 +3,8 @@ import { expect, within } from 'storybook/test';
 import { AssignmentEditor } from './assignment-editor';
 
 const meta: Meta<AssignmentEditor> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: AssignmentEditor,
 	title: 'Synapse application / Components / assignment editor',
 	args: { control: { id: 'button-5', label: 'Forward' } },

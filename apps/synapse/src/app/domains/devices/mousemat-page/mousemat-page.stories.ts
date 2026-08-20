@@ -31,6 +31,8 @@ const mock = {
 } satisfies Mock;
 
 const meta: Meta<MousematPageComponent> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: MousematPageComponent,
 	title: 'Synapse Application / Pages / Mousemat',
 	decorators: [

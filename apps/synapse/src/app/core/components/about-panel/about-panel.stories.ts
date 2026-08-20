@@ -3,6 +3,8 @@ import { expect, within } from 'storybook/test';
 import { AboutPanel } from './about-panel';
 
 const meta: Meta<AboutPanel> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: AboutPanel,
 	title: 'Synapse application / Components / about panel',
 };

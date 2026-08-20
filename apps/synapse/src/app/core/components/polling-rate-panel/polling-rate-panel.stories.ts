@@ -3,6 +3,8 @@ import { expect, within } from 'storybook/test';
 import { PollingRatePanel } from './polling-rate-panel';
 
 const meta: Meta<PollingRatePanel> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: PollingRatePanel,
 	title: 'Synapse application / Components / polling rate panel',
 };

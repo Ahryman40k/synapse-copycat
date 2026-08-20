@@ -70,6 +70,8 @@ const MockedStore = signalStore(
 );
 
 const meta: Meta<DashboardPage> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: DashboardPage,
 	title: 'Synapse Application / Pages / Dashboard',
 	decorators: [

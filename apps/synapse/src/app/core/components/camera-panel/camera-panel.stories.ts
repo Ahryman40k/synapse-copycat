@@ -31,6 +31,8 @@ const KIYO: Device = {
 };
 
 const meta: Meta<CameraPanel> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: CameraPanel,
 	title: 'Synapse application / Components / camera panel',
 	args: { device: KIYO },

@@ -5,6 +5,8 @@ import { expect, within } from 'storybook/test';
 import { TemperatureSlider } from './temperature-slider';
 
 const meta: Meta<TemperatureSlider> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: TemperatureSlider,
 	title: 'UI library / Temperature slider',
 	args: { ariaLabel: 'White balance', value: 5000, disabled: false },

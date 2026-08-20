@@ -8,6 +8,8 @@ import { expect, within } from 'storybook/test';
 import { SettingsPage } from './settings-page';
 
 const meta: Meta<SettingsPage> = {
+	// No .mdx beside this one, so Storybook generates the docs page.
+	tags: ['autodocs'],
 	component: SettingsPage,
 	title: 'Synapse Application / Pages / Settings',
 	decorators: [
