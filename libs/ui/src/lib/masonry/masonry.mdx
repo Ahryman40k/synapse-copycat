@@ -1,0 +1,70 @@
+{/* masonry.mdx */}
+
+import { Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as stories from './masonry.stories.ts';
+
+<Meta of={stories} />
+
+# Masonry
+
+Turns a CSS grid into a masonry: every item packs against the bottom of the one
+above it **in its own column**, rather than against the tallest item in its row.
+
+```html
+<div class="panels" synMasonry>…</div>
+```
+
+```scss
+.panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  column-gap: 1em;
+}
+```
+
+<Canvas of={stories.Packed} />
+
+## Why this is a directive and not a stylesheet
+
+A grid row is as tall as its tallest item. That ties together items which have
+nothing to do with each other: a control appearing in one panel pushes the panel
+below its _neighbour_ down the page.
+
+CSS has an answer — `grid-template-rows: masonry` — and no engine ships it.
+Probed while writing this: Chromium supports neither it nor the `item-flow`
+shorthand that replaced it in the working draft, and WebKit, which is what Tauri
+renders with on Linux, is no further ahead. So the heights have to be measured.
+
+The grid is given rows one pixel tall and no row gap; each item is then told to
+span as many of them as it is tall, plus the gap.
+
+## Pinned by index, not packed into the shortest column
+
+Textbook masonry drops each item into whichever column is currently shortest.
+That is unstable when an item changes height — measured here, growing one panel
+moved its neighbour into the other column entirely, which reads as a glitch
+rather than a layout.
+
+So item _n_ goes to column _n % columns_. The bottoms come out ragged, which is
+what a masonry looks like, and nothing ever changes column unless the column
+count does.
+
+<Canvas of={stories.Stable} />
+
+## What it owns, and what you own
+
+The three declarations that make the measuring work are the directive's own
+machinery and it sets them on its host: one-pixel rows, no row gap, and
+`align-items: start` — an item filling its row would measure the row rather than
+itself. Left in the consumer's stylesheet they were a contract nothing enforced;
+dropping one broke the packing with no error, only a wrong answer.
+
+Yours is the layout: `display: grid`, how many columns, and the gap between
+them. The vertical gap is read from `column-gap`, so there is no second number
+to keep in sync.
+
+## Without scripting
+
+`ResizeObserver` is absent from jsdom, and the directive stands down when it
+finds none — the grid then renders as an ordinary one. That is also the right
+answer with scripting off: rows that line up, rather than a collapsed page.

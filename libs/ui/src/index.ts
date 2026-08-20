@@ -5,6 +5,7 @@ export * from './lib/card/card';
 export * from './lib/checkbox/checkbox';
 export * from './lib/color-picker/color-picker';
 export * from './lib/key-capture/key-capture';
+export * from './lib/masonry/masonry';
 export * from './lib/panel/panel';
 export * from './lib/select/select';
 export * from './lib/slider/slider';
