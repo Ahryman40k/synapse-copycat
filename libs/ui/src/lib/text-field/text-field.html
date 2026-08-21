@@ -1,0 +1,16 @@
+<label class="syn-text-field__control">
+  <span class="syn-text-field__label"><ng-content /></span>
+
+  <input
+    class="syn-text-field__input"
+    type="text"
+    [value]="value()"
+    [disabled]="disabled()"
+    [attr.placeholder]="placeholder() || null"
+    [attr.aria-label]="ariaLabel()"
+    (focus)="onFocus()"
+    (input)="onInput($event)"
+    (blur)="onBlur()"
+    (keydown)="onKeydown($event)"
+  />
+</label>

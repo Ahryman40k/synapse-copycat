@@ -9,6 +9,7 @@
 @use '../../lib/panel/panel.theme' as panel;
 @use '../../lib/select/select.theme' as select;
 @use '../../lib/slider/_slider.theme.scss' as slider;
+@use '../../lib/text-field/_text-field.theme.scss' as text-field;
 @use '../../lib/temperature-slider/_temperature-slider.theme.scss' as
   temperature-slider;
 
@@ -24,6 +25,7 @@
   @include panel.apply($theme);
   @include select.apply($theme);
   @include slider.apply($theme);
+  @include text-field.apply($theme);
   // After the slider: it repaints the track that one has just painted.
   @include temperature-slider.apply($theme);
 }

@@ -11,6 +11,7 @@ export * from './lib/select/select';
 export * from './lib/slider/slider';
 export * from './lib/temperature-slider/temperature-slider';
 export * from './lib/switch/switch';
+export * from './lib/text-field/text-field';
 export * from './lib/theming/oklch';
 export * from './lib/theming/palette';
 export * from './lib/theming/theme';

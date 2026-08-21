@@ -1,0 +1,43 @@
+// Colour only — every dimension lives in text-field.scss.
+
+/// $theme is accepted for compatibility with `ui.scss`, which still passes the
+/// legacy map to the components that have not migrated yet. Unused here.
+@mixin apply($theme: null) {
+  syn-text-field {
+    color: var(--syn-on-surface);
+  }
+
+  syn-text-field .syn-text-field__label {
+    color: var(--syn-on-surface-variant);
+  }
+
+  syn-text-field .syn-text-field__input {
+    background-color: var(--syn-surface-variant);
+    color: var(--syn-on-surface);
+    border-color: color-mix(
+      in srgb,
+      var(--syn-primary) 45%,
+      var(--syn-surface-container)
+    );
+
+    // The hint text, which must stay distinguishable from a real value —
+    // someone reading a field cannot otherwise tell what they typed from what
+    // the field is suggesting.
+    &::placeholder {
+      color: var(--syn-on-surface-variant);
+      opacity: 0.75;
+    }
+
+    &:not(:disabled):hover {
+      border-color: var(--syn-primary);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--syn-primary);
+    }
+  }
+
+  syn-text-field.syn-text-field--disabled {
+    opacity: 0.35;
+  }
+}

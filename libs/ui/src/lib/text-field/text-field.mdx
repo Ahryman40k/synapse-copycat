@@ -1,0 +1,41 @@
+{/* text-field.mdx */}
+
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+import * as stories from './text-field.stories.ts';
+
+<Meta of={stories} />
+
+# TextField
+
+A single line of text, restyled around a real `<input>`.
+
+```html
+<syn-text-field [(value)]="name" (committed)="rename($event)">
+  Group name
+</syn-text-field>
+```
+
+<Canvas of={stories.Default} />
+
+<Controls of={stories.Default} />
+
+## `value` and `committed` are not the same event
+
+`value` follows every keystroke, which is what a two-way binding is for. Naming
+a group is not a per-keystroke command though — wiring a rename to `valueChange`
+sends one command per letter typed.
+
+`committed` fires when the user has settled: on Enter, and on leaving the field.
+That is the one to send to a backend.
+
+Escape restores what the field held when it was focused and commits nothing.
+Abandoning an edit is something people expect to be able to do, and a rename
+committed on the way out would have no way back.
+
+<Canvas of={stories.Abandoning} />
+
+## Why the native element
+
+The caret, selection, undo, autofill, dictation and the mobile keyboard all come
+free with `<input>`. A `<div contenteditable>` would have to reinvent every one
+of them, badly.

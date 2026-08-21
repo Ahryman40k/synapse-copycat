@@ -1,0 +1,53 @@
+// Structure only — every colour lives in _text-field.theme.scss.
+// See libs/ui/AGENTS.md for the split.
+
+:host {
+  display: block;
+}
+
+.syn-text-field__control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.syn-text-field__label:empty {
+  display: none;
+}
+
+.syn-text-field__input {
+  width: 100%;
+  // Matches the select, so the two line up in a row of controls.
+  padding: 0.5rem 0.875rem;
+
+  border: 1px solid;
+  border-radius: 0.5rem;
+
+  font: inherit;
+
+  transition:
+    border-color 0.15s ease-in-out,
+    background-color 0.15s ease-in-out;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+:host(.syn-text-field--disabled) {
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .syn-text-field__input {
+    transition: none;
+  }
+}
