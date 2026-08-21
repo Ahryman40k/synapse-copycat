@@ -8,7 +8,7 @@ import { componentWrapperDecorator } from '@storybook/angular';
 import type { Meta, StoryObj } from '@storybook/angular';
 import { Component, signal } from '@angular/core';
 import { moduleMetadata } from '@storybook/angular';
-import { expect, userEvent, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { GroupCard } from './group-card';
 
 const meta: Meta<GroupCard> = {
@@ -164,6 +164,12 @@ export const Stopped: Story = {
 		await expect(
 			canvas.getByRole('switch', { name: 'Run Desk' }),
 		).not.toBeChecked();
+
+		// Still level, with nothing to report on any of them.
+		const heights = [...canvasElement.querySelectorAll('participant-card')].map(
+			(tile) => (tile as HTMLElement).offsetHeight,
+		);
+		await expect(new Set(heights).size).toBe(1);
 	},
 };
 
@@ -213,6 +219,15 @@ export const Skipped: Story = {
 		await expect(canvas.getByText('no lighting interface')).toBeVisible();
 		// Counted like the others: it is in the group, it is just not drawing.
 		await expect(canvas.getByText('4 participants')).toBeVisible();
+
+		// The reason is longer than a rate, and the tile carrying it must not
+		// make the shelf ragged — an uneven row reads as a fault in the short
+		// ones rather than as extra words in the tall one.
+		const heights = [...canvasElement.querySelectorAll('participant-card')].map(
+			(tile) => (tile as HTMLElement).offsetHeight,
+		);
+		await expect(heights).toHaveLength(4);
+		await expect(new Set(heights).size).toBe(1);
 		// Unknown to the catalogue, so its identifier stands in for a name
 		// rather than the tile coming up blank.
 		await expect(canvas.getByText('5426-3587')).toBeVisible();
@@ -262,12 +277,11 @@ export const Settings: Story = {
 
 		await expect(settings).toHaveAttribute('open');
 
-		// Name, cadence and the three channels, all behind the one disclosure.
+		// Cadence and the three channels, behind the one disclosure. The name is
+		// not here — it is the title.
 		await expect(
-			// Named after the group it renames: two cards on one page would
-			// otherwise both answer to "Group name".
-			canvas.getByRole('textbox', { name: 'Rename Desk' }),
-		).toHaveValue('Desk');
+			canvas.queryByRole('textbox', { name: 'Rename Desk' }),
+		).not.toBeInTheDocument();
 		await expect(
 			canvas.getByRole('combobox', { name: 'Cadence for Desk' }),
 		).toHaveValue('normal');
@@ -293,6 +307,40 @@ export const Receiving: Story = {
 		await userEvent.click(canvas.getByRole('button', { name: 'Place here' }));
 
 		await expect(canvas.getByTestId('taken')).toHaveTextContent('5426-3587');
+	},
+};
+
+/**
+ * Renaming in place.
+ *
+ * A field open in every card was too much furniture for something done once, so
+ * the title is a button until it is pressed. That it takes focus as it appears
+ * is the part worth a story: a field that opens and waits to be clicked is
+ * worse than the button it replaced, and jsdom cannot tell you where focus is
+ * in a way that means anything.
+ */
+export const Renaming: Story = {
+	name: 'Renaming from the title',
+	args: { status: desk, catalogue: CATALOGUE },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+
+		// A heading at rest, which is what lets a reader move between cards.
+		await expect(canvas.getByRole('heading', { name: 'Desk' })).toBeVisible();
+
+		await userEvent.click(canvas.getByRole('button', { name: 'Desk' }));
+
+		const field = canvas.getByRole('textbox', { name: 'Rename Desk' });
+		await expect(field).toHaveValue('Desk');
+		// Focus arrives in the after-render phase, which is a frame later than
+		// the click that caused it.
+		await waitFor(async () => {
+			await expect(field).toHaveFocus();
+		});
+
+		// And leaving puts the heading back, changed or not.
+		await userEvent.keyboard('{Escape}');
+		await expect(canvas.getByRole('heading', { name: 'Desk' })).toBeVisible();
 	},
 };
 

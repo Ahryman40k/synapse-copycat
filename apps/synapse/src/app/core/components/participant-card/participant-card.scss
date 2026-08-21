@@ -1,8 +1,19 @@
 // Structure only — the colour lives in _participant-card.theme.scss.
 
+// The host is the grid item, so it is what the row stretches. Without a
+// display of its own it laid out inline and the stretch stopped there, leaving
+// the tile inside at its content height — which is how a row of tiles ended up
+// ragged even though the grid had made room for them all.
+:host {
+  display: flex;
+}
+
 .participant-card__frame {
   position: relative;
   display: flex;
+  // Fills the height the row gave the host; the tile inside then stretches
+  // with it, because a flex row stretches its items by default.
+  flex: 1 1 auto;
   min-width: 0;
 }
 

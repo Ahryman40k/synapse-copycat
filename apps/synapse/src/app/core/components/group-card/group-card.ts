@@ -1,9 +1,15 @@
 import {
+	afterNextRender,
 	ChangeDetectionStrategy,
 	Component,
 	computed,
+	ElementRef,
+	inject,
+	Injector,
 	input,
 	output,
+	signal,
+	viewChild,
 } from '@angular/core';
 import type {
 	Ambience,
@@ -92,6 +98,46 @@ export class GroupCard {
 	readonly participantOpen = output<ParticipantId>();
 	readonly participantPickUp = output<ParticipantId>();
 
+	/**
+	 * Renaming in place, on the title.
+	 *
+	 * A field sitting open in every card was too much furniture for something
+	 * done once: a group is named when it is made and rarely again. The title is
+	 * a button until it is pressed, so the affordance costs a hover and the
+	 * resting card shows a heading, which is also what a screen reader needs to
+	 * find its way between cards.
+	 */
+	protected readonly renaming = signal(false);
+
+	/**
+	 * ⚠️ `read: ElementRef` is required. `syn-text-field` is a component, so a
+	 * bare `viewChild` hands back its instance, not its element — the type said
+	 * `ElementRef`, the optional chain swallowed the mismatch, and the focus
+	 * quietly never happened.
+	 */
+	private readonly nameField = viewChild('nameField', { read: ElementRef });
+
+	readonly #injector = inject(Injector);
+
+	/**
+	 * Open the field, and put the caret in it.
+	 *
+	 * ⚠️ The focus is scheduled for after the next render, not done here and not
+	 * from an `effect`. Both of those run before the view is refreshed, so the
+	 * field being focused does not exist yet — the call went nowhere in silence
+	 * and the caret stayed on the button that had just been replaced.
+	 */
+	protected startRenaming(): void {
+		this.renaming.set(true);
+
+		afterNextRender(
+			() => {
+				this.nameField()?.nativeElement.querySelector('input')?.focus();
+			},
+			{ injector: this.#injector },
+		);
+	}
+
 	protected readonly group = computed(() => this.status().group);
 	protected readonly ambience = computed(() => this.group().ambience);
 	protected readonly running = computed(() => this.group().started);
@@ -159,5 +205,15 @@ export class GroupCard {
 		// A group with no name is unnameable in the interface afterwards, and
 		// the backend has no opinion — so the empty case is refused here.
 		if (trimmed) this.renamed.emit(trimmed);
+	}
+
+	/**
+	 * Leaving the field closes it, whether or not anything changed.
+	 *
+	 * `committed` fires only on a real change, so closing on that alone left the
+	 * field open after Escape or after a click away with nothing typed.
+	 */
+	protected onNameBlur(): void {
+		this.renaming.set(false);
 	}
 }

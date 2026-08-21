@@ -1,10 +1,62 @@
 // Structure only — the colour lives in _group-card.theme.scss.
 // The column layout comes from `syn-panel` itself.
 
+// The host is the grid item, so the row stretches it — but only once it has a
+// display of its own; left inline the stretch stopped there and each card ended
+// at its own content height. The panel inside then fills that height because a
+// flex row stretches its items, and `flex: 1 1 auto` is what gives it the full
+// width. Both halves are load-bearing, and `Cards level across a row` in the
+// dashboard stories fails without the first.
+:host {
+  display: flex;
+}
+
+syn-panel {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 h2 {
   margin: 0;
-  font-size: 1rem;
-  text-transform: uppercase;
+  // Sized on the button inside it, which is what carries the text.
+  font-size: inherit;
+  // Takes the room the switch does not, so a name is only ever short of space
+  // when there genuinely is none.
+  flex: 1 1 auto;
+  min-width: 0;
+
+  button {
+    // A heading that behaves like text until reached for. The box is there
+    // from the start so pressing it does not shift anything.
+    display: block;
+    max-width: 100%;
+    padding: 0.125rem 0.25rem;
+    margin: -0.125rem -0.25rem;
+
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    background: none;
+
+    font: inherit;
+    font-size: 1rem;
+    font-weight: inherit;
+    text-align: left;
+    text-transform: uppercase;
+    cursor: text;
+
+    // Wraps rather than truncating. A name is the one thing on the card that
+    // identifies it, and half of it followed by an ellipsis identifies nothing
+    // — the row is free to grow instead, now that cards are level by row.
+    overflow-wrap: anywhere;
+    width: 100%;
+  }
+}
+
+// Exactly the room the heading had, so the switch beside it does not move as
+// the field replaces the title.
+.group-card__name-field {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 h3 {
@@ -91,6 +143,11 @@ h3 {
   // Small tiles, several to a row: a group of six should read as a shelf, not
   // as a scroll.
   grid-template-columns: repeat(auto-fill, minmax(min(8rem, 100%), 1fr));
+  // Every tile the same height, across rows and not only within one. Tiles
+  // carry a different amount to say — a rate, a reason, nothing at all while
+  // the group is stopped — and a shelf of uneven tiles reads as a fault in the
+  // short ones. `1fr` on auto rows sizes them all to the tallest.
+  grid-auto-rows: 1fr;
   gap: 0.5rem;
 }
 

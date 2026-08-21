@@ -3,8 +3,19 @@
 /// $theme is accepted for compatibility with the call in styles.scss, which
 /// still passes the legacy map. Unused here.
 @mixin apply($theme: null) {
-  group-card h2 {
+  group-card h2 button {
     color: var(--syn-primary);
+
+    // Only on hover and focus: an outline around every card title would read
+    // as a form, which is the furniture this replaced.
+    &:hover {
+      border-color: var(--syn-outline);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--syn-primary);
+      outline-offset: 1px;
+    }
   }
 
   group-card h3,

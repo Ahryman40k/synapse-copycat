@@ -8,6 +8,7 @@ import {
 } from '@synapse-copycat/backend-api';
 import {
 	applicationConfig,
+	componentWrapperDecorator,
 	moduleMetadata,
 	type Meta,
 	type StoryObj,
@@ -165,6 +166,171 @@ export const Default: Story = {
 	},
 };
 
+/**
+ * Two groups side by side, with different amounts to say.
+ *
+ * ⚠️ Their heights are the point, and only a real browser can tell: jsdom
+ * reports 0 for every measurement.
+ */
+export const LevelCards: Story = {
+	name: 'Cards level across a row',
+	decorators: [
+		applicationConfig({
+			providers: [
+				provideBackendApi(
+					withMock(backend(['5426-0136', '5426-0550', '5426-3074'])),
+				),
+			],
+		}),
+	],
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		await canvas.findByText('All devices');
+
+		// Empty the first group of most of its members so the two differ in
+		// content, then make a second one.
+		await userEvent.click(canvas.getByRole('button', { name: /New group/ }));
+		const dialog = await within(document.body).findByRole('dialog', {
+			name: 'New group',
+		});
+		await userEvent.type(
+			within(dialog).getByRole('textbox', { name: 'Group name' }),
+			'Desk',
+		);
+		await userEvent.click(
+			within(dialog).getByRole('button', { name: 'Create' }),
+		);
+
+		await waitFor(async () => {
+			await expect(canvas.getByRole('heading', { name: 'Desk' })).toBeVisible();
+		});
+
+		// ⚠️ Measured on the panel, not on `group-card`. The host is the grid
+		// item and the grid stretches it whatever happens inside, so measuring
+		// the host asserts nothing at all — the painted box is the panel.
+		//
+		// One group holds three tiles, the other none, and they still end level.
+		// The direct child only: the ambience panel inside the disclosure is a
+		// `syn-panel` too.
+		const heights = [
+			...canvasElement.querySelectorAll('group-card > syn-panel'),
+		].map((panel) => (panel as HTMLElement).offsetHeight);
+		await expect(heights).toHaveLength(2);
+		await expect(new Set(heights).size).toBe(1);
+	},
+};
+
+/**
+ * Three groups in a window two cards wide.
+ *
+ * ⚠️ The wrapping is the assertion, and only a real browser can make it: jsdom
+ * has no layout, so every `offsetTop` there is 0 and the same test would pass
+ * against a single unbroken row.
+ */
+export const Wrapping: Story = {
+	name: 'Wrapping onto a second row',
+	decorators: [
+		componentWrapperDecorator(
+			(story) => `<div style="width: 46rem">${story}</div>`,
+		),
+		applicationConfig({
+			providers: [
+				provideBackendApi(withMock(backend(['5426-0136', '5426-0550']))),
+			],
+		}),
+	],
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		await canvas.findByText('All devices');
+
+		// A group on its own takes the row rather than sitting in a third of it
+		// with two empty tracks beside it.
+		const lone = canvasElement.querySelector('group-card') as HTMLElement;
+		const row = lone.parentElement as HTMLElement;
+		await expect(lone.offsetWidth).toBe(row.offsetWidth);
+
+		for (const name of ['Desk', 'Shelf']) {
+			await userEvent.click(canvas.getByRole('button', { name: /New group/ }));
+			const dialog = await within(document.body).findByRole('dialog', {
+				name: 'New group',
+			});
+			await userEvent.type(
+				within(dialog).getByRole('textbox', { name: 'Group name' }),
+				name,
+			);
+			await userEvent.click(
+				within(dialog).getByRole('button', { name: 'Create' }),
+			);
+			await waitFor(async () => {
+				await expect(canvas.getByRole('heading', { name })).toBeVisible();
+			});
+		}
+
+		const cards = [...canvasElement.querySelectorAll('group-card')];
+		await expect(cards).toHaveLength(3);
+
+		// 46rem holds two cards at the 20rem floor and no more, so the third
+		// starts a second row. The count follows the window, and the cap only
+		// bites on screens wide enough to want more than it allows.
+		const tops = cards.map((card) => (card as HTMLElement).offsetTop);
+		await expect(new Set(tops).size).toBe(2);
+		await expect(tops[0]).toBe(tops[1]);
+		await expect(tops[2]).toBeGreaterThan(tops[0]);
+	},
+};
+
+/**
+ * Four groups in a window wide enough for five.
+ *
+ * ⚠️ The cap is the assertion. Without it the row keeps taking columns until
+ * the cards are 20rem postage stamps, which is the point where "how many fit"
+ * stops meaning "how many are worth reading".
+ */
+export const Capped: Story = {
+	name: 'Capped at three columns',
+	decorators: [
+		componentWrapperDecorator(
+			(story) => `<div style="width: 90rem">${story}</div>`,
+		),
+		applicationConfig({
+			providers: [
+				provideBackendApi(withMock(backend(['5426-0136', '5426-0550']))),
+			],
+		}),
+	],
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		await canvas.findByText('All devices');
+
+		for (const name of ['Desk', 'Shelf', 'Rack']) {
+			await userEvent.click(canvas.getByRole('button', { name: /New group/ }));
+			const dialog = await within(document.body).findByRole('dialog', {
+				name: 'New group',
+			});
+			await userEvent.type(
+				within(dialog).getByRole('textbox', { name: 'Group name' }),
+				name,
+			);
+			await userEvent.click(
+				within(dialog).getByRole('button', { name: 'Create' }),
+			);
+			await waitFor(async () => {
+				await expect(canvas.getByRole('heading', { name })).toBeVisible();
+			});
+		}
+
+		const cards = [...canvasElement.querySelectorAll('group-card')];
+		await expect(cards).toHaveLength(4);
+
+		// 90rem would hold four cards at the 20rem floor, so the fourth is on a
+		// second row because of the cap and not because it did not fit.
+		const tops = cards.map((card) => (card as HTMLElement).offsetTop);
+		await expect(new Set(tops).size).toBe(2);
+		await expect(tops[2]).toBe(tops[0]);
+		await expect(tops[3]).toBeGreaterThan(tops[0]);
+	},
+};
+
 /** Nothing saved and nothing plugged in: the emptiest the page ever is. */
 export const NoGroups: Story = {
 	decorators: [
@@ -289,12 +455,9 @@ export const Tuning: Story = {
 		const canvas = within(canvasElement);
 
 		await canvas.findByText('All devices');
-		// The disclosure's summary, which the colour also appears inside once
-		// it is open.
-		await userEvent.click(
-			canvasElement.querySelector('summary') as HTMLElement,
-		);
 
+		// The name is the title, not a field in the disclosure.
+		await userEvent.click(canvas.getByRole('button', { name: 'All devices' }));
 		const name = canvas.getByRole('textbox', { name: 'Rename All devices' });
 		await userEvent.clear(name);
 		await userEvent.type(name, 'Desk{Enter}');
@@ -303,6 +466,10 @@ export const Tuning: Story = {
 			await expect(canvas.getByRole('heading', { name: 'Desk' })).toBeVisible();
 		});
 
+		// The cadence does live in the disclosure.
+		await userEvent.click(
+			canvasElement.querySelector('summary') as HTMLElement,
+		);
 		const cadence = canvas.getByRole('combobox', { name: 'Cadence for Desk' });
 		await userEvent.selectOptions(cadence, 'slow');
 

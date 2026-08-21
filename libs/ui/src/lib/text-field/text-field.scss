@@ -16,6 +16,11 @@
 }
 
 .syn-text-field__input {
+  // ⚠️ Declared here, not relied upon. This workspace has no global
+  // `box-sizing` reset, so `width: 100%` in a content-box world means 100% of
+  // the parent *plus* 1.75rem of padding and 2px of border — which is how this
+  // field overflowed the box it was given and ran under the control beside it.
+  box-sizing: border-box;
   width: 100%;
   // Matches the select, so the two line up in a row of controls.
   padding: 0.5rem 0.875rem;

@@ -1,6 +1,26 @@
 <syn-panel>
   <div class="group-card__header">
-    <h2>{{ group().name }}</h2>
+    <!--
+      The title is the rename. A heading at rest — which is what lets a reader
+      move between cards — and a field once pressed, rather than a field open
+      in every card for something done once.
+    -->
+    @if (renaming()) {
+      <syn-text-field
+        #nameField
+        class="group-card__name-field"
+        [value]="group().name"
+        [ariaLabel]="'Rename ' + group().name"
+        (committed)="onRenamed($event)"
+        (focusout)="onNameBlur()"
+      ></syn-text-field>
+    } @else {
+      <h2>
+        <button type="button" (click)="startRenaming()">
+          {{ group().name }}
+        </button>
+      </h2>
+    }
 
     <!--
       A switch, not a button: started is a state the group keeps between runs,
@@ -31,14 +51,6 @@
     </summary>
 
     <div class="group-card__settings-body">
-      <syn-text-field
-        [value]="group().name"
-        [ariaLabel]="'Rename ' + group().name"
-        (committed)="onRenamed($event)"
-      >
-        Name
-      </syn-text-field>
-
       <!--
         A request, not a promise: a device that cannot afford the rate skips
         ticks of its own accord rather than slowing the group, which is what

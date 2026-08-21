@@ -10,16 +10,59 @@ h2 {
   font-size: 1.2em;
 }
 
-// `synMasonry` brings the row machinery; the columns and the gap stay here.
+// As many columns as the window can hold, up to a cap, with the cards sharing
+// whatever is left — so one group takes the row rather than sitting in a
+// quarter of it with three empty tracks beside it.
+//
+// Two floors decide the count, and they pull in opposite directions:
+//
+// - **20rem per card**, taken from what a card has to hold rather than picked:
+//   two participant tiles of 8rem with their gap, and the two sliders in the
+//   ambience panel side by side at `flex: 1 1 8rem` instead of wrapping. Below
+//   that the card starts folding its own contents.
+// - **`--group-columns`**, a cap. Without it a wide screen keeps adding
+//   columns until the cards are 20rem postage stamps, and the answer to "how
+//   many fit" stops being the same as "how many are worth reading".
+//
+// `max()` of the two is what `auto-fit` gets as its minimum: whichever floor
+// is larger at this width wins, so the count rises with the window and stops
+// at the cap. `auto-fit` and not `auto-fill`, because collapsing the tracks
+// nothing occupies is exactly what lets a lone card take the row.
 .dashboard-page__groups {
+  --group-columns: 3;
+  --group-gap: 1rem;
+
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
-  column-gap: 1rem;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(
+      max(
+        min(20rem, 100%),
+        calc(
+          (100% - (var(--group-columns) - 1) * var(--group-gap)) /
+            var(--group-columns)
+        )
+      ),
+      1fr
+    )
+  );
+  gap: var(--group-gap);
+  margin-bottom: 1rem;
+}
+
+// Wide enough that a fourth column is still comfortably above the 20rem floor.
+@media (min-width: 100rem) {
+  .dashboard-page__groups {
+    --group-columns: 4;
+  }
 }
 
 .dashboard-page__tray {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(9rem, 100%), 1fr));
+  // Same reason as the tiles inside a group: uneven heights read as a fault in
+  // the short ones.
+  grid-auto-rows: 1fr;
   gap: 0.75rem;
 
   // A visible area even when empty, so there is somewhere to aim at when
