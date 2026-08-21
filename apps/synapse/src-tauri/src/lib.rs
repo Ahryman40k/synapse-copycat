@@ -36,6 +36,17 @@ pub fn run() {
             commands::devices,
             // commands::modules,
             commands::run_capability,
+            // ── groups ──
+            commands::groups,
+            commands::unassigned_participants,
+            commands::create_group,
+            commands::rename_group,
+            commands::set_group_members,
+            commands::set_group_ambience,
+            commands::set_group_cadence,
+            commands::start_group,
+            commands::stop_group,
+            commands::remove_group,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

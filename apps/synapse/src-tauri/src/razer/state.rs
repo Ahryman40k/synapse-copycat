@@ -4,8 +4,9 @@ use tokio::sync::Mutex;
 
 use crate::razer::backend::{BackendError, DeviceBackend};
 use crate::razer::engine::ambience::Ambience;
-use crate::razer::engine::cadence::Cadence;
-use crate::razer::engine::{Engine, Status};
+use crate::razer::engine::frame::Rgb;
+use crate::razer::engine::group::{Conductor, GroupId, GroupStatus, ParticipantId};
+use crate::razer::persistence;
 
 /// Tauri managed state. Holds the platform backend behind a trait object
 /// so all command handlers are platform-agnostic.
@@ -22,6 +23,9 @@ use crate::razer::engine::{Engine, Status};
 /// blocking lock across an await would block the whole runtime.
 ///
 /// `Send + Sync` are required by Tauri's `manage()`.
+/// Razer green, and the same value `libs/ui` starts its palette from.
+const DEFAULT_COLOUR: Rgb = Rgb::new(0, 255, 0);
+
 pub struct RazerState {
     /// `Arc`, not `Box`: every runner the engine spawns holds one, and a task
     /// cannot borrow from this struct.
@@ -30,39 +34,74 @@ pub struct RazerState {
     /// Why there is none, kept verbatim for the message the frontend receives.
     reason: Option<String>,
 
-    engine: Mutex<Option<Engine>>,
+    conductor: Mutex<Conductor>,
+
+    /// Where the groups are written. `None` when neither `XDG_CONFIG_HOME` nor
+    /// `HOME` is set, in which case the app still runs — it just forgets.
+    config_path: Option<std::path::PathBuf>,
 }
 
 impl RazerState {
     /// Never fails. Called once at app startup in `lib.rs`.
     ///
-    /// ⚠️ One attempt, at startup. A daemon started afterwards is not picked
-    /// up — the app has to be restarted. Reconnecting on demand needs interior
-    /// mutability here and is deliberately left out for now.
+    /// ⚠️ One attempt at the daemon, at startup. A daemon started afterwards is
+    /// not picked up — the app has to be restarted.
     ///
-    /// The engine is lodged, not started. Launch will start whatever the saved
-    /// configuration says was running — see `Conductor::start_marked` — and a
-    /// machine with no saved configuration gets one group holding everything,
-    /// already drawing.
-    ///
-    /// ⚠️ That default does light the hardware without being asked, overwriting
-    /// whatever effect was on it. A deliberate choice, taken on the grounds
-    /// that an application opening on an empty page teaches nothing, and
-    /// reversible in one click since `started` is a state the user owns.
+    /// Groups come from disk. With nothing saved, everything the daemon
+    /// reports goes into one group that is already drawing; with a broken file,
+    /// nothing is assumed and the user is left with no groups rather than with
+    /// a configuration silently replaced.
     pub async fn new() -> Self {
-        match create_platform_backend().await {
-            Ok(backend) => Self {
-                backend: Some(backend),
-                reason: None,
-                engine: Mutex::new(None),
-            },
+        let (backend, reason) = match create_platform_backend().await {
+            Ok(backend) => (Some(backend), None),
             Err(error) => {
                 eprintln!("warn: no device backend — {error}");
-                Self {
-                    backend: None,
-                    reason: Some(error.to_string()),
-                    engine: Mutex::new(None),
+                (None, Some(error.to_string()))
+            }
+        };
+
+        let config_path = persistence::default_path();
+        let conductor = Self::initial_conductor(backend.as_ref(), config_path.as_deref()).await;
+
+        let state = Self {
+            backend,
+            reason,
+            conductor: Mutex::new(conductor),
+            config_path,
+        };
+
+        if let Ok(backend) = state.backend_handle() {
+            state.conductor.lock().await.start_marked(backend).await;
+        }
+        state
+    }
+
+    async fn initial_conductor(
+        backend: Option<&Arc<dyn DeviceBackend>>,
+        config_path: Option<&std::path::Path>,
+    ) -> Conductor {
+        match config_path.map(persistence::load) {
+            Some(Ok(saved)) => Conductor::restore(saved.groups, saved.next_id),
+
+            // Nothing saved: the first run. Everything in one group, drawing.
+            Some(Err(persistence::LoadError::Absent)) | None => {
+                let participants = match backend {
+                    Some(backend) => backend.list_devices().await.unwrap_or_default(),
+                    None => Vec::new(),
+                };
+                if participants.is_empty() {
+                    Conductor::default()
+                } else {
+                    Conductor::with_everything(participants, Ambience::still(DEFAULT_COLOUR))
                 }
+            }
+
+            // A file that exists and cannot be read is not a first run. Start
+            // with nothing rather than overwriting whatever is in there on the
+            // next save — the user can still repair it by hand.
+            Some(Err(error)) => {
+                eprintln!("warn: {error}; starting with no groups and saving nothing");
+                Conductor::default()
             }
         }
     }
@@ -81,63 +120,75 @@ impl RazerState {
         BackendError::DaemonUnavailable(self.reason.clone().unwrap_or_else(|| "unknown".into()))
     }
 
-    // ── the engine ────────────────────────────────────────────────────────────
-
-    /// Starts drawing an ambience on every device the daemon reports.
+    /// Runs something against the groups and writes the result to disk.
     ///
-    /// Replaces whatever was running, stopping it first so two engines never
-    /// paint the same device at once — each would keep undoing the other, and
-    /// the dirty-row memory of both would be wrong.
-    pub async fn start_ambience(
-        &self,
-        ambience: Ambience,
-        cadence: Cadence,
-    ) -> Result<Status, BackendError> {
+    /// Every change saves. A crash between a change and a save would lose it,
+    /// and there is no natural moment to batch on — the user closes the window
+    /// rather than the application.
+    pub async fn with_groups<T>(&self, edit: impl FnOnce(&mut Conductor) -> T) -> T {
+        let mut conductor = self.conductor.lock().await;
+        let outcome = edit(&mut conductor);
+        self.persist(&conductor);
+        outcome
+    }
+
+    fn persist(&self, conductor: &Conductor) {
+        let Some(path) = &self.config_path else {
+            return;
+        };
+        if let Err(error) = persistence::save(path, &persistence::snapshot(conductor)) {
+            // Not fatal: the ambience is running, and losing it on the next
+            // launch is better than taking the window down now.
+            eprintln!("warn: could not save groups to {}: {error}", path.display());
+        }
+    }
+
+    // ── groups ────────────────────────────────────────────────────────────────
+
+    pub async fn groups(&self) -> Vec<GroupStatus> {
+        self.conductor.lock().await.status()
+    }
+
+    /// Everything the daemon reports that no group has claimed.
+    pub async fn unassigned(&self) -> Result<Vec<ParticipantId>, BackendError> {
+        let all = self.backend()?.list_devices().await?;
+        let conductor = self.conductor.lock().await;
+        Ok(conductor.unassigned(&all).into_iter().cloned().collect())
+    }
+
+    /// Starts a group. Separate from `with_groups` because it needs the
+    /// backend and is `async` all the way down.
+    pub async fn start_group(&self, id: GroupId) -> Result<(), BackendError> {
         let backend = self.backend_handle()?;
-        let serials = backend.list_devices().await?;
-
-        let mut slot = self.engine.lock().await;
-        if let Some(running) = slot.take() {
-            running.stop().await;
-        }
-
-        let engine = Engine::start(backend, &serials, ambience, cadence).await;
-        let status = engine.status();
-        *slot = Some(engine);
-        Ok(status)
+        let mut conductor = self.conductor.lock().await;
+        conductor
+            .start(id, backend)
+            .await
+            .map_err(|error| BackendError::Protocol(error.to_string()))?;
+        self.persist(&conductor);
+        Ok(())
     }
 
-    /// Stops drawing. The devices keep showing the last frame — nothing turns
-    /// them off, because the user asked to stop an ambience, not to go dark.
-    pub async fn stop_ambience(&self) {
-        if let Some(running) = self.engine.lock().await.take() {
-            running.stop().await;
-        }
+    pub async fn stop_group(&self, id: GroupId) {
+        let mut conductor = self.conductor.lock().await;
+        conductor.stop(id).await;
+        self.persist(&conductor);
     }
 
-    /// Changes what is being drawn, without restarting anything.
-    ///
-    /// Fails if nothing is running: silently starting would hide a caller that
-    /// forgot to, and would paint devices the user had not asked to light.
-    pub async fn set_ambience(&self, ambience: Ambience) -> Result<(), BackendError> {
-        match self.engine.lock().await.as_ref() {
-            Some(engine) => {
-                engine.set_ambience(ambience);
-                Ok(())
-            }
-            None => Err(BackendError::Protocol(
-                "no ambience is running; start one first".into(),
-            )),
-        }
+    pub async fn remove_group(&self, id: GroupId) -> Result<(), BackendError> {
+        let mut conductor = self.conductor.lock().await;
+        conductor
+            .remove(id)
+            .await
+            .map_err(|error| BackendError::Protocol(error.to_string()))?;
+        self.persist(&conductor);
+        Ok(())
     }
 
-    /// What the engine is doing, or `None` when it is not running.
-    pub async fn ambience_status(&self) -> Option<Status> {
-        self.engine.lock().await.as_ref().map(Engine::status)
-    }
-
-    pub async fn is_drawing(&self) -> bool {
-        self.engine.lock().await.is_some()
+    /// Stops everything. For a real quit, so the devices are not left being
+    /// driven by a process that is going away.
+    pub async fn stop_all(&self) {
+        self.conductor.lock().await.stop_all().await;
     }
 }
 
