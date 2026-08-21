@@ -40,12 +40,15 @@ impl RazerState {
     /// up — the app has to be restarted. Reconnecting on demand needs interior
     /// mutability here and is deliberately left out for now.
     ///
-    /// The engine is **lodged, not started**. Starting it paints every device,
-    /// and on launch there is nothing to paint but a default nobody chose —
-    /// which would overwrite whatever lighting the user already had, from a
-    /// hardware effect or another client, before they had asked for anything.
-    /// It waits for an ambience: one restored from a saved setup, or one
-    /// picked in the interface.
+    /// The engine is lodged, not started. Launch will start whatever the saved
+    /// configuration says was running — see `Conductor::start_marked` — and a
+    /// machine with no saved configuration gets one group holding everything,
+    /// already drawing.
+    ///
+    /// ⚠️ That default does light the hardware without being asked, overwriting
+    /// whatever effect was on it. A deliberate choice, taken on the grounds
+    /// that an application opening on an empty page teaches nothing, and
+    /// reversible in one click since `started` is a state the user owns.
     pub async fn new() -> Self {
         match create_platform_backend().await {
             Ok(backend) => Self {

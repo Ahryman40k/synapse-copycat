@@ -26,6 +26,11 @@
 //! 13.5ms of a 33ms budget. Concurrently, the interval only has to cover the
 //! slowest. See `runner`.
 //!
+//! **A group is an ambience and its participants**, and that is nearly what an
+//! `Engine` already is. `group` adds the configuration around it — a name, a
+//! started flag, and the rule that no participant belongs to two groups at
+//! once, since two engines on one device would each keep undoing the other.
+//!
 //! **Two classes of device.** Painting assumes a matrix and `setKeyRow`. A
 //! Kraken has neither — `hasMatrix` is false and the interface is absent — so a
 //! headset can only ever run a hardware effect, and belongs to the ambience
@@ -34,6 +39,7 @@
 pub mod ambience;
 pub mod cadence;
 pub mod frame;
+pub mod group;
 pub mod painter;
 pub mod runner;
 
