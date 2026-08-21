@@ -19,6 +19,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use serde::{Deserialize, Serialize};
+
 use crate::razer::backend::DeviceBackend;
 
 use super::ambience::Ambience;
@@ -35,7 +37,8 @@ pub type GroupId = u32;
 pub type ParticipantId = String;
 
 /// A group at rest: what it is, not what it is doing.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Group {
     pub id: GroupId,
     pub name: String,
@@ -49,17 +52,22 @@ pub struct Group {
 }
 
 /// A group, and how it is going if it is running.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GroupStatus {
     pub group: Group,
     pub devices: Vec<DeviceStatus>,
     pub skipped: Vec<Skipped>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(tag = "kind", rename_all = "camelCase")]
 pub enum GroupError {
-    UnknownGroup(GroupId),
+    UnknownGroup {
+        id: GroupId,
+    },
     /// The rule that keeps two engines off one device.
+    #[serde(rename_all = "camelCase")]
     AlreadyTaken {
         participant: ParticipantId,
         by: GroupId,
@@ -69,7 +77,7 @@ pub enum GroupError {
 impl std::fmt::Display for GroupError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::UnknownGroup(id) => write!(f, "no group {id}"),
+            Self::UnknownGroup { id } => write!(f, "no group {id}"),
             Self::AlreadyTaken { participant, by } => {
                 write!(f, "{participant} already belongs to group {by}")
             }
@@ -107,6 +115,22 @@ impl Conductor {
             started: true,
         });
         conductor
+    }
+
+    /// Rebuilds from a saved file. Nothing is running until `start_marked`.
+    pub fn restore(groups: Vec<Group>, next_id: GroupId) -> Self {
+        Self {
+            groups,
+            running: HashMap::new(),
+            next_id,
+        }
+    }
+
+    /// The next id that would be handed out. Saved, so that ids are never
+    /// reused across runs — a stale reference held by the interface must not
+    /// quietly address a different group.
+    pub fn next_id_value(&self) -> GroupId {
+        self.next_id
     }
 
     fn next_id(&mut self) -> GroupId {
@@ -287,7 +311,7 @@ impl Conductor {
     fn require(&self, id: GroupId) -> Result<(), GroupError> {
         self.group(id)
             .map(|_| ())
-            .ok_or(GroupError::UnknownGroup(id))
+            .ok_or(GroupError::UnknownGroup { id })
     }
 
     fn group_mut(&mut self, id: GroupId) -> &mut Group {
@@ -415,14 +439,17 @@ mod tests {
     fn operations_on_a_group_that_does_not_exist_say_so() {
         let mut conductor = Conductor::default();
 
-        assert_eq!(conductor.rename(7, "x"), Err(GroupError::UnknownGroup(7)));
+        assert_eq!(
+            conductor.rename(7, "x"),
+            Err(GroupError::UnknownGroup { id: 7 })
+        );
         assert_eq!(
             conductor.set_ambience(7, red()),
-            Err(GroupError::UnknownGroup(7))
+            Err(GroupError::UnknownGroup { id: 7 })
         );
         assert_eq!(
             conductor.set_cadence(7, Cadence::Slow),
-            Err(GroupError::UnknownGroup(7))
+            Err(GroupError::UnknownGroup { id: 7 })
         );
     }
 

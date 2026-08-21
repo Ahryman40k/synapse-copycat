@@ -4,5 +4,6 @@ pub mod capability;
 pub mod device;
 pub mod dispatch;
 pub mod engine;
+pub mod persistence;
 pub mod request;
 pub mod state;
