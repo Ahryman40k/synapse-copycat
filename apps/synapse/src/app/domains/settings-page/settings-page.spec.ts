@@ -1,10 +1,22 @@
-import { provideBackendApi, withMock } from '@synapse-copycat/backend-api';
+import {
+	provideBackendApi,
+	unusedCommands,
+	withMock,
+} from '@synapse-copycat/backend-api';
 import { render, screen } from '@testing-library/angular';
 import { SettingsPage } from './settings-page';
 
 const setup = () =>
 	render(SettingsPage, {
-		providers: [provideBackendApi(withMock({ devices: [], modules: [] }))],
+		providers: [
+			provideBackendApi(
+				withMock({
+					...unusedCommands(),
+					devices: [],
+					modules: [],
+				}),
+			),
+		],
 	});
 
 describe('SettingsPage', () => {

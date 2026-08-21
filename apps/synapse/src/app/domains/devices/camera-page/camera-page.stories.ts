@@ -2,6 +2,7 @@ import { inject, provideAppInitializer } from '@angular/core';
 import {
 	type Mock,
 	provideBackendApi,
+	unusedCommands,
 	withMock,
 } from '@synapse-copycat/backend-api';
 import {
@@ -14,6 +15,7 @@ import { ApplicationStore } from '../../../core/stores/application-store';
 import { CameraPageComponent } from './camera-page';
 
 const mock = {
+	...unusedCommands(),
 	devices: [
 		{
 			kind: 'streaming',

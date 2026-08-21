@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import {
 	type Mock,
 	provideBackendApi,
+	unusedCommands,
 	withMock,
 } from '@synapse-copycat/backend-api';
 import {
@@ -15,6 +16,7 @@ import { ApplicationStore } from '../../stores/application-store';
 import { DefaultLayout } from './default-layout';
 
 const mock = {
+	...unusedCommands(),
 	devices: [
 		{
 			kind: 'mouse',

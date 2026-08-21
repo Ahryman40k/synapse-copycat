@@ -3,7 +3,11 @@ import {
 	type Meta,
 	type StoryObj,
 } from '@storybook/angular';
-import { provideBackendApi, withMock } from '@synapse-copycat/backend-api';
+import {
+	provideBackendApi,
+	unusedCommands,
+	withMock,
+} from '@synapse-copycat/backend-api';
 import { expect, within } from 'storybook/test';
 import { SettingsPage } from './settings-page';
 
@@ -14,7 +18,15 @@ const meta: Meta<SettingsPage> = {
 	title: 'Synapse Application / Pages / Settings',
 	decorators: [
 		applicationConfig({
-			providers: [provideBackendApi(withMock({ devices: [], modules: [] }))],
+			providers: [
+				provideBackendApi(
+					withMock({
+						...unusedCommands(),
+						devices: [],
+						modules: [],
+					}),
+				),
+			],
 		}),
 	],
 };

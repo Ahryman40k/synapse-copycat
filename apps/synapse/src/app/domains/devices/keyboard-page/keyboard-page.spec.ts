@@ -1,6 +1,10 @@
 import { inject, provideAppInitializer } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideBackendApi, withMock } from '@synapse-copycat/backend-api';
+import {
+	provideBackendApi,
+	unusedCommands,
+	withMock,
+} from '@synapse-copycat/backend-api';
 import { render, screen } from '@testing-library/angular';
 import { ApplicationStore } from '../../../core/stores/application-store';
 import { KeyboardPageComponent } from './keyboard-page';
@@ -12,6 +16,7 @@ const setup = () =>
 		providers: [
 			provideBackendApi(
 				withMock({
+					...unusedCommands(),
 					devices: [
 						{
 							kind: 'mouse',

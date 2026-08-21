@@ -6,6 +6,7 @@ import {
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import {
 	type Mock,
+	mockGroups,
 	provideBackendApi,
 	withMock,
 } from '@synapse-copycat/backend-api';
@@ -71,6 +72,21 @@ export function makeAppConfig(config: Config) {
 						name: 'Twinlky',
 					},
 				],
+
+				// The group commands change things, so they cannot be a table of
+				// fixed answers — `mockGroups` keeps the state, and the one rule
+				// worth keeping: a participant belongs to at most one group.
+				//
+				// The ids match what the store builds from the wire shape,
+				// `<vendor>-<product>` zero-padded, so a group formed here names
+				// the same devices the dashboard shows.
+				...mockGroups([
+					'5426-0136',
+					'5426-0165',
+					'5426-3074',
+					'5426-0550',
+					'5426-3587',
+				]),
 			} satisfies Mock)
 		: undefined;
 

@@ -1,5 +1,9 @@
 import { inject, provideAppInitializer } from '@angular/core';
-import { provideBackendApi, withMock } from '@synapse-copycat/backend-api';
+import {
+	provideBackendApi,
+	unusedCommands,
+	withMock,
+} from '@synapse-copycat/backend-api';
 import { render, screen } from '@testing-library/angular';
 import { ApplicationStore } from '../../../core/stores/application-store';
 import { CameraPageComponent } from './camera-page';
@@ -11,6 +15,7 @@ const setup = () =>
 		providers: [
 			provideBackendApi(
 				withMock({
+					...unusedCommands(),
 					devices: [
 						{
 							kind: 'streaming',

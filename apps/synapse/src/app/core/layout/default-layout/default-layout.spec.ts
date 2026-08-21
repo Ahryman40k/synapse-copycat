@@ -1,10 +1,15 @@
 import { render } from '@testing-library/angular';
 import { DefaultLayout } from './default-layout';
-import { provideBackendApi, withMock } from '@synapse-copycat/backend-api';
+import {
+	provideBackendApi,
+	unusedCommands,
+	withMock,
+} from '@synapse-copycat/backend-api';
 
 const providers = [
 	provideBackendApi(
 		withMock({
+			...unusedCommands(),
 			devices: [
 				{
 					product_id: 1,

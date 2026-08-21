@@ -1,4 +1,8 @@
-import { provideBackendApi, withMock } from '@synapse-copycat/backend-api';
+import {
+	provideBackendApi,
+	unusedCommands,
+	withMock,
+} from '@synapse-copycat/backend-api';
 import { render } from '@testing-library/angular';
 import { App } from './app';
 import { ApplicationStore } from './core/stores/application-store';
@@ -9,6 +13,7 @@ describe('Application', () => {
 			providers: [
 				provideBackendApi(
 					withMock({
+						...unusedCommands(),
 						devices: [
 							{
 								product_id: 1,
