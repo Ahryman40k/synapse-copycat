@@ -46,6 +46,7 @@ pub mod runner;
 use std::sync::Arc;
 use std::time::Duration;
 
+use serde::Serialize;
 use tokio::sync::watch;
 use tokio::task::JoinHandle;
 
@@ -56,7 +57,8 @@ use cadence::{Achieved, Cadence};
 use runner::Runner;
 
 /// One device the engine is driving, and how it is going.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DeviceStatus {
     pub serial: String,
     /// False for a device the ambience is approximated on rather than drawn —
@@ -68,7 +70,8 @@ pub struct DeviceStatus {
 }
 
 /// Everything a caller needs to show what the engine is doing.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Status {
     pub ambience: Ambience,
     pub cadence: Cadence,
@@ -77,7 +80,8 @@ pub struct Status {
 }
 
 /// A device the engine could not take on.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Skipped {
     pub serial: String,
     pub because: String,

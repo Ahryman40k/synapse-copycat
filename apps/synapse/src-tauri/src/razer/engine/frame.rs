@@ -3,13 +3,42 @@
 //! Everything here is pure: no bus, no daemon, no device. What talks to the
 //! hardware takes a `Frame` and sends it — see the module docs.
 
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
 /// One LED's colour. `u8` per channel because that is what the wire carries;
 /// the compositor works in floats and lands here at the end.
+///
+/// Crosses the IPC boundary as `#rrggbb`, not as three numbers. That is what
+/// `syn-color-picker` produces, what `HexColor` in `libs/ui` already validates,
+/// and what a person can read in a config file. The conversion lives here so
+/// there is one place it can be wrong.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Rgb {
     pub r: u8,
     pub g: u8,
     pub b: u8,
+}
+
+impl Serialize for Rgb {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&format!("#{:02x}{:02x}{:02x}", self.r, self.g, self.b))
+    }
+}
+
+impl<'de> Deserialize<'de> for Rgb {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::Error;
+        let text = String::deserialize(deserializer)?;
+        let digits = text.strip_prefix('#').unwrap_or(&text);
+        if digits.len() != 6 {
+            return Err(D::Error::custom(format!("expected #rrggbb, got {text:?}")));
+        }
+        let channel = |at: usize| {
+            u8::from_str_radix(&digits[at..at + 2], 16)
+                .map_err(|_| D::Error::custom(format!("expected #rrggbb, got {text:?}")))
+        };
+        Ok(Self::new(channel(0)?, channel(2)?, channel(4)?))
+    }
 }
 
 impl Rgb {
@@ -34,7 +63,7 @@ impl Rgb {
 /// Straight from `getMatrixDimensions`. Measured across the devices we serve:
 /// 9x22 on a Huntsman Elite, 4x6 on a Tartarus V2, 1x14 on a Basilisk, 1x1 on a
 /// Goliathus — the last of which can hold a colour but never a picture.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Geometry {
     pub rows: u8,
     pub columns: u8,
@@ -259,6 +288,26 @@ mod tests {
         frame.set(0, 0, Rgb::new(255, 0, 0));
 
         assert_eq!(frame.average(), Rgb::new(25, 0, 0));
+    }
+
+    #[test]
+    fn a_colour_travels_as_a_hex_string() {
+        // The form the picker produces and a person can read in a file.
+        let json = serde_json::to_string(&Rgb::new(0, 255, 64)).unwrap();
+        assert_eq!(json, "\"#00ff40\"");
+        assert_eq!(
+            serde_json::from_str::<Rgb>("\"#00ff40\"").unwrap(),
+            Rgb::new(0, 255, 64)
+        );
+    }
+
+    #[test]
+    fn anything_that_is_not_a_colour_is_refused() {
+        // A saved file can be edited by hand, and a silent black would be
+        // harder to explain than a rejected load.
+        for bad in ["\"#fff\"", "\"green\"", "\"#gggggg\"", "\"\""] {
+            assert!(serde_json::from_str::<Rgb>(bad).is_err(), "accepted {bad}");
+        }
     }
 
     #[test]

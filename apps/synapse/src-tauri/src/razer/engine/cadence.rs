@@ -6,8 +6,11 @@
 
 use std::time::Duration;
 
+use serde::{Deserialize, Serialize};
+
 /// A requested redraw rate. **A request, not a promise** — see `Achieved`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Cadence {
     /// 10 Hz. Enough for anything that breathes, fades or follows the hour, and
     /// almost free: a nine-row keyboard spends under 8% of its budget here.
@@ -60,10 +63,15 @@ impl Cadence {
 /// The engine measures rather than assumes, because the honest answer varies by
 /// device: the same ambience is nine round trips on a keyboard and two on a
 /// mouse. A caller can show this, or step down.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Achieved {
     pub requested: Cadence,
     /// Mean time to draw one frame, sending only the rows that moved.
+    ///
+    /// Milliseconds on the wire, as a float: an interface shows "12.4ms", not
+    /// a `{ secs, nanos }` pair.
+    #[serde(rename = "perFrameMs", serialize_with = "as_millis")]
     pub per_frame: Duration,
     pub frames: u32,
     /// How many ticks pass between draws. 1 is every tick.
@@ -104,6 +112,10 @@ impl Achieved {
         let needed = self.per_frame.as_secs_f64() * 2.0 / self.requested.budget().as_secs_f64();
         (needed.ceil() as u32).max(1)
     }
+}
+
+fn as_millis<S: serde::Serializer>(value: &Duration, s: S) -> Result<S::Ok, S::Error> {
+    s.serialize_f64(value.as_secs_f64() * 1000.0)
 }
 
 #[cfg(test)]

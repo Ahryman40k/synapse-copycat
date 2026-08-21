@@ -24,8 +24,24 @@
 //!
 //! Pure throughout: no clock, no bus, no device. Time arrives as a parameter so
 //! a test can ask for any instant it likes.
+//!
+//! **Over the wire**, each source is an object tagged by `type`, the same shape
+//! `CapabilityRequest` already uses:
+//!
+//! ```json
+//! { "colour":     { "type": "fixed", "rgb": "#00ff00" },
+//!   "motion":     { "type": "wave", "lapsPerSecond": 0.5, "width": 0.2 },
+//!   "brightness": { "type": "circadian", "day": 1.0, "night": 0.2 } }
+//! ```
+//!
+//! Tagged rather than positional, so adding a source is an addition on both
+//! sides rather than a renumbering; camelCase because the other side is
+//! TypeScript; and `Duration` never appears — serde would write it as a
+//! `{ secs, nanos }` pair, which is not a thing anyone wants to type.
 
 use std::time::Duration;
+
+use serde::{Deserialize, Serialize};
 
 use super::frame::{Frame, Geometry, Rgb};
 
@@ -52,12 +68,14 @@ impl Tick {
 }
 
 /// Where the hue comes from.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "camelCase")]
 pub enum ColourSource {
     /// One colour, chosen by the user or reported by a device.
-    Fixed(Rgb),
+    Fixed { rgb: Rgb },
     /// A hue sweep. The only source here that also implies movement, because
     /// the colour itself is what travels — motion still decides the shape.
+    #[serde(rename_all = "camelCase")]
     Rainbow {
         /// Full turns of the colour wheel per second.
         turns_per_second: f32,
@@ -68,7 +86,8 @@ pub enum ColourSource {
 }
 
 /// Where the movement comes from: a 0..1 intensity per pixel per instant.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "camelCase")]
 pub enum MotionSource {
     /// Everything lit, evenly. What "static" means.
     None,
@@ -80,6 +99,7 @@ pub enum MotionSource {
     /// 22-column keyboard in 2.75s and a 100-LED strip in 12.5s: three waves
     /// drifting apart, not one ambience. Normalised, they cross together and
     /// the band covers the same proportion of each.
+    #[serde(rename_all = "camelCase")]
     Wave {
         /// Full crossings of the device per second.
         laps_per_second: f32,
@@ -87,13 +107,23 @@ pub enum MotionSource {
         width: f32,
     },
     /// The whole matrix breathing together.
-    Pulse { period: Duration },
+    ///
+    /// Milliseconds on the wire: a `Duration` would serialise as a
+    /// `{ secs, nanos }` pair, which no interface wants to build.
+    #[serde(rename_all = "camelCase")]
+    Pulse {
+        #[serde(with = "millis")]
+        period: Duration,
+    },
 }
 
 /// Where the overall level comes from.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "camelCase")]
 pub enum BrightnessSource {
-    Fixed(f32),
+    Fixed {
+        level: f32,
+    },
     /// Warm and low at night, full during the day. The two levels are the
     /// user's; the curve between them is a cosine, so there is no step at the
     /// boundary — a light that jumps at a fixed hour reads as a fault.
@@ -104,7 +134,7 @@ pub enum BrightnessSource {
 }
 
 /// The three channels together.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct Ambience {
     pub colour: ColourSource,
     pub motion: MotionSource,
@@ -115,9 +145,9 @@ impl Ambience {
     /// What "static, one colour" means in this model: no movement, no curve.
     pub fn still(colour: Rgb) -> Self {
         Self {
-            colour: ColourSource::Fixed(colour),
+            colour: ColourSource::Fixed { rgb: colour },
             motion: MotionSource::None,
-            brightness: BrightnessSource::Fixed(1.0),
+            brightness: BrightnessSource::Fixed { level: 1.0 },
         }
     }
 
@@ -158,7 +188,7 @@ impl Ambience {
 impl ColourSource {
     fn at(self, column: u8, geometry: Geometry, tick: Tick) -> Rgb {
         match self {
-            Self::Fixed(colour) => colour,
+            Self::Fixed { rgb } => rgb,
             Self::Rainbow {
                 turns_per_second,
                 spread,
@@ -212,13 +242,28 @@ impl MotionSource {
 impl BrightnessSource {
     fn level(self, tick: Tick) -> f32 {
         match self {
-            Self::Fixed(level) => level.clamp(0.0, 1.0),
+            Self::Fixed { level } => level.clamp(0.0, 1.0),
             Self::Circadian { day, night } => {
                 // Peaks at noon, bottoms at midnight.
                 let noon = (1.0 - (tick.day_fraction * std::f32::consts::TAU).cos()) / 2.0;
                 (night + (day - night) * noon).clamp(0.0, 1.0)
             }
         }
+    }
+}
+
+/// `Duration` as whole milliseconds, because `{ secs, nanos }` is not a shape
+/// an interface should have to build.
+mod millis {
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use std::time::Duration;
+
+    pub fn serialize<S: Serializer>(value: &Duration, s: S) -> Result<S::Ok, S::Error> {
+        (value.as_millis() as u64).serialize(s)
+    }
+
+    pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<Duration, D::Error> {
+        Ok(Duration::from_millis(u64::deserialize(d)?))
     }
 }
 
@@ -253,6 +298,50 @@ mod tests {
     const RED: Rgb = Rgb::new(255, 0, 0);
 
     #[test]
+    fn an_ambience_crosses_the_boundary_as_tagged_objects() {
+        let ambience = Ambience {
+            colour: ColourSource::Rainbow {
+                turns_per_second: 0.2,
+                spread: 1.0,
+            },
+            motion: MotionSource::Wave {
+                laps_per_second: 0.5,
+                width: 0.2,
+            },
+            brightness: BrightnessSource::Circadian {
+                day: 1.0,
+                night: 0.2,
+            },
+        };
+
+        let json = serde_json::to_string(&ambience).unwrap();
+        assert_eq!(
+            json,
+            r#"{"colour":{"type":"rainbow","turnsPerSecond":0.2,"spread":1.0},"#.to_owned()
+                + r#""motion":{"type":"wave","lapsPerSecond":0.5,"width":0.2},"#
+                + r#""brightness":{"type":"circadian","day":1.0,"night":0.2}}"#
+        );
+        assert_eq!(serde_json::from_str::<Ambience>(&json).unwrap(), ambience);
+    }
+
+    #[test]
+    fn a_pulse_is_milliseconds_not_a_pair_of_numbers() {
+        let ambience = Ambience {
+            motion: MotionSource::Pulse {
+                period: Duration::from_millis(2500),
+            },
+            ..Ambience::still(RED)
+        };
+
+        let json = serde_json::to_string(&ambience.motion).unwrap();
+        assert_eq!(json, r#"{"type":"pulse","period":2500}"#);
+        assert_eq!(
+            serde_json::from_str::<MotionSource>(&json).unwrap(),
+            ambience.motion
+        );
+    }
+
+    #[test]
     fn a_still_ambience_paints_one_colour_everywhere() {
         let frame = Ambience::still(RED).compose(KEYBOARD, Tick::at(0.0));
 
@@ -275,7 +364,7 @@ mod tests {
     #[test]
     fn brightness_dims_without_touching_the_hue() {
         let ambience = Ambience {
-            brightness: BrightnessSource::Fixed(0.5),
+            brightness: BrightnessSource::Fixed { level: 0.5 },
             ..Ambience::still(RED)
         };
 
@@ -440,7 +529,7 @@ mod tests {
                 laps_per_second: 0.5,
                 width: 0.15,
             },
-            brightness: BrightnessSource::Fixed(0.5),
+            brightness: BrightnessSource::Fixed { level: 0.5 },
         };
 
         let frame = ambience.compose(KEYBOARD, Tick::at(1.0));
