@@ -11,7 +11,7 @@ they win over this one inside their directory.
 **Synapse** is a Linux replacement for Razer Synapse: a desktop application that
 manages RGB lighting and settings for Razer peripherals.
 
-- **Frontend** — Angular 21 (standalone, signals, zoneless-leaning)
+- **Frontend** — Angular 22 (standalone, signals, zoneless-leaning) + Angular CDK
 - **Shell** — Tauri 2 (Rust)
 - **Backend** — Rust, talking to the OpenRazer daemon over **DBus** on Linux and
   over **REST** on Windows, behind a single trait
@@ -180,7 +180,7 @@ Nx entirely. **Use the `validate` skill** rather than guessing what to run.
 
 ## 4. Angular conventions
 
-This codebase targets **Angular 21**. Do not write Angular 14-era code.
+This codebase targets **Angular 22**. Do not write Angular 14-era code.
 
 **Files are named without a suffix.** `button.ts`, `dashboard-page.ts`,
 `app.ts` — not `button.component.ts`. Template and styles sit next to the class
@@ -213,6 +213,37 @@ Follow these, all observed in the existing code:
 - **`ChangeDetectionStrategy.OnPush`** on new components.
 - **`host: {}`** in the decorator instead of `@HostBinding` / `@HostListener`.
 - **`import type`** for type-only imports — Biome and the TS config expect it.
+
+### The CDK, and what it is for
+
+`@angular/cdk` is a dependency. Reach for it before writing the behaviour
+yourself — **drag and drop**, **dialogs and overlays**, **clipboard**,
+**a11y** (focus traps, live announcers), **accordion**, **scrolling**.
+
+Two of those replaced hand-rolled code here, and the reasons are worth keeping:
+
+- **Drag and drop** was a pair of directives over the HTML5 API. The CDK's is
+  built on pointer events instead, which means the gesture is **testable** —
+  `dashboard-page.stories.ts` drags a device between two lists in a real
+  Chromium. The HTML5 API cannot be driven from script at all.
+  ⚠️ A synthetic `mousedown` needs `buttons: 1, detail: 1`, or the CDK reads it
+  as `isFakeMousedownFromScreenReader` and the drag silently never starts.
+- **Dialogs** were a component wrapping the native `<dialog>` with a two-way
+  `open`. That flag is what sank it: Angular refreshes a two-way binding's memo
+  only on the next change-detection pass, so closing and reopening without one
+  in between never pushed the new value and the dialog stayed shut. The CDK's
+  `Dialog` has no shared flag — `open()` returns a ref, `closed` carries the
+  answer — so the state cannot disagree with itself.
+
+⚠️ **The CDK has no keyboard equivalent for dragging, and neither does the
+platform.** Any drag must be doubled by something reachable without a pointer.
+The dashboard does it with a handle on each tile that picks a participant up
+and a button on each target that puts it down.
+
+Its styles are not automatic: `apps/synapse/src/styles.scss` includes
+`cdk.overlay()` and `cdk.a11y-visually-hidden()`, and paints `.syn-dialog-panel`
+and the drag preview. A dialog opened without `panelClass: 'syn-dialog-panel'`
+renders unstyled.
 
 ### Known naming inconsistency
 
