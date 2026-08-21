@@ -1,5 +1,11 @@
 import { inject, TestBed } from '@angular/core/testing';
-import { provideBackendApi, withMock } from '@synapse-copycat/backend-api';
+import {
+	mockGroups,
+	provideBackendApi,
+	still,
+	unusedCommands,
+	withMock,
+} from '@synapse-copycat/backend-api';
 import { DEVICE_LIGHTING_DEFAULT } from '../models/lighting';
 import { ApplicationStore } from './application-store';
 
@@ -9,6 +15,7 @@ describe('ApplicationStore', () => {
 			providers: [
 				provideBackendApi(
 					withMock({
+						...unusedCommands(),
 						devices: [
 							{
 								product_id: 1,
@@ -204,6 +211,181 @@ describe('ApplicationStore', () => {
 			store.setSection('0002-0001', 'power');
 
 			expect(store.sectionFor('0002-0001')).toBe('power');
+		},
+	));
+});
+
+/**
+ * The group slice, against the stateful mock rather than a table of answers.
+ *
+ * Worth its own block: every group method re-reads afterwards instead of
+ * patching what it just sent, and that is the property to hold on to. The
+ * backend can refuse — a participant already in another group — and it may
+ * adjust what it was given, so anything patched locally would drift with
+ * nothing to say so.
+ */
+describe('ApplicationStore, groups', () => {
+	beforeEach(() => {
+		TestBed.configureTestingModule({
+			providers: [
+				provideBackendApi(
+					withMock({
+						...unusedCommands(),
+						...mockGroups(['aaa', 'bbb', 'ccc']),
+					}),
+				),
+			],
+		});
+	});
+
+	it('reads the group the backend starts with', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getGroups();
+
+			expect(store.groups()).toHaveLength(1);
+			expect(store.groups()[0].group.members).toEqual(['aaa', 'bbb', 'ccc']);
+			// Everything is in it, so nothing is waiting for a group.
+			expect(store.unassigned()).toEqual([]);
+		},
+	));
+
+	it('follows the backend when a participant changes hands', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getGroups();
+			const all = store.groups()[0].group.id;
+
+			await store.setGroupMembers(all, ['aaa']);
+
+			// The two it let go are unassigned now — which nothing here worked
+			// out: it is what the backend answered when asked again.
+			expect(store.unassigned()).toEqual(['bbb', 'ccc']);
+		},
+	));
+
+	it('starts and stops without touching the members', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getGroups();
+			const all = store.groups()[0].group.id;
+
+			await store.stopGroup(all);
+			expect(store.groups()[0].group.started).toBe(false);
+			expect(store.groups()[0].group.members).toHaveLength(3);
+
+			await store.startGroup(all);
+			expect(store.groups()[0].group.started).toBe(true);
+		},
+	));
+
+	it('names the group holding a participant when it refuses', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getGroups();
+			const all = store.groups()[0].group.id;
+
+			// `aaa` already belongs to the first group, and a participant belongs
+			// to at most one — two engines painting one device would each keep
+			// undoing the other.
+			const outcome = await store.createGroup(
+				'Second',
+				['aaa'],
+				still('#ff0000'),
+			);
+
+			expect(outcome).toEqual({
+				ok: false,
+				// Structured, not a message: `by` is what lets the interface offer
+				// to move it rather than only saying no.
+				problem: { kind: 'alreadyTaken', participant: 'aaa', by: all },
+			});
+			expect(store.groups()).toHaveLength(1);
+		},
+	));
+
+	it('reports a fault differently from a refusal', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getGroups();
+
+			// Nothing the user did wrong and nothing they can act on, so it must
+			// not arrive dressed as a rule they broke.
+			const outcome = await store.renameGroup(404, 'Nowhere');
+
+			expect(outcome).toEqual({
+				ok: false,
+				problem: { kind: 'unknownGroup', id: 404 },
+			});
+		},
+	));
+
+	it('sets the cadence', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getGroups();
+			const all = store.groups()[0].group.id;
+
+			expect(await store.setGroupCadence(all, 'fast')).toEqual({ ok: true });
+			expect(store.groups()[0].group.cadence).toBe('fast');
+		},
+	));
+
+	it('hands a participant from one group to another', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getGroups();
+			const all = store.groups()[0].group.id;
+
+			// Make room for a second group, then move a member into it.
+			await store.setGroupMembers(all, ['aaa', 'bbb']);
+			await store.createGroup('Desk', ['ccc'], still('#ff0000'));
+			const desk = store.groups().find((s) => s.group.name === 'Desk');
+
+			const outcome = await store.moveParticipant('bbb', desk?.group.id ?? -1);
+
+			expect(outcome).toEqual({ ok: true });
+			// Released by the first and taken by the second, in that order —
+			// the reverse would have been refused by the rule itself.
+			const byName = new Map(
+				store.groups().map(({ group }) => [group.name, group.members]),
+			);
+			expect(byName.get('All devices')).toEqual(['aaa']);
+			expect(byName.get('Desk')).toEqual(['ccc', 'bbb']);
+		},
+	));
+
+	it('sends nothing when a participant is dropped where it already is', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getGroups();
+			const all = store.groups()[0].group.id;
+			const before = store.groups()[0].group;
+
+			expect(await store.moveParticipant('aaa', all)).toEqual({ ok: true });
+
+			// The same object, so nothing was written: the backend persists its
+			// groups on every change, and a no-op would rewrite the file.
+			expect(store.groups()[0].group).toBe(before);
+		},
+	));
+
+	it('refuses to move into a group that is not there', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getGroups();
+
+			const outcome = await store.moveParticipant('aaa', 404);
+
+			expect(outcome).toEqual({
+				ok: false,
+				problem: { kind: 'unknownGroup', id: 404 },
+			});
+			// And nothing was released on the way: the destination is checked
+			// first, so a move that cannot land does not leave the participant
+			// in no group.
+			expect(store.groups()[0].group.members).toContain('aaa');
+			expect(store.unassigned()).not.toContain('aaa');
 		},
 	));
 });

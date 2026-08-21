@@ -5,6 +5,15 @@ import {
 	type Device,
 	type Module,
 } from '@synapse-copycat/backend-api';
+import type {
+	Ambience,
+	Cadence,
+	GroupId,
+	GroupOutcome,
+	GroupStatus,
+	ParticipantId,
+} from '@synapse-copycat/backend-api';
+import { attempt, refused } from '@synapse-copycat/backend-api';
 import type { ChromaEffect } from '../models/chroma-effect';
 import { type Language, LANGUAGE_DEFAULT } from '../models/language';
 import {
@@ -38,6 +47,18 @@ function patchLighting(
 export type ApplicationState = {
 	devices: Device[];
 	modules: Module[];
+
+	/**
+	 * The groups, as the backend last reported them.
+	 *
+	 * Read, never edited here: the backend owns them and writes every change to
+	 * disk before answering, so re-reading after a command is what keeps this
+	 * honest. Patching locally would let the two drift with nothing to say so.
+	 */
+	groups: GroupStatus[];
+
+	/** Participants no group has claimed. Not driven, and not broken. */
+	unassigned: ParticipantId[];
 
 	/**
 	 * The lighting of each device, by id. A device absent from the map is on
@@ -81,6 +102,8 @@ export type ApplicationState = {
 export const INITIAL_STATE: ApplicationState = {
 	devices: [],
 	modules: [],
+	groups: [],
+	unassigned: [],
 	lighting: {},
 	syncEffect: false,
 	syncBrightness: false,
@@ -200,6 +223,163 @@ export const ApplicationStore = signalStore(
 		setSyncBrightness(enabled: boolean, referenceId: string): void {
 			patchState(store, { syncBrightness: enabled });
 			this.setBrightness(referenceId, this.lightingFor(referenceId).brightness);
+		},
+
+		// ── groups ────────────────────────────────────────────────────────────
+		//
+		// Two rules hold across all of these.
+		//
+		// They re-read afterwards rather than patching state from what they just
+		// sent: the backend may adjust what it was given, and it is the only one
+		// that knows what the groups are once another window has had its say.
+		//
+		// And they answer with a `GroupOutcome` rather than throwing. A refusal
+		// is not an exception here — `alreadyTaken` is the backend enforcing the
+		// one rule that matters, and it names the group holding the participant
+		// precisely so the interface can offer to move it. Thrown, that name
+		// would have to be dug back out of an error message.
+
+		async getGroups(): Promise<GroupStatus[]> {
+			const [groups, unassigned] = await Promise.all([
+				backendApi.invoke('groups', {}),
+				backendApi.invoke('unassigned_participants', {}),
+			]);
+			patchState(store, { groups, unassigned });
+			return groups;
+		},
+
+		async createGroup(
+			name: string,
+			members: ParticipantId[],
+			ambience: Ambience,
+		): Promise<GroupOutcome> {
+			const outcome = await attempt(() =>
+				backendApi.invoke('create_group', { name, members, ambience }),
+			);
+			await this.getGroups();
+			return outcome;
+		},
+
+		async renameGroup(id: GroupId, name: string): Promise<GroupOutcome> {
+			const outcome = await attempt(() =>
+				backendApi.invoke('rename_group', { id, name }),
+			);
+			await this.getGroups();
+			return outcome;
+		},
+
+		async setGroupMembers(
+			id: GroupId,
+			members: ParticipantId[],
+		): Promise<GroupOutcome> {
+			const outcome = await attempt(() =>
+				backendApi.invoke('set_group_members', { id, members }),
+			);
+			await this.getGroups();
+			return outcome;
+		},
+
+		async setGroupAmbience(
+			id: GroupId,
+			ambience: Ambience,
+		): Promise<GroupOutcome> {
+			const outcome = await attempt(() =>
+				backendApi.invoke('set_group_ambience', { id, ambience }),
+			);
+			await this.getGroups();
+			return outcome;
+		},
+
+		/**
+		 * How often the group redraws.
+		 *
+		 * A request, not a promise: a device that cannot afford the rate skips
+		 * ticks of its own accord rather than slowing the group, which is what
+		 * the achieved figures on each participant are there to show.
+		 */
+		async setGroupCadence(
+			id: GroupId,
+			cadence: Cadence,
+		): Promise<GroupOutcome> {
+			const outcome = await attempt(() =>
+				backendApi.invoke('set_group_cadence', { id, cadence }),
+			);
+			await this.getGroups();
+			return outcome;
+		},
+
+		async startGroup(id: GroupId): Promise<GroupOutcome> {
+			const outcome = await attempt(() =>
+				backendApi.invoke('start_group', { id }),
+			);
+			await this.getGroups();
+			return outcome;
+		},
+
+		async stopGroup(id: GroupId): Promise<GroupOutcome> {
+			const outcome = await attempt(() =>
+				backendApi.invoke('stop_group', { id }),
+			);
+			await this.getGroups();
+			return outcome;
+		},
+
+		async removeGroup(id: GroupId): Promise<GroupOutcome> {
+			const outcome = await attempt(() =>
+				backendApi.invoke('remove_group', { id }),
+			);
+			await this.getGroups();
+			return outcome;
+		},
+
+		/**
+		 * Hand a participant from whichever group holds it to another one.
+		 *
+		 * Two commands, in this order, because the backend refuses the second
+		 * while the first still holds it — that refusal is the rule doing its
+		 * job, not something to work around. Releasing first means a participant
+		 * can be briefly ungrouped, which is a state the model already has and
+		 * the engine handles by not drawing it.
+		 *
+		 * The holder is read from the store rather than taken as an argument:
+		 * the caller sees a label saying "in Desk", and having it pass that back
+		 * would let a stale reading send the wrong group a member list.
+		 */
+		async moveParticipant(
+			participant: ParticipantId,
+			to: GroupId,
+		): Promise<GroupOutcome> {
+			// Looked up before anything is released: getting this the other way
+			// round left the participant in no group when the destination turned
+			// out not to exist — a release that cannot be undone by a command
+			// that was never going to work.
+			const target = store.groups().find((status) => status.group.id === to);
+			if (!target) return refused({ kind: 'unknownGroup', id: to });
+
+			const holder = store
+				.groups()
+				.find((status) => status.group.members.includes(participant))?.group;
+
+			// Dropped back where it already is. Nothing to do, and worth saying
+			// so: the backend writes its groups to disk on every change, so a
+			// no-op command is a file rewritten for nothing.
+			if (holder?.id === to) return { ok: true };
+
+			if (holder) {
+				const released = await this.setGroupMembers(
+					holder.id,
+					holder.members.filter((member) => member !== participant),
+				);
+				// Stop if the release failed: adding it elsewhere would then be
+				// refused anyway, and reporting that second refusal would name
+				// the wrong cause.
+				if (!released.ok) return released;
+			}
+
+			return this.setGroupMembers(target.group.id, [
+				...target.group.members.filter((member) => member !== participant),
+				participant,
+			]);
 		},
 
 		async getDevices(): Promise<Device[]> {

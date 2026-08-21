@@ -1,0 +1,9 @@
+// Colour only — every dimension lives in ambience-panel.scss.
+
+/// $theme is accepted for compatibility with the call in styles.scss, which
+/// still passes the legacy map. Unused here.
+@mixin apply($theme: null) {
+  ambience-panel h2 {
+    color: var(--syn-primary);
+  }
+}

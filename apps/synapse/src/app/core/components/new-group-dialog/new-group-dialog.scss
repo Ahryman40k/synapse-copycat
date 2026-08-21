@@ -1,0 +1,32 @@
+// Structure only — the colour lives in _new-group-dialog.theme.scss.
+// The panel around it is the CDK's overlay, painted in styles.scss.
+
+:host {
+  display: block;
+  padding: 1.25rem;
+  min-width: min(24rem, calc(100vw - 3rem));
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.new-group-dialog__hint {
+  margin: 0;
+  font-size: 0.8125rem;
+}
+
+.new-group-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

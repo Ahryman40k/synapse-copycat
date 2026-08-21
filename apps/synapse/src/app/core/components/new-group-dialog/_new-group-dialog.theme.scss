@@ -1,0 +1,13 @@
+// Colour only — every dimension lives in new-group-dialog.scss.
+
+/// $theme is accepted for compatibility with the call in styles.scss, which
+/// still passes the legacy map. Unused here.
+@mixin apply($theme: null) {
+  new-group-dialog h2 {
+    color: var(--syn-primary);
+  }
+
+  new-group-dialog .new-group-dialog__hint {
+    color: var(--syn-on-surface-variant);
+  }
+}

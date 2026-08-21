@@ -1,0 +1,45 @@
+// Structure only — the colour lives in _participant-card.theme.scss.
+
+.participant-card__frame {
+  position: relative;
+  display: flex;
+  min-width: 0;
+}
+
+.participant-card__tile {
+  flex: 1 1 auto;
+  // Tighter than a dashboard tile: a group holds several of these side by
+  // side, and the 2rem padding of a lone card wastes the row.
+  padding: 1rem 0.75rem;
+  gap: 0.5rem;
+}
+
+.participant-card__name {
+  font-weight: 700;
+  font-size: 0.8125rem;
+}
+
+.participant-card__doing {
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+// Over the tile's top corner rather than in its flow: the tile is a button,
+// and a button inside a button is invalid markup.
+.participant-card__handle {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+
+  border: none;
+  border-radius: 0.25rem;
+  background: none;
+  cursor: grab;
+}

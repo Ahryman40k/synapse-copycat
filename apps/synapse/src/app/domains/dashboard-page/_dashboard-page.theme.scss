@@ -1,7 +1,54 @@
-@use 'sass:map';
-@use 'sass:color';
+// Colour only — every dimension lives in dashboard-page.scss.
 
-@mixin apply($theme) {
-  dashboard-page {
+/// $theme is accepted for compatibility with the call in styles.scss, which
+/// still passes the legacy map. Unused here.
+@mixin apply($theme: null) {
+  dashboard-page h2 {
+    color: var(--syn-primary);
+  }
+
+  dashboard-page .dashboard-page__empty,
+  dashboard-page .dashboard-page__hint {
+    color: var(--syn-on-surface-variant);
+  }
+
+  dashboard-page .dashboard-page__tray {
+    border-color: var(--syn-outline);
+  }
+
+  dashboard-page .dashboard-page__release {
+    border-color: var(--syn-outline);
+    color: var(--syn-on-surface-variant);
+
+    &:hover {
+      border-color: var(--syn-primary);
+      color: var(--syn-primary);
+    }
+  }
+
+  dashboard-page .dashboard-page__cancel {
+    border-color: var(--syn-outline);
+    color: var(--syn-on-surface);
+
+    &:hover {
+      border-color: var(--syn-primary);
+    }
+  }
+
+  dashboard-page .dashboard-page__confirm {
+    border-color: var(--syn-primary);
+    background-color: var(--syn-primary);
+    color: var(--syn-on-primary);
+
+    &:disabled {
+      opacity: 0.35;
+    }
+  }
+
+  // A refusal, not a fault: the surface it sits on says "read this", not
+  // "something is broken".
+  dashboard-page .dashboard-page__problem {
+    background-color: var(--syn-surface-variant);
+    color: var(--syn-on-surface);
   }
 }

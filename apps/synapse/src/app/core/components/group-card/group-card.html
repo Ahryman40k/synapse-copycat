@@ -1,0 +1,120 @@
+<syn-panel>
+  <div class="group-card__header">
+    <h2>{{ group().name }}</h2>
+
+    <!--
+      A switch, not a button: started is a state the group keeps between runs,
+      not an action taken once. Stopping leaves the last frame on the devices —
+      going dark is a different request.
+    -->
+    <syn-switch
+      [ariaLabel]="'Run ' + group().name"
+      [checked]="running()"
+      (checkedChange)="startedChange.emit($event)"
+    ></syn-switch>
+  </div>
+
+  <ambience-preview
+    [ambience]="ambience()"
+    [ariaLabel]="group().name + ' preview'"
+  ></ambience-preview>
+
+  <!--
+    A native disclosure. The three channels read as a sentence until someone
+    asks to change them: sliders in every card would make the dashboard a wall
+    of controls and bury what it is for. `<details>` brings the toggle, the
+    keyboard, and the announced expanded state without any of it being written.
+  -->
+  <details class="group-card__settings">
+    <summary>
+      <span class="group-card__summary">{{ summary() }}</span>
+    </summary>
+
+    <div class="group-card__settings-body">
+      <syn-text-field
+        [value]="group().name"
+        [ariaLabel]="'Rename ' + group().name"
+        (committed)="onRenamed($event)"
+      >
+        Name
+      </syn-text-field>
+
+      <!--
+        A request, not a promise: a device that cannot afford the rate skips
+        ticks of its own accord rather than slowing the group, which is what
+        the figure on each tile is there to show.
+      -->
+      <syn-select
+        [ariaLabel]="'Cadence for ' + group().name"
+        [options]="cadences"
+        [value]="group().cadence"
+        (valueChange)="onCadence($event)"
+      >
+        Cadence
+      </syn-select>
+
+      <ambience-panel
+        [ambience]="ambience()"
+        (ambienceChange)="ambienceChange.emit($event)"
+      ></ambience-panel>
+
+      <button type="button" class="group-card__remove" (click)="removed.emit()">
+        Remove this group
+      </button>
+    </div>
+  </details>
+
+  <section class="group-card__participants">
+    <h3>{{ memberCount() }} participant{{ memberCount() === 1 ? '' : 's' }}</h3>
+
+    <!--
+      The drop list is always rendered, empty group or not: a list that only
+      exists once it has something in it cannot be the place you drop the first
+      thing. Sorting is off because a group has no order — the tiles are a set,
+      and animating them past each other would suggest otherwise.
+    -->
+    <div
+      class="group-card__tiles"
+      cdkDropList
+      cdkDropListSortingDisabled
+      [cdkDropListData]="group().id"
+      (cdkDropListDropped)="onDropped($event)"
+    >
+      @for (row of rows(); track row.serial) {
+        <participant-card
+          cdkDrag
+          [cdkDragData]="row.serial"
+          [participant]="row.serial"
+          [device]="row.device"
+          [status]="row.status"
+          [because]="row.because"
+          [carried]="carrying() === row.serial"
+          (open)="participantOpen.emit(row.serial)"
+          (pickUp)="participantPickUp.emit(row.serial)"
+        ></participant-card>
+      } @empty {
+        <p class="group-card__none">
+          Nothing in this group yet — drag a device here.
+        </p>
+      }
+    </div>
+
+    <!--
+      ⚠️ The platform has no keyboard equivalent for dragging. This is the
+      other half of the handle on each tile: pick one up there, put it down
+      here. Without it the whole feature is a pointer gesture and nobody else
+      can use it.
+    -->
+    @if (carrying(); as carried) {
+      @if (!holdsCarried()) {
+        <button
+          type="button"
+          class="group-card__place"
+          (click)="participantDropped.emit(carried)"
+        >
+          Place here
+        </button>
+      }
+    }
+  </section>
+</syn-panel>

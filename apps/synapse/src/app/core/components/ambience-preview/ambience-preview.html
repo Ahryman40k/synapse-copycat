@@ -1,0 +1,15 @@
+<!--
+  One element per cell, not a canvas. A canvas would need its own sizing, its
+  own device-pixel handling and a redraw on resize; a row of boxes is laid out
+  by the browser and inherits the theme's radius for free.
+
+  `aria-hidden`: the host carries the label, and twenty-four unnamed boxes
+  would be twenty-four things to read past.
+-->
+@for (cell of cells(); track $index) {
+  <span
+    class="ambience-preview__cell"
+    aria-hidden="true"
+    [style.background-color]="cell"
+  ></span>
+}

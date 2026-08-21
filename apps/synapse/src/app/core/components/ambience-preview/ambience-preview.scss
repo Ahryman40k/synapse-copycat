@@ -1,0 +1,20 @@
+// Structure only — the colours are the ambience itself, set inline, and the
+// frame around them lives in _ambience-preview.theme.scss.
+
+:host {
+  display: flex;
+  gap: 2px;
+
+  block-size: 2.5rem;
+  border-radius: 0.5rem;
+  padding: 0.25rem;
+  overflow: hidden;
+}
+
+.ambience-preview__cell {
+  // Every cell the same width whatever the count, and none allowed to vanish:
+  // a strip with a gap in it reads as a fault in the ambience.
+  flex: 1 1 0;
+  min-inline-size: 2px;
+  border-radius: 2px;
+}

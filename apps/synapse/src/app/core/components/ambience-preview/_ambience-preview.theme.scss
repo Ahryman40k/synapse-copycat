@@ -1,0 +1,15 @@
+// Colour only — every dimension lives in ambience-preview.scss.
+//
+// The cells paint themselves: their colour *is* the ambience. What is themed
+// is the surface behind them, so a dark ambience still reads as a control
+// rather than as a hole in the page.
+
+/// $theme is accepted for compatibility with the call in styles.scss, which
+/// still passes the legacy map. Unused here.
+@mixin apply($theme: null) {
+  ambience-preview {
+    background-color: var(--syn-surface-variant);
+    border: 1px solid
+      color-mix(in srgb, var(--syn-primary) 45%, var(--syn-surface-container));
+  }
+}

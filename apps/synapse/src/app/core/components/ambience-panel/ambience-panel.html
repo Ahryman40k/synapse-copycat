@@ -1,0 +1,142 @@
+<syn-panel>
+  <h2>Ambience</h2>
+
+  <!--
+    Three rows, three independent choices. That is the model made visible: the
+    wallpaper can decide the hue while audio decides the movement and the hour
+    decides how bright it is, and none of them has to win.
+
+    Each block takes its source already narrowed — see the component. Testing
+    the tag in the template would not narrow anything, because Angular reads
+    two calls to the same signal as two unrelated expressions.
+  -->
+
+  <!-- ── colour ─────────────────────────────────────────────────────────── -->
+  <div class="ambience-panel__channel">
+    <syn-select
+      ariaLabel="Colour source"
+      [options]="colourSources"
+      [value]="colour().type"
+      [disabled]="disabled()"
+      (valueChange)="onColourKind($event)"
+    >
+      Colour
+    </syn-select>
+
+    @if (fixedColour(); as fixed) {
+      <!--
+        Not "Colour": the select above already carries that name, and two
+        controls answering to one name is ambiguous for a screen reader and
+        for anything driving the page.
+      -->
+      <syn-color-picker
+        ariaLabel="Chosen colour"
+        [value]="fixed.rgb"
+        [disabled]="disabled()"
+        (valueChange)="onColour($event)"
+      ></syn-color-picker>
+    }
+
+    @if (rainbow(); as rainbow) {
+      <div class="ambience-panel__settings">
+        <syn-slider
+          ariaLabel="Rainbow speed"
+          [value]="percent(rainbow.turnsPerSecond)"
+          [disabled]="disabled()"
+          (valueChange)="onRainbow('turnsPerSecond', $event)"
+        ></syn-slider>
+        <syn-slider
+          ariaLabel="Rainbow spread"
+          [value]="percent(rainbow.spread)"
+          [disabled]="disabled()"
+          (valueChange)="onRainbow('spread', $event)"
+        ></syn-slider>
+      </div>
+    }
+  </div>
+
+  <!-- ── motion ─────────────────────────────────────────────────────────── -->
+  <div class="ambience-panel__channel">
+    <syn-select
+      ariaLabel="Motion source"
+      [options]="motionSources"
+      [value]="motion().type"
+      [disabled]="disabled()"
+      (valueChange)="onMotionKind($event)"
+    >
+      Motion
+    </syn-select>
+
+    <!--
+      Both figures are fractions of the device, never columns: in columns the
+      same wave crosses a mouse and a light strip at visibly different speeds,
+      which is three waves rather than one ambience.
+    -->
+    @if (wave(); as wave) {
+      <div class="ambience-panel__settings">
+        <syn-slider
+          ariaLabel="Wave speed"
+          [value]="percent(wave.lapsPerSecond)"
+          [disabled]="disabled()"
+          (valueChange)="onWave('lapsPerSecond', $event)"
+        ></syn-slider>
+        <syn-slider
+          ariaLabel="Wave width"
+          [min]="1"
+          [value]="percent(wave.width)"
+          [disabled]="disabled()"
+          (valueChange)="onWave('width', $event)"
+        ></syn-slider>
+      </div>
+    }
+
+    @if (pulse()) {
+      <syn-slider
+        ariaLabel="Pulse period"
+        [min]="1"
+        [value]="pulseTenths()"
+        [disabled]="disabled()"
+        (valueChange)="onPulse($event)"
+      ></syn-slider>
+    }
+  </div>
+
+  <!-- ── brightness ─────────────────────────────────────────────────────── -->
+  <div class="ambience-panel__channel">
+    <syn-select
+      ariaLabel="Brightness source"
+      [options]="brightnessSources"
+      [value]="brightness().type"
+      [disabled]="disabled()"
+      (valueChange)="onBrightnessKind($event)"
+    >
+      Brightness
+    </syn-select>
+
+    @if (fixedLevel(); as fixed) {
+      <syn-slider
+        ariaLabel="Brightness level"
+        [value]="percent(fixed.level)"
+        [disabled]="disabled()"
+        (valueChange)="onLevel($event)"
+      ></syn-slider>
+    }
+
+    @if (circadian(); as circadian) {
+      <div class="ambience-panel__settings">
+        <syn-slider
+          ariaLabel="Daytime level"
+          [value]="percent(circadian.day)"
+          [disabled]="disabled()"
+          (valueChange)="onCircadian('day', $event)"
+        ></syn-slider>
+        <syn-slider
+          ariaLabel="Night level"
+          [value]="percent(circadian.night)"
+          [disabled]="disabled()"
+          (valueChange)="onCircadian('night', $event)"
+        ></syn-slider>
+      </div>
+    }
+  </div>
+</syn-panel>

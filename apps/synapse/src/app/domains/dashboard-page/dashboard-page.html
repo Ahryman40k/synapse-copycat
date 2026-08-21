@@ -1,26 +1,96 @@
-@if (devices().length) {
-  <h2>Devices</h2>
-  <section>
-    @for (device of devices(); track device.id) {
-      <button
-        syn-card
-        type="button"
-        [image]="device.visual"
-        (click)="open(device)"
-      >
-        {{ device.name }}
-      </button>
+<!--
+  A live region, not an alert: a refusal here is information — "that one is
+  already in Desk" — and an assertive interruption would be out of proportion.
+-->
+@if (problem(); as problem) {
+  <p class="dashboard-page__problem" role="status">{{ problem }}</p>
+}
+
+<!--
+  One `cdkDropListGroup` around everything: it connects every list inside it
+  without any of them naming the others. Wiring `cdkDropListConnectedTo` by
+  hand would mean each group card knowing the ids of all the rest, and getting
+  it wrong silently — a list you cannot drop into looks exactly like one that
+  refuses.
+-->
+<div cdkDropListGroup>
+  <h2>Ambiences</h2>
+
+  <!--
+  Masonry, not a grid of rows: the cards have wildly different heights — a
+  group of one against a group of six, one with its settings open — and a row
+  as tall as its tallest card would leave the short ones floating in space.
+-->
+  <div class="dashboard-page__groups" synMasonry>
+    @for (status of groups(); track status.group.id) {
+      <group-card
+        [status]="status"
+        [catalogue]="devices()"
+        [carrying]="carried()"
+        (ambienceChange)="onAmbience(status.group.id, $event)"
+        (startedChange)="onStarted(status.group.id, $event)"
+        (renamed)="onRenamed(status.group.id, $event)"
+        (cadenceChange)="onCadence(status.group.id, $event)"
+        (removed)="onRemoved(status.group.id)"
+        (participantDropped)="onDroppedInto(status.group.id, $event)"
+        (participantOpen)="open(devices().find((d) => d.id === $event))"
+        (participantPickUp)="onPickUp($event)"
+      ></group-card>
     } @empty {
-      No device detected
+      <p class="dashboard-page__empty">
+        No group yet. Everything below is waiting for one.
+      </p>
+    }
+  </div>
+
+  <!--
+  The tray. Both a place to take devices from and a place to put them back:
+  dropping one here takes it out of its group, which is a legitimate thing to
+  want — an unlit keyboard while the rest of the desk breathes.
+-->
+  <h2>Waiting for a group</h2>
+
+  <section
+    class="dashboard-page__tray"
+    cdkDropList
+    cdkDropListSortingDisabled
+    (cdkDropListDropped)="onDroppedOut($event)"
+  >
+    @for (entry of unassigned(); track entry.participant) {
+      <participant-card
+        cdkDrag
+        [cdkDragData]="entry.participant"
+        [participant]="entry.participant"
+        [device]="entry.device"
+        [carried]="carried() === entry.participant"
+        (open)="open(entry.device)"
+        (pickUp)="onPickUp(entry.participant)"
+      ></participant-card>
+    } @empty {
+      <p class="dashboard-page__empty">
+        @if (devices().length) {
+          Everything is in a group. Drag one here to take it out.
+        } @else {
+          No Razer devices found.
+        }
+      </p>
+    }
+
+    @if (carriedName(); as name) {
+      <button
+        type="button"
+        class="dashboard-page__release"
+        (click)="onReleased(carried()!)"
+      >
+        Take {{ name }} out of its group
+      </button>
     }
   </section>
-} @else {
-  <h2>No Razer devices found</h2>
-}
+</div>
 
 @if (modules().length) {
   <h2>Modules</h2>
-  <section>
+  <section class="dashboard-page__modules">
     @for (module of modules(); track module.kind) {
       <button
         syn-card
@@ -30,8 +100,24 @@
       >
         {{ module.name }}
       </button>
-    } @empty {
-      No module detected
     }
   </section>
 }
+
+<!--
+  At the end of the page: it is the one thing someone arriving with no groups
+  has to find, and what they come back to when they want another. A primary
+  button rather than an outline, because it is the only call to action here —
+  everything else on this page acts on something that already exists.
+-->
+<div class="dashboard-page__actions">
+  <button
+    syn-button
+    type="button"
+    class="dashboard-page__new"
+    (click)="newGroup()"
+  >
+    <span aria-hidden="true">+</span>
+    New group
+  </button>
+</div>

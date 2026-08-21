@@ -1,0 +1,118 @@
+// Structure only — the colour lives in _group-card.theme.scss.
+// The column layout comes from `syn-panel` itself.
+
+h2 {
+  margin: 0;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.group-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.group-card__settings {
+  summary {
+    // The UA marker is replaced by one that can be positioned and coloured.
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    // The chevron, turning when the disclosure opens.
+    &::before {
+      content: '';
+      flex: none;
+      width: 0.4rem;
+      height: 0.4rem;
+      border-style: solid;
+      border-width: 0 2px 2px 0;
+      transform: rotate(-45deg);
+      transition: transform 0.15s ease-in-out;
+    }
+  }
+
+  &[open] summary::before {
+    transform: rotate(45deg);
+  }
+}
+
+.group-card__summary {
+  font-size: 0.8125rem;
+}
+
+.group-card__settings-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+}
+
+// The panel opened from the disclosure is inside a panel already. Flattening
+// it is the alternative to giving `syn-panel` a variant for one caller: the
+// group card is the surface, and the controls sit on it rather than on a
+// second one.
+.group-card__settings-body ambience-panel syn-panel {
+  padding: 0;
+  border-width: 0;
+}
+
+.group-card__remove {
+  align-self: flex-start;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid;
+  border-radius: 0.25rem;
+  background: none;
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.group-card__tiles {
+  display: grid;
+  // A visible target even when the group is empty, so there is somewhere to
+  // aim at when dropping the first device in.
+  min-height: 4rem;
+  // Small tiles, several to a row: a group of six should read as a shelf, not
+  // as a scroll.
+  grid-template-columns: repeat(auto-fill, minmax(min(8rem, 100%), 1fr));
+  gap: 0.5rem;
+}
+
+.group-card__place {
+  align-self: flex-start;
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px dashed;
+  border-radius: 0.25rem;
+  background: none;
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.group-card__none {
+  margin: 0;
+  font-size: 0.8125rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .group-card__settings summary::before {
+    transition: none;
+  }
+}

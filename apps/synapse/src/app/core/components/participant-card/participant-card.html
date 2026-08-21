@@ -1,0 +1,38 @@
+<!--
+  Activated by its body: the tile opens the device. The handle beside it does
+  the same move a drag would, without a pointer.
+-->
+<div class="participant-card__frame">
+  <button
+    syn-card
+    type="button"
+    class="participant-card__tile"
+    [image]="device()?.visual"
+    (click)="open.emit()"
+  >
+    <span class="participant-card__name">{{ name() }}</span>
+    @if (doing(); as doing) {
+      <span class="participant-card__doing">{{ doing }}</span>
+    }
+  </button>
+
+  <!--
+    ⚠️ The platform has no keyboard equivalent for dragging, so this is not a
+    convenience: without it the only way to move a participant is a pointer
+    gesture, and the feature does not exist for anyone who cannot make one.
+  -->
+  <button
+    type="button"
+    class="participant-card__handle"
+    [attr.aria-pressed]="carried()"
+    [attr.aria-label]="'Move ' + name()"
+    (click)="pickUp.emit()"
+  >
+    <svg viewBox="0 0 16 16" aria-hidden="true" width="12" height="12">
+      <path
+        fill="currentColor"
+        d="M5 2h2v2H5zm4 0h2v2H9zM5 7h2v2H5zm4 0h2v2H9zm-4 5h2v2H5zm4 0h2v2H9z"
+      />
+    </svg>
+  </button>
+</div>

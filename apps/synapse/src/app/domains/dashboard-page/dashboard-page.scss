@@ -1,25 +1,103 @@
-// Structure only — the card carries its own colours now, from the theme roles.
-// The hardcoded #111111 / white / limegreen that used to live here are gone.
+// Structure only — the colours live in _dashboard-page.theme.scss.
 
 :host {
-  & > h2 {
-    font-weight: 900;
-    font-size: 1.2em;
-  }
+  display: block;
+  margin: 1rem;
+}
 
-  & > section {
-    display: grid;
-    gap: 1rem;
-    // Cards size themselves to the track rather than to a fixed width, so the
-    // grid reflows instead of overflowing. The `min()` matters below 16rem:
-    // a bare `minmax(16rem, …)` keeps a 16rem floor and overflows a narrower
-    // window rather than shrinking.
-    grid-template-columns: repeat(auto-fill, minmax(min(16rem, 100%), 1fr));
+h2 {
+  font-weight: 900;
+  font-size: 1.2em;
+}
 
-    margin: 1rem;
+// `synMasonry` brings the row machinery; the columns and the gap stay here.
+.dashboard-page__groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+  column-gap: 1rem;
+}
+
+.dashboard-page__tray {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(9rem, 100%), 1fr));
+  gap: 0.75rem;
+
+  // A visible area even when empty, so there is somewhere to aim at when
+  // dragging the last device out of its group.
+  min-height: 6rem;
+  padding: 0.75rem;
+  border: 1px dashed;
+  border-radius: 0.5rem;
+}
+
+.dashboard-page__modules {
+  display: grid;
+  gap: 1rem;
+  // Cards size themselves to the track rather than to a fixed width, so the
+  // grid reflows instead of overflowing. The `min()` matters below 16rem:
+  // a bare `minmax(16rem, …)` keeps a 16rem floor and overflows a narrower
+  // window rather than shrinking.
+  grid-template-columns: repeat(auto-fill, minmax(min(16rem, 100%), 1fr));
+}
+
+.dashboard-page__actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+// `syn-button` brings the colour, the states and the focus ring. Only the
+// shape is overridden — a pill for the one call to action on the page, kept
+// here rather than added to the library for a single caller.
+.dashboard-page__new {
+  padding: 0.625rem 1.5rem;
+  border-radius: 999px;
+
+  span {
+    font-size: 1.25rem;
+    line-height: 1;
   }
 }
 
-.dashboard-page__name {
-  font-weight: 700;
+.dashboard-page__release {
+  grid-column: 1 / -1;
+  justify-self: start;
+  padding: 0.25rem 0.75rem;
+  border: 1px dashed;
+  border-radius: 0.25rem;
+  background: none;
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.dashboard-page__cancel,
+.dashboard-page__confirm {
+  padding: 0.5rem 1rem;
+  border: 1px solid;
+  border-radius: 0.5rem;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.dashboard-page__empty,
+.dashboard-page__hint {
+  margin: 0;
+  font-size: 0.8125rem;
+}
+
+.dashboard-page__empty {
+  grid-column: 1 / -1;
+}
+
+.dashboard-page__problem {
+  margin: 0 0 1rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  font-size: 0.8125rem;
 }

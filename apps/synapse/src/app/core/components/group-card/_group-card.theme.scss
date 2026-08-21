@@ -1,0 +1,67 @@
+// Colour only — every dimension lives in group-card.scss.
+
+/// $theme is accepted for compatibility with the call in styles.scss, which
+/// still passes the legacy map. Unused here.
+@mixin apply($theme: null) {
+  group-card h2 {
+    color: var(--syn-primary);
+  }
+
+  group-card h3,
+  group-card .group-card__summary,
+  group-card .group-card__none {
+    color: var(--syn-on-surface-variant);
+  }
+
+  group-card .group-card__settings summary::before {
+    border-color: var(--syn-on-surface-variant);
+  }
+
+  group-card .group-card__settings summary:hover {
+    color: var(--syn-primary);
+
+    &::before {
+      border-color: var(--syn-primary);
+    }
+  }
+
+  group-card .group-card__settings summary:focus-visible {
+    outline: 2px solid var(--syn-primary);
+    outline-offset: 2px;
+  }
+
+  // The opened panel sits on the card, so it carries no surface of its own.
+  group-card .group-card__settings-body ambience-panel syn-panel {
+    background-color: transparent;
+  }
+
+  // Where the drag would land. An outline rather than a border, so nothing
+  // shifts by a pixel when it appears.
+  group-card .group-card__tiles.cdk-drop-list-receiving {
+    outline: 2px dashed var(--syn-primary);
+    outline-offset: 4px;
+  }
+
+  group-card .group-card__place {
+    border-color: var(--syn-primary);
+    color: var(--syn-primary);
+
+    &:hover {
+      background-color: var(--syn-primary);
+      color: var(--syn-on-primary);
+    }
+  }
+
+  // Destructive, and deliberately quiet until reached for: it is one click
+  // away from throwing away an arrangement, and it sits in a disclosure that
+  // has to be opened first.
+  group-card .group-card__remove {
+    border-color: var(--syn-outline);
+    color: var(--syn-on-surface-variant);
+
+    &:hover {
+      border-color: var(--syn-error);
+      color: var(--syn-error);
+    }
+  }
+}

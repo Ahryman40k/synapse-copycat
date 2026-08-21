@@ -1,0 +1,30 @@
+<h2>New group</h2>
+
+<!--
+  A real <form>. Enter submits because the platform submits a form with a
+  submit button in it, and Cancel does not because a `type="button"` does not.
+  Wiring the field's `committed` to create instead looked equivalent and was
+  not: `committed` also fires on blur, and clicking Cancel blurs the field
+  first — so cancelling created the group. A story caught it.
+-->
+<form (submit)="onSubmit($event)">
+  <syn-text-field
+    [value]="name()"
+    (valueChange)="name.set($event)"
+    placeholder="Desk"
+    ariaLabel="Group name"
+  >
+    Name
+  </syn-text-field>
+
+  <p class="new-group-dialog__hint">
+    It starts empty and stopped. Drag devices onto it, then run it.
+  </p>
+
+  <div class="new-group-dialog__actions">
+    <button syn-button variant="secondary" type="button" (click)="cancel()">
+      Cancel
+    </button>
+    <button syn-button type="submit" [disabled]="!name().trim()">Create</button>
+  </div>
+</form>

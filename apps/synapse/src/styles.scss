@@ -1,3 +1,6 @@
+// The CDK's overlay styles, which is what its dialogs are rendered into.
+// Without these the panel has no positioning and no backdrop at all.
+@use '@angular/cdk' as cdk;
 /* You can add global styles to this file, and also import other style files */
 
 @use '../../../libs/ui/src/styles/_theming.scss' as theme;
@@ -8,6 +11,16 @@
   as brightness-panel;
 @use '../src/app/core/components/lighting-switch-off-panel/_lighting-switch-off-panel.theme.scss'
   as lighting-switch-off-panel;
+@use '../src/app/core/components/ambience-panel/_ambience-panel.theme.scss' as
+  ambience-panel;
+@use '../src/app/core/components/ambience-preview/_ambience-preview.theme.scss'
+  as ambience-preview;
+@use '../src/app/core/components/group-card/_group-card.theme.scss' as
+  group-card;
+@use '../src/app/core/components/participant-card/_participant-card.theme.scss'
+  as participant-card;
+@use '../src/app/core/components/new-group-dialog/_new-group-dialog.theme.scss'
+  as new-group-dialog;
 @use '../src/app/core/components/effects-panel/_effects-panel.theme.scss' as
   effects-panel;
 @use '../src/app/core/components/device-stage/_device-stage.theme.scss' as
@@ -85,6 +98,11 @@ $theme-dark: theme.create-theme-dark(
   @include pagebar.apply($theme-dark);
   @include brightness-panel.apply($theme-dark);
   @include lighting-switch-off-panel.apply($theme-dark);
+  @include ambience-panel.apply($theme-dark);
+  @include ambience-preview.apply($theme-dark);
+  @include group-card.apply($theme-dark);
+  @include participant-card.apply($theme-dark);
+  @include new-group-dialog.apply($theme-dark);
   @include effects-panel.apply($theme-dark);
   @include device-stage.apply($theme-dark);
   @include razer-logo.apply($theme-dark);
@@ -103,4 +121,54 @@ $theme-dark: theme.create-theme-dark(
   @include language-panel.apply($theme-dark);
   @include about-panel.apply($theme-dark);
   @include settings-page.apply($theme-dark);
+}
+
+// ── the CDK's overlay ────────────────────────────────────────────────────────
+
+@include cdk.overlay();
+// `cdk-visually-hidden`, which the drag and drop announcer uses to describe a
+// drag to a screen reader. Without it the announcements are visible text.
+@include cdk.a11y-visually-hidden();
+
+// The panel our dialogs are opened with. The overlay only positions it; what
+// it looks like is ours.
+.syn-dialog-panel {
+  background-color: var(--syn-surface-container);
+  color: var(--syn-on-surface);
+  border: 1px solid
+    color-mix(in srgb, var(--syn-primary) 45%, var(--syn-surface-container));
+  border-radius: 0.75rem;
+  max-height: calc(100vh - 4rem);
+  overflow: auto;
+}
+
+.cdk-overlay-dark-backdrop {
+  background-color: rgb(0 0 0 / 55%);
+}
+
+// ── dragging ─────────────────────────────────────────────────────────────────
+
+// What follows the pointer. Lifted, and never wider than the tile it came
+// from, so it does not obscure where it is going.
+.cdk-drag-preview {
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 45%);
+}
+
+// The gap it left behind. Faded rather than removed: taking it out of the flow
+// reflows the list under the pointer, which moves the target mid-gesture.
+.cdk-drag-placeholder {
+  opacity: 0.35;
+}
+
+.cdk-drag-animating,
+.cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cdk-drag-animating,
+  .cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
+    transition: none;
+  }
 }
