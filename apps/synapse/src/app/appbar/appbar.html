@@ -22,29 +22,14 @@
 
   <!--
   Labelled by kind, numbered only where a kind repeats — short enough for a
-  narrow window. The full device name is the `title`, never an aria-label
-  overriding the visible text: WCAG 2.5.3 (Label in Name) requires the
-  accessible name to contain what is written on the control, or voice control
-  stops matching it.
+  narrow window. The full name is the `title`, never an aria-label overriding
+  the visible text: WCAG 2.5.3 (Label in Name) requires the accessible name to
+  contain what is written on the control, or voice control stops matching it.
 
   `hidden` on the clipped ones takes them out of the tab order and the
   accessibility tree; the stylesheet keeps their box, so the layout — and
   therefore what fits — never changes as a result.
 -->
-  @for (entry of deviceEntries(); track entry.item.id) {
-    <button
-      #entryButton
-      navbar
-      type="button"
-      [attr.data-entry-id]="entry.item.id"
-      [hidden]="overflowing().has(entry.item.id)"
-      [title]="entry.item.name"
-      [attr.aria-current]="entry.item.id === activeId() ? 'page' : null"
-      (click)="activateDevice(entry.item)"
-    >
-      {{ entry.label }}
-    </button>
-  }
   @for (entry of moduleEntries(); track entry.item.kind) {
     <button
       #entryButton
@@ -88,15 +73,13 @@
         works wherever the focus sits inside the bar.
       -->
       <div class="overflow__menu" role="menu">
-        @for (entry of hiddenEntries(); track entryId(entry.item)) {
+        @for (entry of hiddenEntries(); track entry.item.kind) {
           <button
             type="button"
             role="menuitem"
             class="overflow__item"
             [title]="entry.item.name"
-            [attr.aria-current]="
-              entryId(entry.item) === activeId() ? 'page' : null
-            "
+            [attr.aria-current]="entry.item.kind === activeId() ? 'page' : null"
             (click)="activateFromMenu(entry.item)"
           >
             {{ entry.label }}

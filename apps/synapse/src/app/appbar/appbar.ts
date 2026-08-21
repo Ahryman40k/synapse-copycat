@@ -11,16 +11,11 @@ import {
 	viewChild,
 	viewChildren,
 } from '@angular/core';
-import type { Device, Module } from '@synapse-copycat/backend-api';
+import type { Module } from '@synapse-copycat/backend-api';
 import { RazerLogo } from '../core/components/razer-logo/razer-logo';
 
 /** What a button shows, and the entry it stands for. */
 type Entry<T> = { item: T; label: string };
-
-/** Devices are keyed by id, modules by kind — see `activeId`. */
-function entryId(item: Device | Module): string {
-	return item.__type === 'device' ? item.id : item.kind;
-}
 
 /**
  * Label by kind — `mouse`, `mousemat` — and number them only when there is more
@@ -53,8 +48,17 @@ function labelByKind<T extends { kind: string }>(
  *
  * It stays dumb: it emits what was activated and the layout, which already owns
  * the Router, does the navigating. `activeId` comes back the same way, so the
- * bar can mark the current entry without ever importing the router — the same
- * separation the component already had, extended to the state it was missing.
+ * bar can mark the current entry without ever importing the router.
+ *
+ * **Devices are not in here.** They were, one entry per kind, and it was the
+ * wrong shape twice over: the bar competed with the dashboard for the same job,
+ * and the entries said `mouse (1)` / `mouse (2)` because real device names do
+ * not fit a bar someone can make narrow — a label nobody can match to the thing
+ * on their desk. A device is now opened from its own tile, which carries its
+ * picture and its name.
+ *
+ * Modules stay: there are few of them, their names are short, and they are not
+ * participants in a group, so no tile shows them.
  */
 @Component({
 	selector: 'syn-bar, nav[synapse-bar]',
@@ -69,33 +73,23 @@ function labelByKind<T extends { kind: string }>(
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppBar {
-	readonly devices = input.required<Device[]>();
 	readonly modules = input.required<Module[]>();
 
 	/**
-	 * Key of the entry currently shown. Devices are keyed by `id` — the
-	 * zero-padded `vendor_id-product_id` pair, which tells two different models
-	 * apart — and modules by `kind`, until they gain an id of their own.
+	 * Key of the entry currently shown — a module's `kind`, until modules gain
+	 * an id of their own.
 	 *
 	 * Undefined on the dashboard, which is when Home is the current entry.
-	 *
-	 * ⚠️ Two units of the *same* model share a `vendor_id-product_id` and would
-	 * both be marked. Telling those apart needs the device serial, which the
-	 * Rust backend has but the wire shape drops — see libs/backend-api/AGENTS.md.
 	 */
 	readonly activeId = input<string | undefined>(undefined);
 
-	readonly ariaLabel = input('Devices and modules');
+	readonly ariaLabel = input('Modules');
 
 	/** Numbered only where a kind repeats — see `labelByKind`. */
-	protected readonly deviceEntries = computed(() =>
-		labelByKind(this.devices()),
-	);
 	protected readonly moduleEntries = computed(() =>
 		labelByKind(this.modules()),
 	);
 
-	readonly deviceActivated = output<Device>();
 	readonly moduleActivated = output<Module>();
 	readonly homeRequested = output<void>();
 	readonly settingsRequested = output<void>();
@@ -140,9 +134,7 @@ export class AppBar {
 
 	protected readonly hiddenEntries = computed(() => {
 		const clipped = this.overflowing();
-		return [...this.deviceEntries(), ...this.moduleEntries()].filter((entry) =>
-			clipped.has(entryId(entry.item)),
-		);
+		return this.moduleEntries().filter((entry) => clipped.has(entry.item.kind));
 	});
 
 	protected readonly hasOverflow = computed(
@@ -184,8 +176,6 @@ export class AppBar {
 		});
 	}
 
-	protected entryId = entryId;
-
 	protected toggleOverflow(): void {
 		this.overflowOpen.update((open) => !open);
 	}
@@ -195,10 +185,9 @@ export class AppBar {
 	}
 
 	/** Picking from the menu closes it, like any menu. */
-	protected activateFromMenu(item: Device | Module): void {
+	protected activateFromMenu(item: Module): void {
 		this.closeOverflow();
-		if (item.__type === 'device') this.activateDevice(item);
-		else this.activateModule(item);
+		this.activateModule(item);
 	}
 
 	protected goSettings(): void {
@@ -207,10 +196,6 @@ export class AppBar {
 
 	protected goHome(): void {
 		this.homeRequested.emit();
-	}
-
-	protected activateDevice(device: Device): void {
-		this.deviceActivated.emit(device);
 	}
 
 	protected activateModule(module: Module): void {

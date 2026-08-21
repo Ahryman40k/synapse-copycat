@@ -33,7 +33,7 @@
         (cadenceChange)="onCadence(status.group.id, $event)"
         (removed)="onRemoved(status.group.id)"
         (participantDropped)="onDroppedInto(status.group.id, $event)"
-        (participantOpen)="open(devices().find((d) => d.id === $event))"
+        (participantOpen)="inspect($event)"
         (participantPickUp)="onPickUp($event)"
       ></group-card>
     } @empty {
@@ -63,7 +63,7 @@
         [participant]="entry.participant"
         [device]="entry.device"
         [carried]="carried() === entry.participant"
-        (open)="open(entry.device)"
+        (open)="inspect(entry.participant)"
         (pickUp)="onPickUp(entry.participant)"
       ></participant-card>
     } @empty {

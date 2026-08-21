@@ -21,6 +21,8 @@
   as participant-card;
 @use '../src/app/core/components/new-group-dialog/_new-group-dialog.theme.scss'
   as new-group-dialog;
+@use '../src/app/core/components/device-dialog/_device-dialog.theme.scss' as
+  device-dialog;
 @use '../src/app/core/components/effects-panel/_effects-panel.theme.scss' as
   effects-panel;
 @use '../src/app/core/components/device-stage/_device-stage.theme.scss' as
@@ -103,6 +105,7 @@ $theme-dark: theme.create-theme-dark(
   @include group-card.apply($theme-dark);
   @include participant-card.apply($theme-dark);
   @include new-group-dialog.apply($theme-dark);
+  @include device-dialog.apply($theme-dark);
   @include effects-panel.apply($theme-dark);
   @include device-stage.apply($theme-dark);
   @include razer-logo.apply($theme-dark);

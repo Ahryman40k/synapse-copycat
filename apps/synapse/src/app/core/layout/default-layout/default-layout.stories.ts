@@ -71,12 +71,14 @@ export const Default: Story = {
 		const canvas = within(canvasElement);
 
 		// The outlet is empty — there are no routes here — so the bar is the whole
-		// of what the shell contributes. Entries are labelled by kind, with the
-		// full device name carried by the title.
+		// of what the shell contributes.
 		await expect(canvas.getByRole('button', { name: 'Synapse' })).toBeVisible();
-		await expect(
-			canvas.getByRole('button', { name: 'mousemat' }),
-		).toBeVisible();
 		await expect(canvas.getByRole('button', { name: 'twinkly' })).toBeVisible();
+
+		// ⚠️ The devices are enumerated above and none of them is in the bar.
+		// They are tiles on the dashboard now, inside the group driving them.
+		await expect(
+			canvas.queryByRole('button', { name: 'mousemat' }),
+		).not.toBeInTheDocument();
 	},
 };

@@ -22,6 +22,7 @@ export class DefaultLayout {
 
 	protected readonly navigation = inject(Navigation);
 
-	protected readonly devices = this.#store.devices;
+	// Devices are not in the bar. They are tiles on the dashboard, inside the
+	// group driving them — see `AppBar`.
 	protected readonly modules = this.#store.modules;
 }

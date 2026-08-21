@@ -1,0 +1,35 @@
+<header>
+  @if (detail.device?.visual; as visual) {
+    <img [src]="visual" alt="" />
+  }
+  <div class="device-dialog__identity">
+    <h2>{{ name() }}</h2>
+    <p class="device-dialog__id">{{ detail.participant }}</p>
+    <!--
+      What the engine is doing with it. No page can say this: it belongs to the
+      group, not to the device, so before there was nowhere it could appear.
+    -->
+    <p class="device-dialog__doing">{{ doing() }}</p>
+  </div>
+
+  <button syn-button variant="secondary" type="button" (click)="close()">
+    Close
+  </button>
+</header>
+
+@if (page(); as page) {
+  <!--
+    The device's own page, unchanged and rendered in place. It already took its
+    device as an input, because the route bound it that way — so moving it here
+    meant passing the same input from somewhere else.
+  -->
+  <div class="device-dialog__page">
+    <ng-container
+      *ngComponentOutlet="page; inputs: pageInputs()"
+    ></ng-container>
+  </div>
+} @else {
+  <p class="device-dialog__quiet">
+    Nothing to set on this one — it takes part in a group, and that is all.
+  </p>
+}

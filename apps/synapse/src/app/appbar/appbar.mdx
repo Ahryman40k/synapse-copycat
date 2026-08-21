@@ -38,42 +38,49 @@ reader announces, and what the theme file selects on.
 Only the label is recoloured, where the page bar uses a **filled pill** — the
 two levels of navigation stay told apart while sharing the same colour.
 
-Exactly one entry is current at a time; with no device open, that is Home.
+Exactly one entry is current at a time; with no module open, that is Home.
 
 > The current entry is signalled by colour alone (WCAG 1.4.1). `aria-current`
 > covers assistive technology, but `primary` and `on-surface-variant` sit at
 > tones 0.72 and 0.76 — close enough in lightness that colour vision deficiency
 > may flatten them. A background tint would fix it without a border.
 
-## Two devices of the same kind
+## Devices are not in here
 
-Entries are **labelled by kind and keyed by `id`** — the zero-padded
-`vendor_id-product_id` pair — so two different mouse models each get their own
-entry and their own page, `/device/mouse/5426-0136`. The kind picks which page
-component renders; the id picks the device.
+They were, one entry per kind — `mouse (1)`, `mouse (2)` — and both halves of
+that were wrong.
 
-Labels are numbered **only where a kind repeats**:
+The labels came from the kind because device names are long and inconsistent
+and a bar has to fit a window someone can make narrow. But `mouse (2)` is not
+something a reader can match to the thing on their desk, which is the one job a
+navigation label has. And the entry led to a per-device page that competed with
+the dashboard for the same work, while every control on it wrote to local state
+and reached no hardware at all.
 
-| Connected              | Labels                             |
-| ---------------------- | ---------------------------------- |
-| one mouse              | `mouse`                            |
-| two mice, one mousemat | `mouse (1)` `mouse (2)` `mousemat` |
+A device is opened from its own tile now — with its picture and its real name,
+inside the group driving it — and what opens is a dialog, not a page. Those
+routes are gone.
 
-Kinds are short and stable, which matters in a bar that has to fit a window the
-user can make narrow; device names are long and inconsistent. The full name is
-the `title`, so hovering still reveals it.
+**Modules stay.** There are few of them, their names are short, and nothing
+else on screen shows them.
+
+Labels are still numbered where a kind repeats:
+
+| Connected           | Labels                            |
+| ------------------- | --------------------------------- |
+| one Twinkly         | `twinkly`                         |
+| two Twinklys, a Hue | `twinkly (1)` `twinkly (2)` `hue` |
+
+The full name is the `title`, so hovering still reveals it.
 
 > Never as an `aria-label`. WCAG 2.5.3 (Label in Name) requires the accessible
-> name to contain the visible text — overriding "mouse (2)" with "Razer Viper
-> V2 Pro" would stop voice control from matching what is written on the button.
+> name to contain the visible text — overriding "twinkly (2)" with "Twinkly, the
+> spare one" would stop voice control from matching what is written on the
+> button.
 
-Keying on `kind`, as this did before, showed both mice as "mouse" and marked
-both as current at once.
-
-> ⚠️ Two units of the **same model** share a `vendor_id-product_id` and would
-> still collide. Telling those apart needs the device serial — OpenRazer's real
-> primary key, present on the Rust `Device` but dropped from the wire shape. See
-> `libs/backend-api/AGENTS.md`.
+> ⚠️ Two modules of the same kind are told apart in the label but **not** in
+> `activeId`, which is a module's `kind` — both would be marked current. Modules
+> have no id of their own yet.
 
 ## When it does not fit
 

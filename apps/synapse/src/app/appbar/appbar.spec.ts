@@ -1,35 +1,13 @@
-import type { Device, Module } from '@synapse-copycat/backend-api';
+import type { Module } from '@synapse-copycat/backend-api';
 import { render, screen } from '@testing-library/angular';
 import { AppBar } from './appbar';
 
-const DEVICES: Device[] = [
-	{
-		__type: 'device',
-		kind: 'mouse',
-		name: 'Razer Basilisk Ultimate',
-		id: '5426-0136',
-		visual: 'assets/devices/5426-0136.png',
-	},
-	{
-		__type: 'device',
-		kind: 'mousemat',
-		name: 'Razer Goliathus',
-		id: '5426-3074',
-		visual: 'assets/devices/5426-3074.png',
-	},
-];
-
-const TWO_MICE: Device[] = [
-	DEVICES[0],
-	{
-		__type: 'device',
-		kind: 'mouse',
-		name: 'Razer Viper V2 Pro',
-		id: '5426-0165',
-		visual: 'assets/devices/5426-0165.png',
-	},
-];
-
+/**
+ * ⚠️ Devices are not in the bar any more, so nothing here mentions one. They
+ * were an entry per kind — `mouse (1)`, `mouse (2)` — a label nobody can match
+ * to the thing on their desk, and a second route to a place the dashboard
+ * already owned. A device is opened from its own tile now.
+ */
 const MODULES: Module[] = [
 	{
 		__type: 'module',
@@ -37,12 +15,26 @@ const MODULES: Module[] = [
 		name: 'Twinkly',
 		visual: 'assets/modules/twinkly.png',
 	},
+	{
+		__type: 'module',
+		kind: 'goove',
+		name: 'Goove',
+		visual: 'assets/modules/goove.png',
+	},
+];
+
+const TWO_OF_A_KIND: Module[] = [
+	MODULES[0],
+	{
+		__type: 'module',
+		kind: 'twinkly',
+		name: 'Twinkly, the other one',
+		visual: 'assets/modules/twinkly.png',
+	},
 ];
 
 const setup = (inputs: Record<string, unknown> = {}) =>
-	render(AppBar, {
-		inputs: { devices: DEVICES, modules: MODULES, ...inputs },
-	});
+	render(AppBar, { inputs: { modules: MODULES, ...inputs } });
 
 const entry = (name: string) => screen.getByRole('button', { name });
 
@@ -50,22 +42,17 @@ describe('AppBar', () => {
 	it('is a navigation landmark', async () => {
 		await setup();
 
-		expect(
-			screen.getByRole('navigation', { name: 'Devices and modules' }),
-		).toBeVisible();
+		expect(screen.getByRole('navigation', { name: 'Modules' })).toBeVisible();
 	});
 
-	it('lists home, every device and every module', async () => {
+	it('lists home and every module', async () => {
 		await setup();
 
-		// Home, three entries, and the settings gear, which is not an entry.
-		expect(screen.getAllByRole('button')).toHaveLength(5);
+		// Home, two modules, and the settings gear, which is not an entry.
+		expect(screen.getAllByRole('button')).toHaveLength(4);
 		expect(entry('Synapse')).toBeVisible();
-		// Labelled by kind — short enough for a narrow window — with the full
-		// name carried by the title.
-		expect(entry('mouse')).toBeVisible();
-		expect(entry('mousemat')).toBeVisible();
 		expect(entry('twinkly')).toBeVisible();
+		expect(entry('goove')).toBeVisible();
 	});
 
 	describe('current entry', () => {
@@ -75,31 +62,14 @@ describe('AppBar', () => {
 			// aria-current is what a screen reader announces, and what the theme
 			// file selects on to recolour the label.
 			expect(entry('Synapse')).toHaveAttribute('aria-current', 'page');
-			expect(entry('mouse')).not.toHaveAttribute('aria-current');
-		});
-
-		it('marks the matching device by id, not by kind', async () => {
-			await setup({ activeId: '5426-3074' });
-
-			expect(entry('mousemat')).toHaveAttribute('aria-current', 'page');
-			expect(entry('Synapse')).not.toHaveAttribute('aria-current');
-			expect(entry('mouse')).not.toHaveAttribute('aria-current');
+			expect(entry('twinkly')).not.toHaveAttribute('aria-current');
 		});
 
 		it('marks the matching module', async () => {
-			await setup({ activeId: 'twinkly' });
+			const { fixture } = await setup({ activeId: 'twinkly' });
 
 			expect(entry('twinkly')).toHaveAttribute('aria-current', 'page');
-		});
-
-		it('marks one entry only when two devices share a kind', async () => {
-			// Two mice of different models: keying on `kind` would light up both.
-			const { fixture } = await setup({
-				devices: TWO_MICE,
-				activeId: '5426-0165',
-			});
-
-			expect(entry('mouse (2)')).toHaveAttribute('aria-current', 'page');
+			expect(entry('Synapse')).not.toHaveAttribute('aria-current');
 			expect(
 				(fixture.nativeElement as HTMLElement).querySelectorAll(
 					'[aria-current]',
@@ -112,7 +82,7 @@ describe('AppBar', () => {
 		it('asks for home', async () => {
 			let asked = 0;
 			await render(AppBar, {
-				inputs: { devices: DEVICES, modules: MODULES },
+				inputs: { modules: MODULES },
 				on: { homeRequested: () => asked++ },
 			});
 
@@ -121,28 +91,16 @@ describe('AppBar', () => {
 			expect(asked).toBe(1);
 		});
 
-		it('emits the activated device, not just its kind', async () => {
-			const seen: Device[] = [];
-			await render(AppBar, {
-				inputs: { devices: DEVICES, modules: MODULES },
-				on: { deviceActivated: (device: Device) => seen.push(device) },
-			});
-
-			entry('mousemat').click();
-
-			expect(seen).toEqual([DEVICES[1]]);
-		});
-
-		it('emits the activated module', async () => {
+		it('emits the activated module, not just its kind', async () => {
 			const seen: Module[] = [];
 			await render(AppBar, {
-				inputs: { devices: DEVICES, modules: MODULES },
+				inputs: { modules: MODULES },
 				on: { moduleActivated: (module: Module) => seen.push(module) },
 			});
 
-			entry('twinkly').click();
+			entry('goove').click();
 
-			expect(seen).toEqual([MODULES[0]]);
+			expect(seen).toEqual([MODULES[1]]);
 		});
 	});
 
@@ -150,33 +108,28 @@ describe('AppBar', () => {
 		it('uses the bare kind when it is the only one', async () => {
 			await setup();
 
-			expect(entry('mouse')).toBeVisible();
-			expect(screen.queryByRole('button', { name: 'mouse (1)' })).toBeNull();
+			expect(entry('twinkly')).toBeVisible();
+			expect(screen.queryByRole('button', { name: 'twinkly (1)' })).toBeNull();
 		});
 
 		it('numbers them once a kind repeats', async () => {
-			await setup({ devices: TWO_MICE });
+			// ⚠️ Two of a kind are told apart in the label but not in `activeId`,
+			// which is a module's `kind` — both would be marked current. Modules
+			// have no id of their own yet; see the bar's `activeId`.
+			await setup({ modules: TWO_OF_A_KIND });
 
-			expect(entry('mouse (1)')).toBeVisible();
-			expect(entry('mouse (2)')).toBeVisible();
-			expect(screen.queryByRole('button', { name: 'mouse' })).toBeNull();
-		});
-
-		it('numbers only the kind that repeats', async () => {
-			await setup({ devices: [...TWO_MICE, DEVICES[1]] });
-
-			expect(entry('mouse (1)')).toBeVisible();
-			expect(entry('mouse (2)')).toBeVisible();
-			expect(entry('mousemat')).toBeVisible();
+			expect(entry('twinkly (1)')).toBeVisible();
+			expect(entry('twinkly (2)')).toBeVisible();
+			expect(screen.queryByRole('button', { name: 'twinkly' })).toBeNull();
 		});
 
 		it('keeps the full name reachable as the title', async () => {
-			await setup({ devices: TWO_MICE });
+			await setup();
 
 			// Not as an aria-label: WCAG 2.5.3 wants the accessible name to
 			// contain the visible text.
-			expect(entry('mouse (2)')).toHaveAttribute('title', 'Razer Viper V2 Pro');
-			expect(entry('mouse (2)')).not.toHaveAttribute('aria-label');
+			expect(entry('twinkly')).toHaveAttribute('title', 'Twinkly');
+			expect(entry('twinkly')).not.toHaveAttribute('aria-label');
 		});
 	});
 
@@ -195,7 +148,7 @@ describe('AppBar', () => {
 		it('offers a trigger once entries are clipped', async () => {
 			const { fixture } = await setup();
 
-			fixture.componentInstance.overflowing.set(new Set(['5426-3074']));
+			fixture.componentInstance.overflowing.set(new Set(['goove']));
 			fixture.detectChanges();
 
 			expect(screen.getByRole('button', { name: '1 more' })).toBeVisible();
@@ -204,19 +157,17 @@ describe('AppBar', () => {
 		it('takes a clipped entry out of the tab order', async () => {
 			const { fixture } = await setup();
 
-			fixture.componentInstance.overflowing.set(new Set(['5426-3074']));
+			fixture.componentInstance.overflowing.set(new Set(['goove']));
 			fixture.detectChanges();
 
 			// [hidden] removes it from the accessibility tree; the stylesheet
 			// keeps its box so the layout does not change.
-			expect(screen.queryByRole('button', { name: 'mousemat' })).toBeNull();
+			expect(screen.queryByRole('button', { name: 'goove' })).toBeNull();
 		});
 
 		it('lists the clipped entries in the menu', async () => {
 			const { fixture } = await setup();
-			fixture.componentInstance.overflowing.set(
-				new Set(['5426-3074', 'twinkly']),
-			);
+			fixture.componentInstance.overflowing.set(new Set(['goove', 'twinkly']));
 			fixture.detectChanges();
 
 			screen.getByRole('button', { name: '2 more' }).click();
@@ -224,7 +175,7 @@ describe('AppBar', () => {
 
 			expect(screen.getByRole('menu')).toBeVisible();
 			expect(screen.getAllByRole('menuitem')).toHaveLength(2);
-			expect(screen.getByRole('menuitem', { name: 'mousemat' })).toBeVisible();
+			expect(screen.getByRole('menuitem', { name: 'goove' })).toBeVisible();
 		});
 
 		it('reports its expanded state', async () => {
@@ -241,34 +192,35 @@ describe('AppBar', () => {
 		});
 
 		it('activates from the menu and closes it', async () => {
-			const seen: Device[] = [];
+			const seen: Module[] = [];
 			const { fixture } = await render(AppBar, {
-				inputs: { devices: DEVICES, modules: MODULES },
-				on: { deviceActivated: (device: Device) => seen.push(device) },
+				inputs: { modules: MODULES },
+				on: { moduleActivated: (module: Module) => seen.push(module) },
 			});
-			fixture.componentInstance.overflowing.set(new Set(['5426-3074']));
+			fixture.componentInstance.overflowing.set(new Set(['goove']));
 			fixture.detectChanges();
 
 			screen.getByRole('button', { name: '1 more' }).click();
 			fixture.detectChanges();
-			screen.getByRole('menuitem', { name: 'mousemat' }).click();
+			screen.getByRole('menuitem', { name: 'goove' }).click();
 			fixture.detectChanges();
 
-			expect(seen).toEqual([DEVICES[1]]);
+			expect(seen).toEqual([MODULES[1]]);
 			expect(screen.queryByRole('menu')).toBeNull();
 		});
 
 		it('marks the current entry inside the menu too', async () => {
-			const { fixture } = await setup({ activeId: '5426-3074' });
-			fixture.componentInstance.overflowing.set(new Set(['5426-3074']));
+			const { fixture } = await setup({ activeId: 'goove' });
+			fixture.componentInstance.overflowing.set(new Set(['goove']));
 			fixture.detectChanges();
 
 			screen.getByRole('button', { name: '1 more' }).click();
 			fixture.detectChanges();
 
-			expect(
-				screen.getByRole('menuitem', { name: 'mousemat' }),
-			).toHaveAttribute('aria-current', 'page');
+			expect(screen.getByRole('menuitem', { name: 'goove' })).toHaveAttribute(
+				'aria-current',
+				'page',
+			);
 		});
 
 		it('closes on Escape', async () => {
@@ -290,7 +242,7 @@ describe('AppBar', () => {
 	});
 
 	it('renders with nothing connected', async () => {
-		await setup({ devices: [], modules: [] });
+		await setup({ modules: [] });
 
 		// Home and the settings gear; the gear is there whether or not anything
 		// is plugged in.
@@ -324,8 +276,8 @@ describe('AppBar', () => {
 	it('marks the gear, not Home, while the settings are open', async () => {
 		await setup({ settingsActive: true });
 
-		// `activeId` only names devices and modules, so without this Home would
-		// light up over a page that is not it.
+		// `activeId` only names modules, so without this Home would light up
+		// over a page that is not it.
 		expect(screen.getByRole('button', { name: 'Settings' })).toHaveAttribute(
 			'aria-current',
 			'page',

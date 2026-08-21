@@ -1,28 +1,29 @@
 import { computed, inject, Injectable } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
-import type { Device, Module } from '@synapse-copycat/backend-api';
+import type { Module } from '@synapse-copycat/backend-api';
 import { filter, map } from 'rxjs';
 
 /** Where the application is, read back from the address. */
 export type AppLocation =
 	| { on: 'home' }
 	| { on: 'settings' }
-	| { on: 'device'; id: string }
 	| { on: 'module'; kind: string };
 
 /**
- * `/device/mouse/5426-0136` -> a device, `/module/twinkly` -> a module,
- * `/settings` -> the settings, anything else -> home.
+ * `/module/twinkly` -> a module, `/settings` -> the settings, anything else ->
+ * home.
+ *
+ * ⚠️ There is no device address any more. A device is not a place you navigate
+ * to: it is inspected in a dialog over the dashboard, which is where it sits.
  *
  * Exported so it can be tested for what it is — string handling — with no
  * router, no injector and no component.
  */
 export function locationOf(url: string): AppLocation {
-	const [first, second, third] = url.split('?')[0].split('/').filter(Boolean);
+	const [first, second] = url.split('?')[0].split('/').filter(Boolean);
 
 	if (first === 'settings') return { on: 'settings' };
-	if (first === 'device' && third) return { on: 'device', id: third };
 	if (first === 'module' && second) return { on: 'module', kind: second };
 
 	return { on: 'home' };
@@ -59,22 +60,14 @@ export class Navigation {
 	/** The key the application bar marks as current; undefined means Home. */
 	readonly activeId = computed(() => {
 		const location = this.location();
-
-		if (location.on === 'device') return location.id;
-		if (location.on === 'module') return location.kind;
-		return undefined;
+		return location.on === 'module' ? location.kind : undefined;
 	});
 
 	/**
-	 * Said separately because `activeId` only names devices and modules —
-	 * without it, Home would light up over the settings page.
+	 * Said separately because `activeId` only names modules — without it, Home
+	 * would light up over the settings page.
 	 */
 	readonly onSettings = computed(() => this.location().on === 'settings');
-
-	/** `kind` picks the page component, `id` picks the device. */
-	open(device: Device): void {
-		this.#go(['device', device.kind, device.id], device.kind);
-	}
 
 	openModule(module: Module): void {
 		this.#go(['module', module.kind], module.kind);
@@ -91,11 +84,10 @@ export class Navigation {
 	/**
 	 * Navigate, and say so when there is nowhere to go.
 	 *
-	 * Several kinds have no route: `module/**` has none at all, and the
-	 * keyboard, accessory and streaming device routes are commented out in
-	 * app.routes.ts. `Router.navigate` resolves to `false` in that case rather
-	 * than throwing, so the click looked like it simply did nothing — the URL
-	 * never changed, so neither did the current entry in the bar.
+	 * `module/**` has no route at all. `Router.navigate` resolves to `false` in
+	 * that case rather than throwing, so the click looked like it simply did
+	 * nothing — the URL never changed, so neither did the current entry in the
+	 * bar.
 	 */
 	#go(commands: unknown[], kind: string): void {
 		void this.#router.navigate(commands).then((navigated) => {

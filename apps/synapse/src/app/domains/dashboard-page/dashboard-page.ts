@@ -8,14 +8,13 @@ import {
 import type {
 	Ambience,
 	Cadence,
-	Device,
 	GroupId,
 	GroupOutcome,
 	Module,
 	ParticipantId,
 } from '@synapse-copycat/backend-api';
 import { still } from '@synapse-copycat/backend-api';
-import { Button, Card, Masonry } from '@synapse-copycat/ui';
+import { Button, Card } from '@synapse-copycat/ui';
 import { Dialog } from '@angular/cdk/dialog';
 import {
 	CdkDrag,
@@ -23,6 +22,10 @@ import {
 	CdkDropListGroup,
 	type CdkDragDrop,
 } from '@angular/cdk/drag-drop';
+import {
+	type DeviceDetail,
+	DeviceDialog,
+} from '../../core/components/device-dialog/device-dialog';
 import { NewGroupDialog } from '../../core/components/new-group-dialog/new-group-dialog';
 import { GroupCard } from '../../core/components/group-card/group-card';
 import { ParticipantCard } from '../../core/components/participant-card/participant-card';
@@ -52,7 +55,6 @@ import { ApplicationStore } from '../../core/stores/application-store';
 		CdkDropList,
 		CdkDropListGroup,
 		GroupCard,
-		Masonry,
 		ParticipantCard,
 	],
 	changeDetection: ChangeDetectionStrategy.OnPush,
@@ -126,6 +128,9 @@ export class DashboardPage {
 	protected newGroup(): void {
 		const opened = this.#dialog.open<string | undefined>(NewGroupDialog, {
 			panelClass: 'syn-dialog-panel',
+			// Named on the CDK's container, which is the element carrying the
+			// dialog role.
+			ariaLabel: 'New group',
 		});
 
 		opened.closed.subscribe(async (name) => {
@@ -209,9 +214,39 @@ export class DashboardPage {
 
 	// ── the devices themselves ──────────────────────────────────────────────
 
-	/** Same destination as the entry in the application bar. */
-	protected open(device: Device | undefined): void {
-		if (device) this.#navigation.open(device);
+	/**
+	 * Inspect a participant.
+	 *
+	 * A dialog over the dashboard rather than a page of its own: a device is not
+	 * somewhere you go, it is something on the desk in front of you, and the
+	 * group it belongs to is the context the answer only makes sense in.
+	 *
+	 * Everything the dialog shows is gathered here, because this is the only
+	 * place that holds all three parts — the device, the group driving it, and
+	 * what the engine measured.
+	 */
+	protected inspect(participant: ParticipantId): void {
+		const holder = this.groups().find((status) =>
+			status.group.members.includes(participant),
+		);
+
+		const detail: DeviceDetail = {
+			participant,
+			device: this.devices().find((device) => device.id === participant),
+			group: holder && {
+				name: holder.group.name,
+				ambience: holder.group.ambience,
+				started: holder.group.started,
+			},
+			status: holder?.devices.find((device) => device.serial === participant),
+			skipped: holder?.skipped.find((skip) => skip.serial === participant),
+		};
+
+		this.#dialog.open(DeviceDialog, {
+			data: detail,
+			panelClass: 'syn-dialog-panel',
+			ariaLabel: detail.device?.name ?? participant,
+		});
 	}
 
 	protected openModule(module: Module): void {

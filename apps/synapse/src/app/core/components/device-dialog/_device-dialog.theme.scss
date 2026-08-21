@@ -1,0 +1,15 @@
+// Colour only — every dimension lives in device-dialog.scss.
+
+/// $theme is accepted for compatibility with the call in styles.scss, which
+/// still passes the legacy map. Unused here.
+@mixin apply($theme: null) {
+  device-dialog h2 {
+    color: var(--syn-primary);
+  }
+
+  device-dialog .device-dialog__id,
+  device-dialog .device-dialog__doing,
+  device-dialog .device-dialog__quiet {
+    color: var(--syn-on-surface-variant);
+  }
+}

@@ -1,4 +1,4 @@
-import type { Device, Module } from '@synapse-copycat/backend-api';
+import type { Module } from '@synapse-copycat/backend-api';
 import type { Meta, StoryObj } from '@storybook/angular';
 import { Component, signal } from '@angular/core';
 import { componentWrapperDecorator, moduleMetadata } from '@storybook/angular';
@@ -9,7 +9,6 @@ const meta: Meta<AppBar> = {
 	component: AppBar,
 	title: 'Synapse application / Components / Application Bar',
 	args: {
-		deviceActivated: fn(),
 		moduleActivated: fn(),
 		homeRequested: fn(),
 	},
@@ -18,51 +17,12 @@ const meta: Meta<AppBar> = {
 export default meta;
 type Story = StoryObj<AppBar>;
 
-const devices = [
-	{
-		__type: 'device',
-		kind: 'mouse',
-		name: 'Razer Basilisk Ultimate',
-		id: '5426-0136',
-		visual: 'assets/devices/5426-0136.png',
-	},
-	{
-		__type: 'device',
-		kind: 'mouse',
-		name: 'Razer Viper V2 Pro',
-		id: '5426-0165',
-		visual: 'assets/devices/5426-0165.png',
-	},
-	{
-		__type: 'device',
-		kind: 'accessory',
-		name: 'Razer Basilisk Ultimate (dock)',
-		id: '5426-0126',
-		visual: 'assets/devices/5426-0126.png',
-	},
-	{
-		__type: 'device',
-		kind: 'keyboard',
-		name: 'Razer Huntsman elite',
-		id: '5426-0550',
-		visual: 'assets/devices/5426-0550.png',
-	},
-	{
-		__type: 'device',
-		kind: 'mousemat',
-		name: 'Razer Goliathus',
-		id: '5426-3074',
-		visual: 'assets/devices/5426-3074.png',
-	},
-	{
-		__type: 'device',
-		kind: 'streaming',
-		name: 'Razer Kiyo',
-		id: '5426-3587',
-		visual: 'assets/devices/5426-3587.png',
-	},
-] satisfies Device[];
-
+/**
+ * ⚠️ No devices here. They were entries in this bar — `mouse (1)`, `mouse (2)`
+ * — and are not any more: the label could not be matched to the thing on the
+ * desk, and the dashboard already owned that job. Modules stay, because nothing
+ * else shows them.
+ */
 const modules = [
 	{
 		__type: 'module',
@@ -76,17 +36,23 @@ const modules = [
 		kind: 'goove',
 		visual: 'assets/modules/goove.png',
 	},
+	{
+		__type: 'module',
+		name: 'Nanoleaf',
+		kind: 'nanoleaf',
+		visual: 'assets/modules/nanoleaf.png',
+	},
 ] satisfies Module[];
 
 /** Nothing connected yet — the state the app opens in before enumeration. */
 export const Default: Story = {
 	name: 'Default Bar',
-	args: { devices: [], modules: [] },
+	args: { modules: [] },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
 		await expect(
-			canvas.getByRole('navigation', { name: 'Devices and modules' }),
+			canvas.getByRole('navigation', { name: 'Modules' }),
 		).toBeVisible();
 		// With no device open, Home is where you are.
 		await expect(
@@ -95,37 +61,19 @@ export const Default: Story = {
 	},
 };
 
-export const DeviceOnly: Story = {
-	name: 'With only devices',
-	args: { devices, modules: [] },
-};
-
-export const ModuleOnly: Story = {
-	name: 'With only modules',
-	args: { devices: [], modules },
-};
-
 export const All: Story = {
 	name: 'Full bar',
-	args: { devices, modules },
+	args: { modules },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
-		// Two mice, so the kind is numbered; nothing else is.
-		await expect(
-			canvas.getByRole('button', { name: 'mouse (1)' }),
-		).toBeVisible();
-		await expect(
-			canvas.getByRole('button', { name: 'mouse (2)' }),
-		).toBeVisible();
-		await expect(
-			canvas.getByRole('button', { name: 'mousemat' }),
-		).toBeVisible();
+		await expect(canvas.getByRole('button', { name: 'twinkly' })).toBeVisible();
+		await expect(canvas.getByRole('button', { name: 'goove' })).toBeVisible();
 
 		// The full name stays reachable without overriding the visible label.
 		await expect(
-			canvas.getByRole('button', { name: 'mouse (2)' }),
-		).toHaveAttribute('title', 'Razer Viper V2 Pro');
+			canvas.getByRole('button', { name: 'twinkly' }),
+		).toHaveAttribute('title', 'Twinkly');
 	},
 };
 
@@ -137,11 +85,11 @@ export const All: Story = {
  */
 export const Narrow: Story = {
 	name: 'Narrower than its contents',
-	args: { devices, modules },
+	args: { modules },
 	decorators: [
 		componentWrapperDecorator(
 			(story) =>
-				`<div style="width: 360px; outline: 1px dashed rgb(128 128 128 / 0.5)">${story}</div>`,
+				`<div style="width: 220px; outline: 1px dashed rgb(128 128 128 / 0.5)">${story}</div>`,
 		),
 	],
 };
@@ -153,11 +101,9 @@ export const Narrow: Story = {
 	imports: [AppBar],
 	template: `
 		<syn-bar
-			[devices]="devices"
 			[modules]="modules"
 			[activeId]="activeId()"
 			(homeRequested)="activeId.set(undefined)"
-			(deviceActivated)="activeId.set($event.id)"
 			(moduleActivated)="activeId.set($event.kind)"
 		></syn-bar>
 		<p style="padding:1rem; font:13px system-ui; opacity:0.7">
@@ -166,7 +112,6 @@ export const Narrow: Story = {
 	`,
 })
 export class AppBarStoryHost {
-	readonly devices = devices;
 	readonly modules = modules;
 	readonly activeId = signal<string | undefined>(undefined);
 }
@@ -186,12 +131,13 @@ export const Interactive: Story = {
 
 		await expect(await canvas.findByText(/current: home/)).toBeVisible();
 
-		canvas.getByRole('button', { name: 'mousemat' }).click();
+		canvas.getByRole('button', { name: 'goove' }).click();
 
-		await expect(await canvas.findByText(/current: 5426-3074/)).toBeVisible();
-		await expect(
-			canvas.getByRole('button', { name: 'mousemat' }),
-		).toHaveAttribute('aria-current', 'page');
+		await expect(await canvas.findByText(/current: goove/)).toBeVisible();
+		await expect(canvas.getByRole('button', { name: 'goove' })).toHaveAttribute(
+			'aria-current',
+			'page',
+		);
 	},
 };
 
@@ -202,13 +148,14 @@ export const Interactive: Story = {
  */
 export const CurrentEntry: Story = {
 	name: 'Current entry',
-	args: { devices, modules, activeId: '5426-3074' },
+	args: { modules, activeId: 'goove' },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
-		await expect(
-			canvas.getByRole('button', { name: 'mousemat' }),
-		).toHaveAttribute('aria-current', 'page');
+		await expect(canvas.getByRole('button', { name: 'goove' })).toHaveAttribute(
+			'aria-current',
+			'page',
+		);
 		await expect(
 			canvas.getByRole('button', { name: 'Synapse' }),
 		).not.toHaveAttribute('aria-current');
@@ -228,15 +175,11 @@ export const CurrentEntry: Story = {
  */
 export const AgainstThePageBar: Story = {
 	name: 'Depth against the page bar',
-	args: { devices, modules, activeId: '5426-0136' },
+	args: { modules, activeId: 'twinkly' },
 	render: (args) => ({
 		props: args,
 		template: `
-			<syn-bar
-				[devices]="devices"
-				[modules]="modules"
-				[activeId]="activeId"
-			></syn-bar>
+			<syn-bar [modules]="modules" [activeId]="activeId"></syn-bar>
 			<div style="background: var(--syn-surface-container); padding: 0.375rem; display: flex; gap: 0.25rem">
 				<button style="padding:0.625rem 1.25rem; border:0; border-radius:999px; font:inherit; font-weight:900; text-transform:uppercase; background:var(--syn-primary); color:var(--syn-on-primary)">customize</button>
 				<button style="padding:0.625rem 1.25rem; border:0; border-radius:999px; font:inherit; font-weight:900; text-transform:uppercase; background:none; color:var(--syn-on-surface-variant)">lighting</button>

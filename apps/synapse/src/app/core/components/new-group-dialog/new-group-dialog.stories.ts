@@ -25,6 +25,7 @@ export class NewGroupDialogStoryHost {
 		this.#dialog
 			.open<string | undefined>(NewGroupDialog, {
 				panelClass: 'syn-dialog-panel',
+				ariaLabel: 'New group',
 			})
 			.closed.subscribe((name) => this.answer.set(name ?? 'cancelled'));
 	}

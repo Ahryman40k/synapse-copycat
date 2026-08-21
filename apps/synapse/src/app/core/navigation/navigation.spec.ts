@@ -1,13 +1,6 @@
 import { locationOf } from './navigation';
 
 describe('locationOf', () => {
-	it('reads a device out of its address', () => {
-		expect(locationOf('/device/mouse/5426-0136')).toEqual({
-			on: 'device',
-			id: '5426-0136',
-		});
-	});
-
 	it('reads a module out of its address', () => {
 		expect(locationOf('/module/twinkly')).toEqual({
 			on: 'module',
@@ -28,14 +21,16 @@ describe('locationOf', () => {
 	});
 
 	it('ignores the query string', () => {
-		expect(locationOf('/device/mouse/5426-0136?tab=lighting')).toEqual({
-			on: 'device',
-			id: '5426-0136',
+		expect(locationOf('/module/twinkly?tab=lighting')).toEqual({
+			on: 'module',
+			kind: 'twinkly',
 		});
 	});
 
-	it('does not call a device page a device without its id', () => {
-		// `/device/mouse` names a kind and nothing to open.
-		expect(locationOf('/device/mouse')).toEqual({ on: 'home' });
+	it('has no address for a device any more', () => {
+		// ⚠️ A device is not a place. It is inspected in a dialog over the
+		// dashboard, where it already sits — the per-device pages and their
+		// routes are gone. An old bookmark lands on home rather than on a blank.
+		expect(locationOf('/device/mouse/5426-0136')).toEqual({ on: 'home' });
 	});
 });

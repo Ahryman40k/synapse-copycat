@@ -19,17 +19,15 @@ import { Button, TextField } from '@synapse-copycat/ui';
  * there is no open/closed flag shared with the caller. That is what makes it
  * impossible to get into the state a two-way bound dialog can reach, where the
  * caller and the dialog disagree about whether it is showing.
+ *
+ * ⚠️ No `role="dialog"` here: the CDK's container already carries it. The
+ * accessible name goes through `ariaLabel` on the config.
  */
 @Component({
 	selector: 'new-group-dialog',
 	templateUrl: './new-group-dialog.html',
 	styleUrl: './new-group-dialog.scss',
 	imports: [Button, TextField],
-	host: {
-		role: 'dialog',
-		'aria-modal': 'true',
-		'aria-label': 'New group',
-	},
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NewGroupDialog {
