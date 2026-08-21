@@ -1,5 +1,7 @@
 import {
 	type ApplicationConfig,
+	inject,
+	provideAppInitializer,
 	provideBrowserGlobalErrorListeners,
 	// provideZoneChangeDetection,
 } from '@angular/core';
@@ -11,12 +13,22 @@ import {
 	withMock,
 } from '@synapse-copycat/backend-api';
 import { appRoutes } from './app.routes';
+import { AmbienceTheme } from './core/theming/ambience-theme';
 import type { ApplicationConfig as Config } from './models/config';
 
 export const baseProviders = [
 	provideBrowserGlobalErrorListeners(),
 	// provideZoneChangeDetection({ eventCoalescing: true }),
 	provideRouter(appRoutes, withComponentInputBinding()),
+
+	// Asked for, not kept. `AmbienceTheme` exists for its effect, which ties the
+	// palette to what the first group is showing, and a root service nobody
+	// injects is never constructed — the theme would silently stay on its
+	// default. Bootstrapping rather than layout, so it lives here and not in the
+	// shell component.
+	provideAppInitializer(() => {
+		inject(AmbienceTheme);
+	}),
 ];
 
 export function makeAppConfig(config: Config) {
