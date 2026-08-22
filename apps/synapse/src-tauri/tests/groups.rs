@@ -10,7 +10,7 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use app_lib::razer::backend::{dbus::DbusBackend, DeviceBackend};
+use openrazer::backend::{dbus::DbusBackend, DeviceBackend};
 use app_lib::razer::engine::ambience::{Ambience, MotionSource};
 use app_lib::razer::engine::cadence::Cadence;
 use app_lib::razer::engine::frame::Rgb;

@@ -16,7 +16,7 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use tokio::sync::watch;
 use tokio::time::{interval, MissedTickBehavior};
 
-use crate::razer::backend::{BackendError, DeviceBackend};
+use openrazer::backend::{BackendError, DeviceBackend};
 
 use super::ambience::{Ambience, Tick};
 use super::cadence::{Achieved, Cadence};

@@ -1,0 +1,17 @@
+[package]
+name = "twinkly"
+version = "0.1.0"
+description = "Discover and drive Twinkly LED devices over their local network API"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+# No TLS: the Twinkly local API is plain HTTP on port 80, and pulling in a TLS
+# stack for a protocol that never uses one costs build time and a system
+# dependency for nothing.
+reqwest = { version = "0.12", default-features = false, features = ["json"] }

@@ -1,6 +1,6 @@
 //! Putting a frame on one device, and knowing what not to send.
 
-use crate::razer::backend::{BackendError, DeviceBackend};
+use openrazer::backend::{BackendError, DeviceBackend};
 
 use super::frame::{row_payload, Frame, Geometry};
 

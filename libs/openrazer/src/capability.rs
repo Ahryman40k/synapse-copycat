@@ -1,6 +1,6 @@
 use std::future::Future;
 use std::pin::Pin;
-use crate::razer::{
+use crate::{
     backend::{BackendError, DeviceBackend},
     request::CapabilityResponse,
 };

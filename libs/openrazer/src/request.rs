@@ -1,4 +1,4 @@
-use crate::razer::{
+use crate::{
     capabilities::{battery::*, dpi::*, lighting::*, misc::*},
     capability::Capability,
 };

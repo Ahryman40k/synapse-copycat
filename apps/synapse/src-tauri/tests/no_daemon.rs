@@ -8,7 +8,8 @@
 //! whole point, so it must run everywhere, every time.
 #![cfg(target_os = "linux")]
 
-use app_lib::razer::{backend::BackendError, state::RazerState};
+use app_lib::razer::state::RazerState;
+use openrazer::backend::BackendError;
 
 /// `RazerState::new` used to return a `Result` that `lib.rs` unwrapped, so a
 /// machine without OpenRazer got a panic and no window — which is most machines

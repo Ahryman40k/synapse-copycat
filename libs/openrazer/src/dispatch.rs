@@ -1,4 +1,4 @@
-use crate::razer::{
+use crate::{
     backend::{BackendError, DeviceBackend},
     capability::Capability,
     request::{CapabilityRequest, CapabilityResponse},

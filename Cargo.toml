@@ -1,0 +1,26 @@
+# The Rust side is a workspace so each protocol can be its own library.
+#
+# `libs/` already held the TypeScript libraries; the Rust ones join them rather
+# than living somewhere parallel, because the split that matters is what a piece
+# of code is for, not what it is written in.
+#
+# ⚠️ The workspace root is the repository root, which is what lets a member sit
+# in `libs/` while the application sits in `apps/`. Cargo puts the build output
+# in `<root>/target` as a result — `apps/synapse/src-tauri/target` is no longer
+# where anything lands.
+[workspace]
+resolver = "2"
+members = ["apps/synapse/src-tauri", "libs/openrazer", "libs/twinkly"]
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.77.2"
+license = ""
+
+# Shared so a version bump happens once. Every crate still declares what it
+# actually uses.
+[workspace.dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0.18"
+tokio = { version = "1.0.0", features = ["full"] }

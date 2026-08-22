@@ -21,7 +21,7 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 
-use crate::razer::backend::DeviceBackend;
+use openrazer::backend::DeviceBackend;
 
 use super::ambience::Ambience;
 use super::cadence::Cadence;

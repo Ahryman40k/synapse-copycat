@@ -50,7 +50,7 @@ use serde::Serialize;
 use tokio::sync::watch;
 use tokio::task::JoinHandle;
 
-use crate::razer::backend::DeviceBackend;
+use openrazer::backend::DeviceBackend;
 
 use ambience::Ambience;
 use cadence::{Achieved, Cadence};

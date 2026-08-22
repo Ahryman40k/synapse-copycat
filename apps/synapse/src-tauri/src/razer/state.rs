@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use tokio::sync::Mutex;
 
-use crate::razer::backend::{BackendError, DeviceBackend};
+use openrazer::backend::{BackendError, DeviceBackend};
 use crate::razer::engine::ambience::Ambience;
 use crate::razer::engine::frame::Rgb;
 use crate::razer::engine::group::{Conductor, GroupId, GroupStatus, ParticipantId};
@@ -196,14 +196,14 @@ impl RazerState {
 
 #[cfg(target_os = "linux")]
 async fn create_platform_backend() -> Result<Arc<dyn DeviceBackend>, BackendError> {
-    use crate::razer::backend::dbus::DbusBackend;
+    use openrazer::backend::dbus::DbusBackend;
     let backend = DbusBackend::new().await?;
     Ok(Arc::new(backend))
 }
 
 #[cfg(target_os = "windows")]
 async fn create_platform_backend() -> Result<Arc<dyn DeviceBackend>, BackendError> {
-    use crate::razer::backend::rest::RestBackend;
+    use openrazer::backend::rest::RestBackend;
     // Base URL can come from config, env var, or a fixed default
     let base_url =
         std::env::var("RAZER_API_URL").unwrap_or_else(|_| "http://localhost:8080".into());

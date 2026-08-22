@@ -11,7 +11,7 @@
 //! ```
 #![cfg(target_os = "linux")]
 
-use app_lib::razer::backend::dbus::DbusBackend;
+use openrazer::backend::dbus::DbusBackend;
 use app_lib::razer::engine::ambience::{Ambience, MotionSource, Tick};
 use app_lib::razer::engine::frame::{Geometry, Rgb};
 use app_lib::razer::engine::painter::{Canvas, Painter};

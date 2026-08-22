@@ -5,6 +5,9 @@ dist
 tmp
 out-tsc
 
+# Cargo, which now builds into the workspace root rather than into src-tauri
+/target
+
 # dependencies
 node_modules
 

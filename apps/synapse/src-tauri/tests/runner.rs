@@ -12,7 +12,7 @@ use std::time::{Duration, Instant};
 
 use tokio::sync::watch;
 
-use app_lib::razer::backend::{dbus::DbusBackend, DeviceBackend};
+use openrazer::backend::{dbus::DbusBackend, DeviceBackend};
 use app_lib::razer::engine::ambience::{Ambience, MotionSource};
 use app_lib::razer::engine::cadence::{Achieved, Cadence};
 use app_lib::razer::engine::frame::{Geometry, Rgb};
