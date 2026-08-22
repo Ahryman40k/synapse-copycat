@@ -10,7 +10,7 @@ const meta: Meta<AppBar> = {
 	title: 'Synapse application / Components / Application Bar',
 	args: {
 		moduleActivated: fn(),
-		homeRequested: fn(),
+		placeRequested: fn(),
 	},
 };
 
@@ -103,8 +103,9 @@ export const Narrow: Story = {
 		<syn-bar
 			[modules]="modules"
 			[activeId]="activeId()"
-			(homeRequested)="activeId.set(undefined)"
-			(moduleActivated)="activeId.set($event.kind)"
+			[place]="place()"
+			(placeRequested)="go($event)"
+			(moduleActivated)="open($event.kind)"
 		></syn-bar>
 		<p style="padding:1rem; font:13px system-ui; opacity:0.7">
 			current: {{ activeId() ?? 'home' }}
@@ -114,6 +115,18 @@ export const Narrow: Story = {
 export class AppBarStoryHost {
 	readonly modules = modules;
 	readonly activeId = signal<string | undefined>(undefined);
+	readonly place = signal<string | undefined>('home');
+
+	go(place: string): void {
+		this.activeId.set(undefined);
+		this.place.set(place);
+	}
+
+	open(kind: string): void {
+		// No fixed place is current while a module is open.
+		this.place.set(undefined);
+		this.activeId.set(kind);
+	}
 }
 
 /**
@@ -148,7 +161,7 @@ export const Interactive: Story = {
  */
 export const CurrentEntry: Story = {
 	name: 'Current entry',
-	args: { modules, activeId: 'goove' },
+	args: { modules, activeId: 'goove', place: undefined },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
@@ -175,7 +188,7 @@ export const CurrentEntry: Story = {
  */
 export const AgainstThePageBar: Story = {
 	name: 'Depth against the page bar',
-	args: { modules, activeId: 'twinkly' },
+	args: { modules, activeId: 'twinkly', place: undefined },
 	render: (args) => ({
 		props: args,
 		template: `

@@ -1,0 +1,60 @@
+// Structure only — the colour lives in _backgrounds-page.theme.scss.
+
+:host {
+  display: block;
+  margin: 1rem;
+}
+
+h1 {
+  font-weight: 900;
+  font-size: 1.4em;
+  margin: 0 0 0.5rem;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+p {
+  margin: 0;
+}
+
+.backgrounds-page__lead {
+  margin-bottom: 1.5rem;
+  max-width: 44rem;
+}
+
+.backgrounds-page__plan,
+.backgrounds-page__pending {
+  max-width: 44rem;
+}
+
+.backgrounds-page__plan {
+  margin-bottom: 1rem;
+}
+
+ol {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+// The desktop and what can be read from it, on one row each.
+dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.375rem 1rem;
+  margin: 0;
+}
+
+dt {
+  font-weight: 500;
+}
+
+dd {
+  margin: 0;
+}

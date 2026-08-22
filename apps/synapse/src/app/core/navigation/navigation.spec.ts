@@ -8,16 +8,19 @@ describe('locationOf', () => {
 		});
 	});
 
-	it('recognises the settings', () => {
+	it('recognises every fixed place', () => {
+		// Matched against the table the bar renders from, so a page added there
+		// is recognised here without anyone remembering to come back.
 		expect(locationOf('/settings')).toEqual({ on: 'settings' });
+		expect(locationOf('/studio')).toEqual({ on: 'studio' });
+		expect(locationOf('/backgrounds')).toEqual({ on: 'backgrounds' });
+		expect(locationOf('/dashboard')).toEqual({ on: 'home' });
 	});
 
 	it('calls everything else home', () => {
-		// Home is the fallback rather than a case of its own: the bar marks it
-		// whenever nothing else is current.
-		expect(locationOf('/dashboard')).toEqual({ on: 'home' });
 		expect(locationOf('/')).toEqual({ on: 'home' });
 		expect(locationOf('')).toEqual({ on: 'home' });
+		expect(locationOf('/nowhere')).toEqual({ on: 'home' });
 	});
 
 	it('ignores the query string', () => {

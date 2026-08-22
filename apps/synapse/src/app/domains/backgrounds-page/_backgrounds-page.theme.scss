@@ -1,0 +1,18 @@
+// Colour only — every dimension lives in backgrounds-page.scss.
+
+/// $theme is accepted for compatibility with the call in styles.scss, which
+/// still passes the legacy map. Unused here.
+@mixin apply($theme: null) {
+  backgrounds-page h1,
+  backgrounds-page h2 {
+    color: var(--syn-primary);
+  }
+
+  backgrounds-page .backgrounds-page__lead,
+  backgrounds-page dd,
+  backgrounds-page ol,
+  backgrounds-page .backgrounds-page__plan p,
+  backgrounds-page .backgrounds-page__pending p {
+    color: var(--syn-on-surface-variant);
+  }
+}

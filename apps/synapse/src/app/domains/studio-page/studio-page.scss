@@ -1,0 +1,47 @@
+// Structure only — the colour lives in _studio-page.theme.scss.
+
+:host {
+  display: block;
+  margin: 1rem;
+}
+
+h1 {
+  font-weight: 900;
+  font-size: 1.4em;
+  margin: 0 0 0.5rem;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.studio-page__lead {
+  margin: 0 0 1.5rem;
+  max-width: 44rem;
+}
+
+// The preview takes the room; the controls sit beside it where there is width
+// for both, and under it where there is not.
+.studio-page__work {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(24rem, 100%), 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.studio-page__preview {
+  // Taller than a card's strip: this is the one that is meant to be watched.
+  height: 6rem;
+}
+
+.studio-page__scope {
+  max-width: 44rem;
+  margin-bottom: 1.5rem;
+}
+
+.studio-page__pending {
+  margin-top: 1.5rem;
+  max-width: 44rem;
+}

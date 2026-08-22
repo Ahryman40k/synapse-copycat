@@ -1,0 +1,68 @@
+<h1>Background manager</h1>
+
+<p class="backgrounds-page__lead">
+  A folder of images, the colours in each of them, and a group to give those
+  colours to. Setting the wallpaper and setting the lighting become one gesture,
+  so the desk and the display agree.
+</p>
+
+<syn-panel class="backgrounds-page__plan">
+  <h2>What it will do</h2>
+  <ol>
+    <li>Keep a library of images from a folder you point at.</li>
+    <li>
+      Pull a handful of colours out of each — not one average, which on most
+      photographs is mud.
+    </li>
+    <li>
+      Apply one to a group: the wallpaper is set and the lighting takes a colour
+      from the same picture.
+    </li>
+  </ol>
+  <p>
+    Only the last step touches anything that exists today — a group's ambience
+    already takes a fixed colour, and handing it one is a call that is written.
+  </p>
+</syn-panel>
+
+<!--
+  The page states the problem rather than offering a control that works on some
+  machines. What makes this hard is not the interface.
+-->
+<syn-panel class="backgrounds-page__pending">
+  <h2>The hard part</h2>
+
+  <p>
+    Setting a wallpaper on Linux means driving whatever your desktop uses, and
+    there is no common way in. This will be a set of adapters, not a call:
+  </p>
+
+  <dl>
+    <dt>GNOME</dt>
+    <dd>
+      GSettings — and the dark variant separately, or switching theme brings the
+      old one back.
+    </dd>
+
+    <dt>KDE Plasma</dt>
+    <dd>
+      No setting to write: it takes a Plasma script, evaluated by the shell over
+      DBus.
+    </dd>
+
+    <dt>XFCE</dt>
+    <dd>
+      <code>xfconf-query</code>, once per monitor and per workspace — the
+      property path contains both.
+    </dd>
+
+    <dt>swww, hyprpaper</dt>
+    <dd>Their own client or their own socket, and each one different.</dd>
+  </dl>
+
+  <p>
+    Whichever of those land will say which ones were found on your machine,
+    rather than offering one control that silently does nothing on three
+    desktops out of four.
+  </p>
+</syn-panel>

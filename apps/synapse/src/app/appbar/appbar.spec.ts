@@ -45,18 +45,20 @@ describe('AppBar', () => {
 		expect(screen.getByRole('navigation', { name: 'Modules' })).toBeVisible();
 	});
 
-	it('lists home and every module', async () => {
+	it('lists every fixed place and every module', async () => {
 		await setup();
 
-		// Home, two modules, and the settings gear, which is not an entry.
-		expect(screen.getAllByRole('button')).toHaveLength(4);
+		// Three places, two modules, and the settings gear.
+		expect(screen.getAllByRole('button')).toHaveLength(6);
 		expect(entry('Synapse')).toBeVisible();
+		expect(entry('Effect studio')).toBeVisible();
+		expect(entry('Background manager')).toBeVisible();
 		expect(entry('twinkly')).toBeVisible();
 		expect(entry('goove')).toBeVisible();
 	});
 
 	describe('current entry', () => {
-		it('marks home when no entry is active', async () => {
+		it('marks home when that is where you are', async () => {
 			await setup();
 
 			// aria-current is what a screen reader announces, and what the theme
@@ -65,8 +67,20 @@ describe('AppBar', () => {
 			expect(entry('twinkly')).not.toHaveAttribute('aria-current');
 		});
 
+		it('marks a workspace', async () => {
+			await setup({ place: 'studio' });
+
+			expect(entry('Effect studio')).toHaveAttribute('aria-current', 'page');
+			expect(entry('Synapse')).not.toHaveAttribute('aria-current');
+		});
+
 		it('marks the matching module', async () => {
-			const { fixture } = await setup({ activeId: 'twinkly' });
+			// No fixed place is current while a module is open — saying "home"
+			// would light the wrong entry.
+			const { fixture } = await setup({
+				activeId: 'twinkly',
+				place: undefined,
+			});
 
 			expect(entry('twinkly')).toHaveAttribute('aria-current', 'page');
 			expect(entry('Synapse')).not.toHaveAttribute('aria-current');
@@ -79,16 +93,20 @@ describe('AppBar', () => {
 	});
 
 	describe('outputs', () => {
-		it('asks for home', async () => {
-			let asked = 0;
+		it('says which place was asked for', async () => {
+			// One output for every fixed destination. It was three bespoke pairs
+			// and every page added meant another.
+			const asked: string[] = [];
 			await render(AppBar, {
 				inputs: { modules: MODULES },
-				on: { homeRequested: () => asked++ },
+				on: { placeRequested: (place: string) => asked.push(place) },
 			});
 
+			entry('Effect studio').click();
 			entry('Synapse').click();
+			screen.getByRole('button', { name: 'Settings' }).click();
 
-			expect(asked).toBe(1);
+			expect(asked).toEqual(['studio', 'home', 'settings']);
 		});
 
 		it('emits the activated module, not just its kind', async () => {
@@ -244,9 +262,9 @@ describe('AppBar', () => {
 	it('renders with nothing connected', async () => {
 		await setup({ modules: [] });
 
-		// Home and the settings gear; the gear is there whether or not anything
-		// is plugged in.
-		expect(screen.getAllByRole('button')).toHaveLength(2);
+		// The three fixed places and the gear, which are there whether or not
+		// anything is plugged in.
+		expect(screen.getAllByRole('button')).toHaveLength(4);
 		expect(entry('Synapse')).toHaveAttribute('aria-current', 'page');
 	});
 
@@ -263,21 +281,12 @@ describe('AppBar', () => {
 		expect(gear).toHaveAttribute('title', 'Settings');
 	});
 
-	it('asks for the settings when the gear is pressed', async () => {
-		const settingsRequested = vi.fn();
-		const { fixture } = await setup();
-		fixture.componentInstance.settingsRequested.subscribe(settingsRequested);
-
-		screen.getByRole('button', { name: 'Settings' }).click();
-
-		expect(settingsRequested).toHaveBeenCalled();
-	});
-
 	it('marks the gear, not Home, while the settings are open', async () => {
-		await setup({ settingsActive: true });
+		// ⚠️ The gear is a place like the others and is laid out apart from
+		// them, outside the clipped region, so it is never what scrolls out of
+		// reach. That is the only reason it is not in the table.
+		await setup({ place: 'settings' });
 
-		// `activeId` only names modules, so without this Home would light up
-		// over a page that is not it.
 		expect(screen.getByRole('button', { name: 'Settings' })).toHaveAttribute(
 			'aria-current',
 			'page',

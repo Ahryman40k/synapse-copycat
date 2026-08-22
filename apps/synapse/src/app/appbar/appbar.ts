@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import type { Module } from '@synapse-copycat/backend-api';
 import { RazerLogo } from '../core/components/razer-logo/razer-logo';
+import { type Place, PLACES, SETTINGS } from '../core/models/place';
 
 /** What a button shows, and the entry it stands for. */
 type Entry<T> = { item: T; label: string };
@@ -73,7 +74,19 @@ function labelByKind<T extends { kind: string }>(
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppBar {
+	protected readonly places = PLACES;
+	protected readonly settings = SETTINGS;
+
 	readonly modules = input.required<Module[]>();
+
+	/**
+	 * The fixed place currently shown, or `undefined` while a module is.
+	 *
+	 * One value in place of the three flags this had — `activeId` for modules,
+	 * a `settingsActive` boolean, and Home inferred from both being empty. Home
+	 * is a place like the others now, so nothing has to be inferred.
+	 */
+	readonly place = input<Place | undefined>('home');
 
 	/**
 	 * Key of the entry currently shown — a module's `kind`, until modules gain
@@ -91,8 +104,7 @@ export class AppBar {
 	);
 
 	readonly moduleActivated = output<Module>();
-	readonly homeRequested = output<void>();
-	readonly settingsRequested = output<void>();
+	readonly placeRequested = output<Place>();
 
 	/**
 	 * Marks the gear as the current page. Not derivable from `activeId`, which
@@ -188,14 +200,6 @@ export class AppBar {
 	protected activateFromMenu(item: Module): void {
 		this.closeOverflow();
 		this.activateModule(item);
-	}
-
-	protected goSettings(): void {
-		this.settingsRequested.emit();
-	}
-
-	protected goHome(): void {
-		this.homeRequested.emit();
 	}
 
 	protected activateModule(module: Module): void {

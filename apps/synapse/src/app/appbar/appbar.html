@@ -7,18 +7,24 @@
   <razer-logo></razer-logo>
 
   <!--
-  aria-current="page" is set only on the current entry — that is what tells a
+  The fixed places — the dashboard and the two workspaces. Driven from a table
+  rather than written out, so adding a page is a line there and not four edits
+  spread across this file, the component, the routes and the navigation.
+
+  aria-current="page" is set only on the current one — that is what tells a
   screen-reader user where they are, and what the theme file selects on to
   recolour the label.
 -->
-  <button
-    navbar
-    type="button"
-    [attr.aria-current]="activeId() || settingsActive() ? null : 'page'"
-    (click)="goHome()"
-  >
-    Synapse
-  </button>
+  @for (entry of places; track entry.place) {
+    <button
+      navbar
+      type="button"
+      [attr.aria-current]="entry.place === place() ? 'page' : null"
+      (click)="placeRequested.emit(entry.place)"
+    >
+      {{ entry.label }}
+    </button>
+  }
 
   <!--
   Labelled by kind, numbered only where a kind repeats — short enough for a
@@ -103,8 +109,8 @@
   class="settings"
   title="Settings"
   aria-label="Settings"
-  [attr.aria-current]="settingsActive() ? 'page' : null"
-  (click)="goSettings()"
+  [attr.aria-current]="place() === 'settings' ? 'page' : null"
+  (click)="placeRequested.emit(settings.place)"
 >
   <svg
     class="settings__icon"
