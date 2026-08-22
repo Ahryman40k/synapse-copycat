@@ -20,12 +20,31 @@ const setup = () =>
 	});
 
 describe('SettingsPage', () => {
-	it('is titled, and shows both panels', async () => {
+	it('is titled, and shows every panel', async () => {
 		await setup();
 
 		expect(screen.getByRole('heading', { name: 'Settings' })).toBeVisible();
 		expect(screen.getByRole('heading', { name: 'Language' })).toBeVisible();
+		expect(
+			screen.getByRole('heading', { name: 'Where to look for devices' }),
+		).toBeVisible();
 		expect(screen.getByRole('heading', { name: 'About' })).toBeVisible();
+	});
+
+	it('switches a source off, and remembers it', async () => {
+		// The cost of forgetting is a network sweep the user asked not to
+		// happen, on every launch.
+		const { fixture } = await setup();
+
+		screen.getByRole('switch', { name: 'Look for Twinkly' }).click();
+		fixture.detectChanges();
+
+		expect(
+			screen.getByRole('switch', { name: 'Look for Twinkly' }),
+		).not.toBeChecked();
+		expect(localStorage.getItem('synapse.sources')).toContain(
+			'"twinkly":false',
+		);
 	});
 
 	it('has no tab bar', async () => {

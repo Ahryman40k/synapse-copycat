@@ -1,5 +1,11 @@
-import { inject } from '@angular/core';
-import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
+import { computed, inject } from '@angular/core';
+import {
+	patchState,
+	signalStore,
+	withComputed,
+	withMethods,
+	withState,
+} from '@ngrx/signals';
 import {
 	BackendApi,
 	type Device,
@@ -16,6 +22,12 @@ import type {
 import { attempt, refused } from '@synapse-copycat/backend-api';
 import type { ChromaEffect } from '../models/chroma-effect';
 import { type Language, LANGUAGE_DEFAULT } from '../models/language';
+import {
+	type Source,
+	type Sources,
+	readSources,
+	writeSources,
+} from '../models/source';
 import {
 	type BrightnessChange,
 	type DeviceLighting,
@@ -45,7 +57,8 @@ function patchLighting(
 }
 
 export type ApplicationState = {
-	devices: Device[];
+	/** What the Razer backend enumerated, over DBus. */
+	wired: Device[];
 	modules: Module[];
 
 	/**
@@ -57,8 +70,23 @@ export type ApplicationState = {
 	 */
 	groups: GroupStatus[];
 
-	/** Participants no group has claimed. Not driven, and not broken. */
-	unassigned: ParticipantId[];
+	/**
+	 * Participants no group has claimed, as the backend counts them.
+	 *
+	 * ⚠️ Razer devices only. Anything found over the network is in
+	 * `discovered`, because asking the backend would mean a two-second sweep
+	 * on every group command. The two are joined by `unassigned`.
+	 */
+	claimable: ParticipantId[];
+
+	/**
+	 * Found on the network — Twinklys today.
+	 *
+	 * Held apart from `wired` and merged by the `devices` selector, so a
+	 * refresh of one never drops the other: the two arrive from different
+	 * commands, seconds apart.
+	 */
+	discovered: Device[];
 
 	/**
 	 * The lighting of each device, by id. A device absent from the map is on
@@ -91,6 +119,9 @@ export type ApplicationState = {
 
 	/** What the interface speaks. Recorded, not yet acted on. */
 	language: Language;
+
+	/** Which protocols are looked for at all. */
+	sources: Sources;
 };
 
 /**
@@ -100,21 +131,68 @@ export type ApplicationState = {
  * by `tsc`, since stories are in no tsconfig.
  */
 export const INITIAL_STATE: ApplicationState = {
-	devices: [],
+	wired: [],
 	modules: [],
 	groups: [],
-	unassigned: [],
+	claimable: [],
+	discovered: [],
 	lighting: {},
 	syncEffect: false,
 	syncBrightness: false,
 	activeSection: {},
 	language: LANGUAGE_DEFAULT,
+	// Read at module load rather than in a method: the resolvers ask for
+	// devices before anything has had a chance to call an initialiser, and a
+	// sweep skipped by a preference must be skipped on the very first one.
+	sources: readSources(
+		typeof localStorage === 'undefined' ? undefined : localStorage,
+	),
 };
 
 export const ApplicationStore = signalStore(
 	{ providedIn: 'root' },
 
 	withState<ApplicationState>(INITIAL_STATE),
+
+	withComputed((store) => ({
+		/**
+		 * Every device, whatever it arrived over.
+		 *
+		 * A single list on purpose: the interface must not have to know that a
+		 * keyboard came over DBus and a light string over UDP. Everything that
+		 * reads this — the dashboard tiles, the detail dialog, the group cards
+		 * — treats them alike, which is what makes adding Govee a matter of one
+		 * more source rather than one more branch everywhere.
+		 */
+		devices: computed(() => [...store.wired(), ...store.discovered()]),
+
+		/**
+		 * Participants no group holds.
+		 *
+		 * The backend answers for the ones it drives; discovery answers for the
+		 * ones it has merely found. Joining them here rather than in the
+		 * backend keeps `unassigned_participants` quick — it is re-read after
+		 * every group command, and a network sweep there would put two seconds
+		 * on each of them.
+		 *
+		 * ⚠️ A discovered device can be dropped into a group today, and the
+		 * group will report it as one it could not drive. That is truthful:
+		 * the engine does not speak Twinkly yet.
+		 */
+		unassigned: computed(() => {
+			const held = new Set(
+				store.groups().flatMap((status) => status.group.members),
+			);
+
+			return [
+				...store.claimable(),
+				...store
+					.discovered()
+					.map((device) => device.id)
+					.filter((id) => !held.has(id)),
+			];
+		}),
+	})),
 
 	withMethods((store, backendApi = inject(BackendApi)) => ({
 		/**
@@ -128,6 +206,22 @@ export const ApplicationStore = signalStore(
 		 */
 		deviceById(id: string | undefined): Device | undefined {
 			return store.devices().find((device) => device.id === id);
+		},
+
+		/**
+		 * Turn a protocol's discovery on or off.
+		 *
+		 * Saved immediately. The cost of getting it wrong is a network sweep the
+		 * user asked not to happen, and a preference that forgets itself on
+		 * every launch is not a preference.
+		 */
+		setSource(source: Source, enabled: boolean): void {
+			const sources = { ...store.sources(), [source]: enabled };
+			patchState(store, { sources });
+			writeSources(
+				typeof localStorage === 'undefined' ? undefined : localStorage,
+				sources,
+			);
 		},
 
 		setLanguage(language: Language): void {
@@ -240,11 +334,11 @@ export const ApplicationStore = signalStore(
 		// would have to be dug back out of an error message.
 
 		async getGroups(): Promise<GroupStatus[]> {
-			const [groups, unassigned] = await Promise.all([
+			const [groups, claimable] = await Promise.all([
 				backendApi.invoke('groups', {}),
 				backendApi.invoke('unassigned_participants', {}),
 			]);
-			patchState(store, { groups, unassigned });
+			patchState(store, { groups, claimable });
 			return groups;
 		},
 
@@ -382,7 +476,47 @@ export const ApplicationStore = signalStore(
 			]);
 		},
 
+		/**
+		 * Sweep the network for Twinklys.
+		 *
+		 * ⚠️ Seconds, not milliseconds — it is a sweep of the whole subnet. Kept
+		 * out of `getGroups`, which runs after every group command and must
+		 * stay quick.
+		 */
+		async getDiscovered(): Promise<Device[]> {
+			// Asked before the call, not filtered after: the point of the switch
+			// is that the sweep does not happen.
+			if (!store.sources().twinkly) {
+				patchState(store, { discovered: [] });
+				return [];
+			}
+
+			const found = await backendApi.invoke('twinkly_devices', {});
+
+			const discovered = found.map(
+				(strip) =>
+					({
+						__type: 'device',
+						kind: 'strip',
+						// The backend's identifier, taken as it is: it is keyed
+						// by MAC so it survives a change of address, and nothing
+						// here may read it to work out what it is.
+						id: strip.participant,
+						name: strip.name,
+						visual: 'assets/modules/twinkly.png',
+					}) satisfies Device,
+			);
+
+			patchState(store, { discovered });
+			return discovered;
+		},
+
 		async getDevices(): Promise<Device[]> {
+			if (!store.sources().chroma) {
+				patchState(store, { wired: [] });
+				return [];
+			}
+
 			const result = await backendApi.invoke('devices', {});
 
 			const devices = result.map((r) => {
@@ -392,13 +526,21 @@ export const ApplicationStore = signalStore(
 				return {
 					__type: 'device',
 					kind: r.kind,
-					id: `${vendorId}-${productId}`,
+					// ⚠️ The serial, because that is what the rest of the backend
+					// names a participant by. Built from `vendor-product` this
+					// matched nothing against a real daemon, and every tile in a
+					// group showed a raw serial with no picture.
+					id: r.serial,
 					name: r.name,
+					// The picture is per model, so it stays keyed on the ids that
+					// identify a model rather than a unit. A model with no
+					// picture in the repository simply has none — the card drops
+					// an image it cannot load rather than showing it broken.
 					visual: `assets/devices/${vendorId}-${productId}.png`,
 				} satisfies Device;
 			}); // TODO: write wrapper here + validator
 
-			patchState(store, { devices });
+			patchState(store, { wired: devices });
 			return devices;
 		},
 		async getModules(): Promise<Module[]> {

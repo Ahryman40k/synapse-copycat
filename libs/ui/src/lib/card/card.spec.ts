@@ -107,3 +107,39 @@ describe('Card', () => {
 		).toBeNull();
 	});
 });
+
+describe('Card, a picture that is not there', () => {
+	it('drops an image that fails to load', async () => {
+		// ⚠️ Not every device has a picture in the repository. The broken-image
+		// icon reads as something lost rather than as something never drawn.
+		await render('<button syn-card image="/nothing.png">Kraken</button>', {
+			imports: [Card],
+		});
+
+		const image = document.querySelector('img') as HTMLImageElement;
+		image.dispatchEvent(new Event('error'));
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(document.querySelector('img')).toBeNull();
+		expect(screen.getByRole('button', { name: 'Kraken' })).toBeVisible();
+	});
+
+	it('gives a different picture a fair try', async () => {
+		// Remembered by source, not by a flag: a card whose image changes must
+		// not inherit the last one's failure.
+		const { rerender } = await render(
+			'<button syn-card [image]="image">Kraken</button>',
+			{ imports: [Card], componentProperties: { image: '/nothing.png' } },
+		);
+
+		(document.querySelector('img') as HTMLImageElement).dispatchEvent(
+			new Event('error'),
+		);
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		expect(document.querySelector('img')).toBeNull();
+
+		await rerender({ componentProperties: { image: '/something.png' } });
+
+		expect(document.querySelector('img')).not.toBeNull();
+	});
+});

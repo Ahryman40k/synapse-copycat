@@ -19,12 +19,14 @@ const mock = {
 	...unusedCommands(),
 	devices: [
 		{
+			serial: 'XX0000000088',
 			kind: 'mouse',
 			name: 'Razer Basilisk Ultimate',
 			vendor_id: 5426,
 			product_id: 136,
 		},
 		{
+			serial: 'XX0000000C02',
 			kind: 'mousemat',
 			name: 'Goliatus Extended',
 			vendor_id: 5426,

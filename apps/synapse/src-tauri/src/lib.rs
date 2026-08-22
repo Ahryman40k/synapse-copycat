@@ -1,4 +1,5 @@
 mod commands;
+mod discovery;
 mod lifecycle;
 pub mod razer;
 
@@ -34,6 +35,7 @@ pub fn run() {
         .manage(state)
         .invoke_handler(tauri::generate_handler![
             commands::devices,
+            commands::twinkly_devices,
             // commands::modules,
             commands::run_capability,
             // ── groups ──

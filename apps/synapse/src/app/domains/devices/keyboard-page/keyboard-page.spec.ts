@@ -12,19 +12,21 @@ import { KeyboardPageComponent } from './keyboard-page';
 const setup = () =>
 	render(KeyboardPageComponent, {
 		// The `:id` segment, as `withComponentInputBinding()` supplies it.
-		inputs: { id: '5426-0550' },
+		inputs: { id: 'XX0000000226' },
 		providers: [
 			provideBackendApi(
 				withMock({
 					...unusedCommands(),
 					devices: [
 						{
+							serial: 'XX0000000088',
 							kind: 'mouse',
 							name: 'Razer Basilisk Ultimate',
 							vendor_id: 5426,
 							product_id: 136,
 						},
 						{
+							serial: 'XX0000000226',
 							kind: 'keyboard',
 							name: 'Razer Huntsman Elite',
 							vendor_id: 5426,
@@ -108,14 +110,14 @@ describe('KeyboardPage', () => {
 
 		// In the store rather than the page: the page is destroyed on the way
 		// out, so anything it held would be gone on the way back.
-		expect(TestBed.inject(ApplicationStore).sectionFor('5426-0550')).toBe(
+		expect(TestBed.inject(ApplicationStore).sectionFor('XX0000000226')).toBe(
 			'lighting',
 		);
 	});
 
 	it('opens on the section this device was left on', async () => {
 		const { fixture } = await setup();
-		TestBed.inject(ApplicationStore).setSection('5426-0550', 'lighting');
+		TestBed.inject(ApplicationStore).setSection('XX0000000226', 'lighting');
 		fixture.detectChanges();
 
 		expect(screen.getByRole('tab', { name: 'lighting' })).toHaveAttribute(

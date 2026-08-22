@@ -18,6 +18,7 @@ const mock = {
 	...unusedCommands(),
 	devices: [
 		{
+			serial: 'XX0000000088',
 			kind: 'mouse',
 			name: 'Razer Basilisk Ultimate',
 			vendor_id: 5426,
@@ -45,7 +46,7 @@ const meta: Meta<MousePageComponent> = {
 		}),
 	],
 	// The `:id` segment, as `withComponentInputBinding()` supplies it at runtime.
-	args: { id: '5426-0136' },
+	args: { id: 'XX0000000088' },
 };
 export default meta;
 

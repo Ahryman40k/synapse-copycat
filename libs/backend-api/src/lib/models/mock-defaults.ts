@@ -26,6 +26,7 @@ export function unusedCommands(): Mock {
 	return {
 		devices: [],
 		modules: [],
+		twinkly_devices: [],
 		...mockGroups([]),
 	};
 }

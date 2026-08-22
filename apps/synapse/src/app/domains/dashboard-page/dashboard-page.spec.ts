@@ -23,12 +23,14 @@ const backend = (participants: string[]): Mock => ({
 	...unusedCommands(),
 	devices: [
 		{
+			serial: 'XX0000000088',
 			kind: 'mouse',
 			name: 'Basilisk Ultimate',
 			vendor_id: 5426,
 			product_id: 136,
 		},
 		{
+			serial: 'XX0000000226',
 			kind: 'keyboard',
 			name: 'Huntsman Elite',
 			vendor_id: 5426,
@@ -36,6 +38,16 @@ const backend = (participants: string[]): Mock => ({
 		},
 	],
 	modules: [],
+	twinkly_devices: [
+		{
+			participant: 'twinkly-1c9dc285dd79',
+			name: 'Twinkly_85DD79',
+			address: '192.168.1.201',
+			product_code: 'TWS050STQ',
+			leds: 50,
+			profile: 'RGB',
+		},
+	],
 	...mockGroups(participants),
 });
 
@@ -50,6 +62,7 @@ const setup = async (participants: string[]) => {
 	// The resolvers fill the store in the application; here nothing does.
 	const store = TestBed.inject(ApplicationStore);
 	await store.getDevices();
+	await store.getDiscovered();
 	await store.getGroups();
 	rendered.fixture.detectChanges();
 
@@ -59,8 +72,21 @@ const setup = async (participants: string[]) => {
 const click = (name: string | RegExp) => screen.getByRole('button', { name });
 
 describe('DashboardPage', () => {
+	it('shows a network device beside the wired ones', async () => {
+		// ⚠️ It arrived over UDP rather than DBus, and nothing on the page knows
+		// that. A participant is a participant — which is what makes adding
+		// Govee one more source rather than one more branch everywhere.
+		await setup(['XX0000000088']);
+
+		expect(screen.getByText('Twinkly_85DD79')).toBeVisible();
+		// Nothing drives it yet, so it waits in the tray like any unclaimed
+		// device rather than being hidden until the engine can paint it.
+		const tray = document.querySelector('.dashboard-page__tray') as HTMLElement;
+		expect(tray.textContent).toContain('Twinkly_85DD79');
+	});
+
 	it('shows the group the backend starts with, and its members', async () => {
-		await setup(['5426-0136', '5426-0550']);
+		await setup(['XX0000000088', 'XX0000000226']);
 
 		expect(screen.getByText('All devices')).toBeVisible();
 		expect(screen.getByText('2 participants')).toBeVisible();
@@ -71,7 +97,7 @@ describe('DashboardPage', () => {
 	it('takes a participant out of its group', async () => {
 		// Not an error and not a deletion: leaving a device out is a legitimate
 		// arrangement — an unlit keyboard while the rest of the desk breathes.
-		const { fixture } = await setup(['5426-0136', '5426-0550']);
+		const { fixture } = await setup(['XX0000000088', 'XX0000000226']);
 
 		click('Move Huntsman Elite').click();
 		fixture.detectChanges();
@@ -84,7 +110,7 @@ describe('DashboardPage', () => {
 	});
 
 	it('does not offer to take out a device nothing is holding', async () => {
-		const { fixture } = await setup(['5426-0136', '5426-0550']);
+		const { fixture } = await setup(['XX0000000088', 'XX0000000226']);
 
 		// Out first, so it is sitting in the tray.
 		click('Move Huntsman Elite').click();
@@ -108,7 +134,7 @@ describe('DashboardPage', () => {
 	// attached to the body and not to the fixture. `screen` reaches it; a query
 	// scoped to the rendered component would not.
 	it('creates a group, empty and stopped', async () => {
-		const { fixture } = await setup(['5426-0136']);
+		const { fixture } = await setup(['XX0000000088']);
 
 		click(/New group/).click();
 		fixture.detectChanges();

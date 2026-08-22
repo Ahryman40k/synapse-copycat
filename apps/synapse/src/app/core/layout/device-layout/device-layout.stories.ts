@@ -11,7 +11,7 @@ import { DeviceLayout } from './device-layout';
 const DEVICE: Device = {
 	__type: 'device',
 	kind: 'mousemat',
-	id: '5426-3074',
+	id: 'XX0000000C02',
 	name: 'Goliatus Extended',
 	visual: 'assets/devices/5426-3074.png',
 };

@@ -18,12 +18,14 @@ describe('ApplicationStore', () => {
 						...unusedCommands(),
 						devices: [
 							{
+								serial: 'XX0000000001',
 								product_id: 1,
 								vendor_id: 2,
 								kind: 'mouse',
 								name: 'Test mouse',
 							},
 							{
+								serial: 'XX0000000002',
 								product_id: 5432,
 								vendor_id: 1236,
 								kind: 'keyboard',
@@ -46,7 +48,10 @@ describe('ApplicationStore', () => {
 			expect(devices).toHaveLength(2);
 
 			const firstItem = devices[0];
-			expect(firstItem.id).toBe('0002-0001');
+			// The serial, because that is what the backend names a participant
+			// by. Built from `vendor-product` this matched no group member.
+			expect(firstItem.id).toBe('XX0000000001');
+			// The picture stays keyed on the model, not on the unit.
 			expect(firstItem.visual).toBe(`assets/devices/0002-0001.png`);
 		},
 	));
@@ -56,7 +61,7 @@ describe('ApplicationStore', () => {
 		async (store: ApplicationStore) => {
 			await store.getDevices();
 
-			expect(store.deviceById('0002-0001')?.name).toBe('Test mouse');
+			expect(store.deviceById('XX0000000001')?.name).toBe('Test mouse');
 		},
 	));
 
@@ -67,7 +72,7 @@ describe('ApplicationStore', () => {
 			// route fills the store, so the lookup finds nothing.
 			await store.getDevices();
 
-			expect(store.deviceById('9999-9999')).toBeUndefined();
+			expect(store.deviceById('XX9999999999')).toBeUndefined();
 			expect(store.deviceById(undefined)).toBeUndefined();
 		},
 	));
@@ -77,10 +82,10 @@ describe('ApplicationStore', () => {
 		async (store: ApplicationStore) => {
 			await store.getDevices();
 
-			store.setEffect('0002-0001', 'wave');
+			store.setEffect('XX0000000001', 'wave');
 
-			expect(store.lightingFor('0002-0001').effect).toBe('wave');
-			expect(store.lightingFor('1236-5432').effect).toBe('spectrum');
+			expect(store.lightingFor('XX0000000001').effect).toBe('wave');
+			expect(store.lightingFor('XX0000000002').effect).toBe('spectrum');
 		},
 	));
 
@@ -88,12 +93,12 @@ describe('ApplicationStore', () => {
 		[ApplicationStore],
 		async (store: ApplicationStore) => {
 			await store.getDevices();
-			store.setSyncEffect(true, '0002-0001');
+			store.setSyncEffect(true, 'XX0000000001');
 
-			store.setEffect('0002-0001', 'wave');
+			store.setEffect('XX0000000001', 'wave');
 
-			expect(store.lightingFor('0002-0001').effect).toBe('wave');
-			expect(store.lightingFor('1236-5432').effect).toBe('wave');
+			expect(store.lightingFor('XX0000000001').effect).toBe('wave');
+			expect(store.lightingFor('XX0000000002').effect).toBe('wave');
 		},
 	));
 
@@ -101,13 +106,13 @@ describe('ApplicationStore', () => {
 		[ApplicationStore],
 		async (store: ApplicationStore) => {
 			await store.getDevices();
-			store.setEffect('0002-0001', 'breathe');
+			store.setEffect('XX0000000001', 'breathe');
 
-			store.setSyncEffect(true, '0002-0001');
+			store.setSyncEffect(true, 'XX0000000001');
 
 			// Waiting for the next change would leave the box ticked over devices
 			// that disagree — the state it claims would not be true.
-			expect(store.lightingFor('1236-5432').effect).toBe('breathe');
+			expect(store.lightingFor('XX0000000002').effect).toBe('breathe');
 		},
 	));
 
@@ -115,15 +120,15 @@ describe('ApplicationStore', () => {
 		[ApplicationStore],
 		async (store: ApplicationStore) => {
 			await store.getDevices();
-			store.setSyncEffect(true, '0002-0001');
-			store.setEffect('0002-0001', 'wave');
+			store.setSyncEffect(true, 'XX0000000001');
+			store.setEffect('XX0000000001', 'wave');
 
-			store.setSyncEffect(false, '0002-0001');
-			store.setEffect('0002-0001', 'static');
+			store.setSyncEffect(false, 'XX0000000001');
+			store.setEffect('XX0000000001', 'static');
 
 			// Each keeps what it had; only what comes next stops propagating.
-			expect(store.lightingFor('0002-0001').effect).toBe('static');
-			expect(store.lightingFor('1236-5432').effect).toBe('wave');
+			expect(store.lightingFor('XX0000000001').effect).toBe('static');
+			expect(store.lightingFor('XX0000000002').effect).toBe('wave');
 		},
 	));
 
@@ -134,7 +139,7 @@ describe('ApplicationStore', () => {
 
 			// Ticked on one device's page, ticked on the next one's: the flag says
 			// how the devices relate, so it cannot belong to a panel.
-			store.setSyncEffect(true, '0002-0001');
+			store.setSyncEffect(true, 'XX0000000001');
 
 			expect(store.syncEffect()).toBe(true);
 		},
@@ -144,15 +149,15 @@ describe('ApplicationStore', () => {
 		[ApplicationStore],
 		async (store: ApplicationStore) => {
 			await store.getDevices();
-			store.setSyncEffect(true, '0002-0001');
+			store.setSyncEffect(true, 'XX0000000001');
 
-			store.setBrightness('0002-0001', { activated: true, value: 40 });
+			store.setBrightness('XX0000000001', { activated: true, value: 40 });
 
 			// A keyboard under the eyes is usually dimmer than a mousemat beside
 			// them, so one effect everywhere does not mean one level everywhere.
 			expect(store.syncBrightness()).toBe(false);
-			expect(store.lightingFor('1236-5432').brightness.value).toBe(100);
-			expect(store.lightingFor('0002-0001').brightness.value).toBe(40);
+			expect(store.lightingFor('XX0000000002').brightness.value).toBe(100);
+			expect(store.lightingFor('XX0000000001').brightness.value).toBe(40);
 		},
 	));
 
@@ -160,11 +165,11 @@ describe('ApplicationStore', () => {
 		[ApplicationStore],
 		async (store: ApplicationStore) => {
 			await store.getDevices();
-			store.setSyncBrightness(true, '0002-0001');
+			store.setSyncBrightness(true, 'XX0000000001');
 
-			store.setBrightness('0002-0001', { activated: false, value: 25 });
+			store.setBrightness('XX0000000001', { activated: false, value: 25 });
 
-			expect(store.lightingFor('1236-5432').brightness).toEqual({
+			expect(store.lightingFor('XX0000000002').brightness).toEqual({
 				activated: false,
 				value: 25,
 			});
@@ -178,7 +183,9 @@ describe('ApplicationStore', () => {
 
 			// Against the constant, not a copy of it: every field added to the
 			// defaults used to break this test for no reason of its own.
-			expect(store.lightingFor('9999-9999')).toEqual(DEVICE_LIGHTING_DEFAULT);
+			expect(store.lightingFor('XX9999999999')).toEqual(
+				DEVICE_LIGHTING_DEFAULT,
+			);
 			expect(store.lightingFor(undefined).effect).toBe('spectrum');
 		},
 	));
@@ -188,7 +195,7 @@ describe('ApplicationStore', () => {
 		async (store: ApplicationStore) => {
 			// Undefined is what makes the bar fall back to its first tab, so
 			// nothing has to be seeded.
-			expect(store.sectionFor('0002-0001')).toBeUndefined();
+			expect(store.sectionFor('XX0000000001')).toBeUndefined();
 			expect(store.sectionFor(undefined)).toBeUndefined();
 		},
 	));
@@ -196,21 +203,21 @@ describe('ApplicationStore', () => {
 	it('remembers a section per device, not one for all of them', inject(
 		[ApplicationStore],
 		async (store: ApplicationStore) => {
-			store.setSection('0002-0001', 'lighting');
-			store.setSection('1236-5432', 'customize');
+			store.setSection('XX0000000001', 'lighting');
+			store.setSection('XX0000000002', 'customize');
 
-			expect(store.sectionFor('0002-0001')).toBe('lighting');
-			expect(store.sectionFor('1236-5432')).toBe('customize');
+			expect(store.sectionFor('XX0000000001')).toBe('lighting');
+			expect(store.sectionFor('XX0000000002')).toBe('customize');
 		},
 	));
 
 	it('replaces what it remembered for a device', inject(
 		[ApplicationStore],
 		async (store: ApplicationStore) => {
-			store.setSection('0002-0001', 'lighting');
-			store.setSection('0002-0001', 'power');
+			store.setSection('XX0000000001', 'lighting');
+			store.setSection('XX0000000001', 'power');
 
-			expect(store.sectionFor('0002-0001')).toBe('power');
+			expect(store.sectionFor('XX0000000001')).toBe('power');
 		},
 	));
 });
@@ -388,4 +395,77 @@ describe('ApplicationStore, groups', () => {
 			expect(store.unassigned()).not.toContain('aaa');
 		},
 	));
+});
+
+/**
+ * The switches in the settings decide whether a protocol is looked for at all.
+ *
+ * Asserted on what reaches the backend, not on what the store ends up holding:
+ * the point of turning Twinkly off is that the subnet sweep does not happen,
+ * and a test that only checked the resulting list would pass against a version
+ * that swept and then discarded.
+ */
+describe('ApplicationStore, sources', () => {
+	const setup = () => {
+		const asked: string[] = [];
+
+		TestBed.configureTestingModule({
+			providers: [
+				provideBackendApi(
+					withMock({
+						...unusedCommands(),
+						devices: () => {
+							asked.push('devices');
+							return [];
+						},
+						twinkly_devices: () => {
+							asked.push('twinkly_devices');
+							return [];
+						},
+					}),
+				),
+			],
+		});
+
+		return { store: TestBed.inject(ApplicationStore), asked };
+	};
+
+	it('looks for both by default', async () => {
+		const { store, asked } = setup();
+
+		await store.getDevices();
+		await store.getDiscovered();
+
+		expect(asked).toEqual(['devices', 'twinkly_devices']);
+	});
+
+	it('does not sweep the network when Twinkly is off', async () => {
+		const { store, asked } = setup();
+		store.setSource('twinkly', false);
+
+		await store.getDiscovered();
+
+		expect(asked).toEqual([]);
+		expect(store.discovered()).toEqual([]);
+	});
+
+	it('does not ask the daemon when Chroma is off', async () => {
+		const { store, asked } = setup();
+		store.setSource('chroma', false);
+
+		await store.getDevices();
+
+		expect(asked).toEqual([]);
+	});
+
+	it('forgets what a switched-off source had found', async () => {
+		// Otherwise a device stays on the dashboard after the source that found
+		// it was turned off, which reads as the switch having done nothing.
+		const { store } = setup();
+		await store.getDiscovered();
+		store.setSource('twinkly', false);
+		await store.getDiscovered();
+
+		expect(store.discovered()).toEqual([]);
+	});
 });

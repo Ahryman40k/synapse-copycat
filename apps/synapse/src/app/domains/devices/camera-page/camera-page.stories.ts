@@ -18,6 +18,7 @@ const mock = {
 	...unusedCommands(),
 	devices: [
 		{
+			serial: 'XX0000000E03',
 			kind: 'streaming',
 			name: 'Razer Kiyo',
 			vendor_id: 5426,
@@ -43,7 +44,7 @@ const meta: Meta<CameraPageComponent> = {
 		}),
 	],
 	// The `:id` segment, as `withComponentInputBinding()` supplies it at runtime.
-	args: { id: '5426-3587' },
+	args: { id: 'XX0000000E03' },
 };
 export default meta;
 

@@ -1,9 +1,8 @@
 <syn-bar
   [modules]="modules()"
   [activeId]="navigation.activeId()"
-  [settingsActive]="navigation.onSettings()"
-  (homeRequested)="navigation.home()"
-  (settingsRequested)="navigation.settings()"
+  [place]="navigation.place()"
+  (placeRequested)="navigation.go($event)"
   (moduleActivated)="navigation.openModule($event)"
 ></syn-bar>
 <router-outlet></router-outlet>

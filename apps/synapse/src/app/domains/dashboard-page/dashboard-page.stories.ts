@@ -30,19 +30,33 @@ const backend = (participants: string[]): Mock => ({
 	...unusedCommands(),
 	devices: [
 		{
+			serial: 'XX0000000088',
 			kind: 'mouse',
 			name: 'Basilisk Ultimate',
 			vendor_id: 5426,
 			product_id: 136,
 		},
 		{
+			serial: 'XX0000000226',
 			kind: 'keyboard',
 			name: 'Huntsman Elite',
 			vendor_id: 5426,
 			product_id: 550,
 		},
-		{ kind: 'mousemat', name: 'Goliathus', vendor_id: 5426, product_id: 3074 },
-		{ kind: 'streaming', name: 'Kiyo', vendor_id: 5426, product_id: 3587 },
+		{
+			serial: 'XX0000000C02',
+			kind: 'mousemat',
+			name: 'Goliathus',
+			vendor_id: 5426,
+			product_id: 3074,
+		},
+		{
+			serial: 'XX54263587',
+			kind: 'streaming',
+			name: 'Kiyo',
+			vendor_id: 5426,
+			product_id: 3587,
+		},
 	],
 	modules: [{ kind: 'twinkly', name: 'Twinkly' }],
 	...mockGroups(participants),
@@ -149,7 +163,7 @@ export const Default: Story = {
 		applicationConfig({
 			providers: [
 				provideBackendApi(
-					withMock(backend(['5426-0136', '5426-0550', '5426-3074'])),
+					withMock(backend(['XX0000000088', 'XX0000000226', 'XX0000000C02'])),
 				),
 			],
 		}),
@@ -178,7 +192,7 @@ export const LevelCards: Story = {
 		applicationConfig({
 			providers: [
 				provideBackendApi(
-					withMock(backend(['5426-0136', '5426-0550', '5426-3074'])),
+					withMock(backend(['XX0000000088', 'XX0000000226', 'XX0000000C02'])),
 				),
 			],
 		}),
@@ -235,7 +249,7 @@ export const Wrapping: Story = {
 		),
 		applicationConfig({
 			providers: [
-				provideBackendApi(withMock(backend(['5426-0136', '5426-0550']))),
+				provideBackendApi(withMock(backend(['XX0000000088', 'XX0000000226']))),
 			],
 		}),
 	],
@@ -294,7 +308,7 @@ export const Capped: Story = {
 		),
 		applicationConfig({
 			providers: [
-				provideBackendApi(withMock(backend(['5426-0136', '5426-0550']))),
+				provideBackendApi(withMock(backend(['XX0000000088', 'XX0000000226']))),
 			],
 		}),
 	],
@@ -360,7 +374,7 @@ export const CreatingAGroup: Story = {
 	decorators: [
 		applicationConfig({
 			providers: [
-				provideBackendApi(withMock(backend(['5426-0136', '5426-0550']))),
+				provideBackendApi(withMock(backend(['XX0000000088', 'XX0000000226']))),
 			],
 		}),
 	],
@@ -416,7 +430,7 @@ export const Releasing: Story = {
 	decorators: [
 		applicationConfig({
 			providers: [
-				provideBackendApi(withMock(backend(['5426-0136', '5426-0550']))),
+				provideBackendApi(withMock(backend(['XX0000000088', 'XX0000000226']))),
 			],
 		}),
 	],
@@ -448,7 +462,7 @@ export const Tuning: Story = {
 	name: 'Renaming and pacing a group',
 	decorators: [
 		applicationConfig({
-			providers: [provideBackendApi(withMock(backend(['5426-0136'])))],
+			providers: [provideBackendApi(withMock(backend(['XX0000000088'])))],
 		}),
 	],
 	play: async ({ canvasElement }) => {
@@ -488,7 +502,7 @@ export const Dragging: Story = {
 	decorators: [
 		applicationConfig({
 			providers: [
-				provideBackendApi(withMock(backend(['5426-0136', '5426-0550']))),
+				provideBackendApi(withMock(backend(['XX0000000088', 'XX0000000226']))),
 			],
 		}),
 	],

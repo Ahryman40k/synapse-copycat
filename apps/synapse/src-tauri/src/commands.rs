@@ -1,13 +1,17 @@
 use tauri::State;
 
+use crate::discovery::TwinklyDevice;
 use crate::razer::engine::ambience::Ambience;
 use crate::razer::engine::cadence::Cadence;
 use crate::razer::engine::group::{GroupError, GroupId, GroupStatus, ParticipantId};
-use crate::razer::{
+use openrazer::{
     backend::{BackendError, DeviceBackend},
-    device::{Device, DeviceKind},
     dispatch::dispatch,
     request::{CapabilityRequest, CapabilityResponse},
+};
+
+use crate::razer::{
+    device::{Device, DeviceKind},
     state::RazerState,
 };
 
@@ -80,6 +84,16 @@ async fn fetch_device(backend: &dyn DeviceBackend, serial: &str) -> Result<Devic
 #[tauri::command]
 pub async fn groups(state: State<'_, RazerState>) -> Result<Vec<GroupStatus>, BackendError> {
     Ok(state.groups().await)
+}
+
+/// Everything discoverable on the network that is not a Razer device.
+///
+/// A sweep on every call rather than a cached list: devices come and go, and a
+/// list that is only refreshed at startup is wrong the moment someone plugs
+/// something in. The sweep costs a couple of seconds and 254 small datagrams.
+#[tauri::command]
+pub async fn twinkly_devices() -> Result<Vec<TwinklyDevice>, BackendError> {
+    Ok(crate::discovery::twinkly_devices().await)
 }
 
 /// The devices no group has claimed. Not driven and not broken — worth showing,

@@ -11,13 +11,14 @@ import { CameraPageComponent } from './camera-page';
 const setup = () =>
 	render(CameraPageComponent, {
 		// The `:id` segment, as `withComponentInputBinding()` supplies it.
-		inputs: { id: '5426-3587' },
+		inputs: { id: 'XX0000000E03' },
 		providers: [
 			provideBackendApi(
 				withMock({
 					...unusedCommands(),
 					devices: [
 						{
+							serial: 'XX0000000E03',
 							kind: 'streaming',
 							name: 'Razer Kiyo',
 							vendor_id: 5426,

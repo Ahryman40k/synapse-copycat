@@ -1,0 +1,13 @@
+// Colour only — every dimension lives in sources-panel.scss.
+
+/// $theme is accepted for compatibility with the call in styles.scss, which
+/// still passes the legacy map. Unused here.
+@mixin apply($theme: null) {
+  sources-panel h2 {
+    color: var(--syn-primary);
+  }
+
+  sources-panel .sources-panel__detail {
+    color: var(--syn-on-surface-variant);
+  }
+}

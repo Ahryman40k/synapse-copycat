@@ -18,6 +18,7 @@ const mock = {
 	...unusedCommands(),
 	devices: [
 		{
+			serial: 'XX0000000226',
 			kind: 'keyboard',
 			name: 'Razer Huntsman Elite',
 			vendor_id: 5426,
@@ -43,7 +44,7 @@ const meta: Meta<KeyboardPageComponent> = {
 		}),
 	],
 	// The `:id` segment, as `withComponentInputBinding()` supplies it at runtime.
-	args: { id: '5426-0550' },
+	args: { id: 'XX0000000226' },
 };
 export default meta;
 

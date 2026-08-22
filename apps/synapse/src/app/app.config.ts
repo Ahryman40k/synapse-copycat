@@ -39,45 +39,64 @@ export function makeAppConfig(config: Config) {
 	console.log('Use configuration', config);
 	const mock = !isTauriDetected
 		? ({
+				// ⚠️ The devices the fake daemon reports, verbatim — serials,
+				// names and ids. The browser path used to invent its own, which
+				// is how a mismatch between the serial the backend names a
+				// participant by and the id the store built went unseen: both
+				// halves were invented here and agreed with each other.
+				//
+				// Mirroring the fake daemon means the two modes show the same
+				// thing, and a difference between them is a real difference.
 				devices: [
 					{
+						serial: 'XX0000000088',
 						kind: 'mouse',
-						name: 'Razer Basilisk Ultimate',
+						name: 'Razer Basilisk Ultimate Receiver',
 						vendor_id: 5426,
 						product_id: 136,
 					},
-					// A second mouse, of a different model, so the browser path actually
-					// exercises two devices sharing a kind. They are told apart by
-					// vendor_id/product_id; two units of the SAME model would not be —
-					// that needs the serial, which the wire shape drops.
 					{
-						kind: 'mouse',
-						name: 'Razer Viper V2 Pro',
-						vendor_id: 5426,
-						product_id: 165,
-					},
-					{
-						kind: 'mousemat',
-						name: 'Goliatus Extended',
-						vendor_id: 5426,
-						product_id: 3074,
-					},
-					{
+						serial: 'XX0000000226',
 						kind: 'keyboard',
 						name: 'Razer Huntsman Elite',
 						vendor_id: 5426,
 						product_id: 550,
 					},
-					// The Kiyo is a webcam, and `camera` is not one of the kinds the
-					// contract carries. `streaming` is Razer's own name for that line
-					// and is already what the (commented-out) route is called.
 					{
-						kind: 'streaming',
-						name: 'Razer Kiyo',
+						// A keypad is a small keyboard, and the daemon publishes
+						// exactly the interfaces a Huntsman does.
+						serial: 'XX000000022B',
+						kind: 'keyboard',
+						name: 'Razer Tartarus V2',
 						vendor_id: 5426,
-						product_id: 3587,
+						product_id: 555,
+					},
+					{
+						serial: 'XX0000000C02',
+						kind: 'mousemat',
+						name: 'Razer Goliathus Extended',
+						vendor_id: 5426,
+						product_id: 3074,
+					},
+					{
+						// No matrix at all, so the engine can only give it one
+						// averaged colour — which is the case the interface has
+						// to state rather than treat as a failure.
+						serial: 'XX0000000527',
+						kind: 'headset',
+						name: 'Razer Kraken Ultimate',
+						vendor_id: 5426,
+						product_id: 1319,
+					},
+					{
+						serial: 'XX0000000F08',
+						kind: 'accessory',
+						name: 'Razer Base Station Chroma',
+						vendor_id: 5426,
+						product_id: 3848,
 					},
 				],
+
 				modules: [
 					{
 						kind: 'twinkly',
@@ -85,19 +104,37 @@ export function makeAppConfig(config: Config) {
 					},
 				],
 
+				// One Twinkly, shaped exactly like the one on the bench — a
+				// TWS050STQ with 50 RGB LEDs. The browser path has no network
+				// sweep, so this is where the interface for a network
+				// participant gets built and seen.
+				twinkly_devices: [
+					{
+						participant: 'twinkly-1c9dc285dd79',
+						name: 'Twinkly_85DD79',
+						address: '192.168.1.201',
+						product_code: 'TWS050STQ',
+						leds: 50,
+						profile: 'RGB',
+					},
+				],
+
 				// The group commands change things, so they cannot be a table of
 				// fixed answers — `mockGroups` keeps the state, and the one rule
 				// worth keeping: a participant belongs to at most one group.
 				//
-				// The ids match what the store builds from the wire shape,
-				// `<vendor>-<product>` zero-padded, so a group formed here names
-				// the same devices the dashboard shows.
+				// Seeded with **serials**, because that is what the backend names
+				// a participant by. Seeded with anything else, every tile in a
+				// group shows a raw identifier and no picture — which is what
+				// happened against a real daemon while this list held invented
+				// `<vendor>-<product>` strings.
 				...mockGroups([
-					'5426-0136',
-					'5426-0165',
-					'5426-3074',
-					'5426-0550',
-					'5426-3587',
+					'XX0000000088',
+					'XX0000000226',
+					'XX000000022B',
+					'XX0000000C02',
+					'XX0000000527',
+					'XX0000000F08',
 				]),
 			} satisfies Mock)
 		: undefined;

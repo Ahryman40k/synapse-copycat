@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import {
+	ChangeDetectionStrategy,
+	Component,
+	computed,
+	input,
+	signal,
+} from '@angular/core';
 
 /**
  * A clickable tile — a device on the dashboard, opening its page.
@@ -22,8 +28,13 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 	selector: 'button[syn-card], a[syn-card]',
 	styleUrl: './card.scss',
 	template: `
-		@if (image()) {
-			<img class="syn-card__media" [src]="image()" [alt]="imageAlt()" />
+		@if (shown(); as source) {
+			<img
+				class="syn-card__media"
+				[src]="source"
+				[alt]="imageAlt()"
+				(error)="onMissing(source)"
+			/>
 		}
 		<ng-content />
 	`,
@@ -31,6 +42,30 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 })
 export class Card {
 	readonly image = input<string | undefined>(undefined);
+
+	/**
+	 * Sources that failed to load.
+	 *
+	 * ⚠️ Not every device has a picture in the repository, and the ones that do
+	 * are keyed by model — so a peripheral nobody has drawn yet asks for a file
+	 * that is not there. Left alone the browser paints its broken-image icon,
+	 * which reads as the application having lost something rather than as a
+	 * picture that was never there. Dropping the element leaves the card with
+	 * its name, which is the truth.
+	 *
+	 * Kept as a set of sources rather than a boolean so that changing `image`
+	 * to something else gets a fair try.
+	 */
+	private readonly missing = signal<ReadonlySet<string>>(new Set());
+
+	protected readonly shown = computed(() => {
+		const source = this.image();
+		return source && !this.missing().has(source) ? source : undefined;
+	});
+
+	protected onMissing(source: string): void {
+		this.missing.update((sources) => new Set(sources).add(source));
+	}
 
 	/**
 	 * Empty by default: the card's own text already says what it is, so

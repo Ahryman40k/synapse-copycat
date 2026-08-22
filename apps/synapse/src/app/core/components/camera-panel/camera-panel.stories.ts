@@ -25,7 +25,7 @@ const media = {
 const KIYO: Device = {
 	__type: 'device',
 	kind: 'streaming',
-	id: '5426-3587',
+	id: 'XX0000000E03',
 	name: 'Razer Kiyo',
 	visual: 'assets/devices/5426-3587.png',
 };

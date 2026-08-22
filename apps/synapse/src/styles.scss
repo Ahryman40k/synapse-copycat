@@ -5,6 +5,9 @@
 
 @use '../../../libs/ui/src/styles/_theming.scss' as theme;
 @use '../src/app/domains/dashboard-page/_dashboard-page.theme.scss' as dashboard;
+@use '../src/app/domains/studio-page/_studio-page.theme.scss' as studio-page;
+@use '../src/app/domains/backgrounds-page/_backgrounds-page.theme.scss' as
+  backgrounds-page;
 @use '../src/app/appbar/_appbar.theme.scss' as appbar;
 @use '../src/app/domains/page-bar/_page-bar.theme.scss' as pagebar;
 @use '../src/app/core/components/brightness-panel/_brightness-panel.theme.scss'
@@ -23,6 +26,8 @@
   as new-group-dialog;
 @use '../src/app/core/components/device-dialog/_device-dialog.theme.scss' as
   device-dialog;
+@use '../src/app/core/components/sources-panel/_sources-panel.theme.scss' as
+  sources-panel;
 @use '../src/app/core/components/effects-panel/_effects-panel.theme.scss' as
   effects-panel;
 @use '../src/app/core/components/device-stage/_device-stage.theme.scss' as
@@ -96,6 +101,8 @@ $theme-dark: theme.create-theme-dark(
 
   @include theme.apply($theme-dark);
   @include dashboard.apply($theme-dark);
+  @include studio-page.apply($theme-dark);
+  @include backgrounds-page.apply($theme-dark);
   @include appbar.apply($theme-dark);
   @include pagebar.apply($theme-dark);
   @include brightness-panel.apply($theme-dark);
@@ -106,6 +113,7 @@ $theme-dark: theme.create-theme-dark(
   @include participant-card.apply($theme-dark);
   @include new-group-dialog.apply($theme-dark);
   @include device-dialog.apply($theme-dark);
+  @include sources-panel.apply($theme-dark);
   @include effects-panel.apply($theme-dark);
   @include device-stage.apply($theme-dark);
   @include razer-logo.apply($theme-dark);

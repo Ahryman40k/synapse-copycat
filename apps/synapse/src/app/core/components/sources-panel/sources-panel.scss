@@ -1,0 +1,41 @@
+// Structure only — the colour lives in _sources-panel.theme.scss.
+// The column layout comes from `syn-panel` itself.
+
+h2 {
+  margin: 0;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+// Takes the room so every switch lines up down the right-hand edge.
+.sources-panel__what {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.sources-panel__label {
+  font-weight: 500;
+}
+
+.sources-panel__detail {
+  font-size: 0.8125rem;
+}

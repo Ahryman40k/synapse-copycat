@@ -1,0 +1,25 @@
+<syn-panel>
+  <h2>Where to look for devices</h2>
+
+  <ul>
+    @for (row of rows(); track row.source) {
+      <li>
+        <div class="sources-panel__what">
+          <span class="sources-panel__label">{{ row.label }}</span>
+          <span class="sources-panel__detail">{{ row.detail }}</span>
+        </div>
+
+        <!--
+          Disabled where nothing implements the protocol. The row stays, so the
+          plan is visible without a promise being made.
+        -->
+        <syn-switch
+          [ariaLabel]="'Look for ' + row.label"
+          [checked]="row.enabled"
+          [disabled]="row.unavailable"
+          (checkedChange)="onChange(row.source, $event)"
+        ></syn-switch>
+      </li>
+    }
+  </ul>
+</syn-panel>

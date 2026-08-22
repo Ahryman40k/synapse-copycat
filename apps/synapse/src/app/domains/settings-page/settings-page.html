@@ -6,5 +6,10 @@
     (languageChange)="onLanguageChange($event)"
   ></language-panel>
 
+  <sources-panel
+    [sources]="sources()"
+    (sourceChange)="onSourceChange($event)"
+  ></sources-panel>
+
   <about-panel></about-panel>
 </div>
