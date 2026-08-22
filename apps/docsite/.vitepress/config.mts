@@ -26,27 +26,23 @@ export default defineConfig({
 			'/features/': [
 				{
 					text: 'Features',
-					items: [
-						{ text: 'feature 01', link: '/features/f01' },
-						{ text: 'feature 02', link: '/features/f02' },
-					],
+					items: [{ text: 'What it does', link: '/features/' }],
 				},
 			],
 			'/guide/': [
 				{
-					text: 'Guide',
-					items: [
-						{ text: 'guide 01', link: '/guide/g01' },
-						{ text: 'guide 02', link: '/guide/g02' },
-					],
+					text: "User's Guide",
+					items: [{ text: 'Getting started', link: '/guide/' }],
 				},
 			],
 			'/technical/': [
 				{
 					text: 'Technical',
 					items: [
-						{ text: 'tech 01', link: '/tech/t01' },
-						{ text: 'tech 02', link: '/tech/t02' },
+						{ text: 'How it is built', link: '/technical/' },
+						{ text: 'The rendering engine', link: '/technical/engine' },
+						{ text: 'The protocol libraries', link: '/technical/protocols' },
+						{ text: 'How it is verified', link: '/technical/testing' },
 					],
 				},
 			],
