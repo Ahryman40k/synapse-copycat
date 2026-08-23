@@ -18,6 +18,13 @@ type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 trait RazerDevice {
     #[zbus(name = "getDevices")]
     fn get_devices(&self) -> zbus::Result<Vec<String>>;
+
+    // The daemon's hotplug notices. Python names, so genuinely snake_case —
+    // the explicit rename is there so nobody "fixes" them to camelCase.
+    #[zbus(signal, name = "device_added")]
+    fn device_added(&self) -> zbus::Result<()>;
+    #[zbus(signal, name = "device_removed")]
+    fn device_removed(&self) -> zbus::Result<()>;
 }
 
 #[zbus::proxy(interface = "razer.device.misc", default_service = "org.razer")]
@@ -420,6 +427,49 @@ impl DeviceBackend for DbusBackend {
                 .set_custom()
                 .await
                 .map_err(|e| BackendError::Transport(e.to_string()))
+        })
+    }
+
+    fn hotplug_events(
+        &self,
+    ) -> BoxFuture<'_, Result<tokio::sync::mpsc::Receiver<super::Hotplug>, BackendError>> {
+        Box::pin(async move {
+            use futures::StreamExt as _;
+
+            // Subscribed here, before the task spawns, so a daemon that cannot
+            // be reached refuses the call instead of a channel that just never
+            // speaks.
+            let proxy = RazerDeviceProxy::new(&self.conn)
+                .await
+                .map_err(|e| BackendError::Transport(e.to_string()))?;
+            let mut added = proxy
+                .receive_device_added()
+                .await
+                .map_err(|e| BackendError::Transport(e.to_string()))?;
+            let mut removed = proxy
+                .receive_device_removed()
+                .await
+                .map_err(|e| BackendError::Transport(e.to_string()))?;
+
+            // Room for a burst — a wireless receiver announcing its children —
+            // without ever blocking the DBus dispatch on a slow consumer.
+            let (sender, receiver) = tokio::sync::mpsc::channel(16);
+            tokio::spawn(async move {
+                loop {
+                    let event = tokio::select! {
+                        Some(_) = added.next() => super::Hotplug::Added,
+                        Some(_) = removed.next() => super::Hotplug::Removed,
+                        // Both streams ended: the connection is gone. Dropping
+                        // the sender is how the receiver learns.
+                        else => break,
+                    };
+                    if sender.send(event).await.is_err() {
+                        break;
+                    }
+                }
+            });
+
+            Ok(receiver)
         })
     }
 }

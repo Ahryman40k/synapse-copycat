@@ -1,12 +1,15 @@
 import { inject, TestBed } from '@angular/core/testing';
+import { BackendApi } from '@synapse-copycat/backend-api';
 import {
 	mockGroups,
+	mockTwinkly,
 	provideBackendApi,
 	still,
 	unusedCommands,
 	withMock,
 } from '@synapse-copycat/backend-api';
 import { DEVICE_LIGHTING_DEFAULT } from '../models/lighting';
+import { STRIP_LIGHTING_DEFAULT } from '../models/strip-lighting';
 import { ApplicationStore } from './application-store';
 
 describe('ApplicationStore', () => {
@@ -395,6 +398,189 @@ describe('ApplicationStore, groups', () => {
 			expect(store.unassigned()).not.toContain('aaa');
 		},
 	));
+});
+
+/**
+ * The strip slice — the one part of the lighting that writes to a device.
+ *
+ * Against the stateful mock, like the groups: the panel writes and then shows
+ * what a read answers, so the property worth holding is that the two agree.
+ */
+describe('ApplicationStore, strips', () => {
+	const STRIP = 'twinkly-1c9dc285dd79';
+
+	beforeEach(() => {
+		TestBed.configureTestingModule({
+			providers: [
+				provideBackendApi(
+					withMock({
+						...unusedCommands(),
+						...mockTwinkly([STRIP]),
+					}),
+				),
+			],
+		});
+	});
+
+	it('claims nothing about a strip it has not asked', inject(
+		[ApplicationStore],
+		(store: ApplicationStore) => {
+			// Dark by default — the honest state for a device never heard from.
+			expect(store.stripLightingFor(STRIP)).toEqual(STRIP_LIGHTING_DEFAULT);
+			expect(store.stripLightingFor(undefined)).toEqual(STRIP_LIGHTING_DEFAULT);
+		},
+	));
+
+	it('shows what the strip reported once asked', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getStripLighting(STRIP);
+
+			// The mock's strips start lit — see `mockTwinkly` for why.
+			expect(store.stripLightingFor(STRIP)).toEqual({
+				on: true,
+				color: '#ff2d95',
+			});
+		},
+	));
+
+	it('writes the switch through and reads it back', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			await store.getStripLighting(STRIP);
+
+			store.setStripPower(STRIP, false);
+			// Reflected at once, before any wire answers.
+			expect(store.stripLightingFor(STRIP).on).toBe(false);
+
+			// And the device agrees when asked again — the write reached it.
+			await store.getStripLighting(STRIP);
+			expect(store.stripLightingFor(STRIP).on).toBe(false);
+		},
+	));
+
+	it('lands the newest of a burst of colours', inject(
+		[ApplicationStore],
+		async (store: ApplicationStore) => {
+			// What a drag across the picker produces. However many of these the
+			// queue skips, the one the hand settled on must be what the strip
+			// ends up holding.
+			store.setStripColor(STRIP, '#111111');
+			store.setStripColor(STRIP, '#222222');
+			store.setStripColor(STRIP, '#333333');
+
+			// A macrotask, so the queue finishes draining first — reading in the
+			// same tick would catch the device mid-burst, which is exactly the
+			// window the queue exists to ride out.
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			await store.getStripLighting(STRIP);
+			expect(store.stripLightingFor(STRIP).color).toBe('#333333');
+		},
+	));
+
+	it('refuses an answer in a shape it cannot trust', async () => {
+		// Its own module: the point is the answer, not the participant.
+		TestBed.resetTestingModule();
+		TestBed.configureTestingModule({
+			providers: [
+				provideBackendApi(
+					withMock({
+						...unusedCommands(),
+						// A colour the native input would silently read as black —
+						// exactly what the valibot schema exists to refuse.
+						run_capability: {
+							type: 'Lighting',
+							value: { on: true, color: 'green' },
+						},
+					}),
+				),
+			],
+		});
+		const store = TestBed.inject(ApplicationStore);
+
+		await store.getStripLighting(STRIP);
+
+		expect(store.stripLightingFor(STRIP)).toEqual(STRIP_LIGHTING_DEFAULT);
+	});
+});
+
+/**
+ * The backend's pushes — plug and unplug reaching the screen with no reload.
+ *
+ * Driven through the mock's `emit`, which is the same channel the store
+ * subscribes to in Tauri mode; only the emitter differs.
+ */
+describe('ApplicationStore, live updates', () => {
+	const KEYBOARD = {
+		serial: 'XX0000000226',
+		kind: 'keyboard' as const,
+		name: 'Razer Huntsman Elite',
+		vendor_id: 5426,
+		product_id: 550,
+	};
+
+	const setup = async () => {
+		TestBed.configureTestingModule({
+			providers: [
+				provideBackendApi(
+					withMock({
+						...unusedCommands(),
+						devices: [KEYBOARD],
+					}),
+				),
+			],
+		});
+		const store = TestBed.inject(ApplicationStore);
+		const api = TestBed.inject(BackendApi);
+		await store.watchForChanges();
+		return { store, api };
+	};
+
+	it('follows a hotplug event', async () => {
+		const { store, api } = await setup();
+		await store.getDevices();
+		expect(store.devices()).toHaveLength(1);
+
+		// The keyboard left; the event carries the fresh list.
+		api.emit('devices_changed', []);
+		expect(store.devices()).toHaveLength(0);
+
+		api.emit('devices_changed', [KEYBOARD]);
+		expect(store.devices().map((device) => device.id)).toEqual([
+			'XX0000000226',
+		]);
+	});
+
+	it('follows a twinkly watch event', async () => {
+		const { store, api } = await setup();
+
+		api.emit('twinkly_devices_changed', [
+			{
+				participant: 'twinkly-1c9dc285dd79',
+				name: 'Twinkly_85DD79',
+				address: '192.168.1.201',
+				product_code: 'TWS050STQ',
+				leds: 50,
+				profile: 'RGB',
+			},
+		]);
+
+		expect(store.devices().map((device) => device.id)).toEqual([
+			'twinkly-1c9dc285dd79',
+		]);
+	});
+
+	it('ignores events from a source that was switched off', async () => {
+		const { store, api } = await setup();
+		store.setSource('chroma', false);
+
+		// Off means off — an event repopulating the list would make the
+		// switch look like it had done nothing.
+		api.emit('devices_changed', [KEYBOARD]);
+
+		expect(store.devices()).toHaveLength(0);
+	});
 });
 
 /**

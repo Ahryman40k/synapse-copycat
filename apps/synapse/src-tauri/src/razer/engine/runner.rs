@@ -18,6 +18,8 @@ use tokio::time::{interval, MissedTickBehavior};
 
 use openrazer::backend::{BackendError, DeviceBackend};
 
+use crate::capability::{convert, TwinklyPool};
+
 use super::ambience::{Ambience, Tick};
 use super::cadence::{Achieved, Cadence};
 use super::frame::{Frame, Geometry, Rgb};
@@ -32,6 +34,60 @@ enum Surface {
     /// colour and set as a static effect — see `Frame::average`. A Kraken
     /// belongs to the ambience this way or not at all.
     Approximated { showing: Option<Rgb> },
+
+    /// A light string in real-time mode: the full picture, one UDP push per
+    /// tick. Not a Razer device at all — the participant prefix routed it
+    /// here, and nothing below goes near the DBus backend.
+    Streamed(Strip),
+}
+
+/// A Twinkly being streamed to — see xled-docs, "real time LED operating mode".
+struct Strip {
+    device: twinkly::Device,
+    /// The real LED count, which can exceed what a `Geometry` column (`u8`)
+    /// can address — see `Strip::bytes` for how the difference is bridged.
+    leds: u16,
+    /// Four bytes per LED (`w,r,g,b`) instead of three.
+    rgbw: bool,
+    geometry: Geometry,
+    /// When `Mode::Rt` was last asserted over HTTP. Re-done every few seconds:
+    /// it is what heals both an expired token (the call re-logs-in on 401) and
+    /// a device that quietly fell back to movie mode.
+    asserted: Option<Instant>,
+    /// The last frame's average — the parting colour when the runner stops.
+    last: Option<Rgb>,
+}
+
+/// How long an rt assertion is trusted before it is repeated.
+///
+/// The device abandons rt mode "after some time" without frames — xled-docs
+/// gives no figure — and a token dies after four hours. A few seconds costs
+/// one HTTP round trip per interval and keeps both failure modes short-lived.
+const REASSERT_RT: Duration = Duration::from_secs(4);
+
+impl Strip {
+    /// The wire form of a frame: every real LED painted.
+    ///
+    /// A string longer than 255 LEDs cannot have a column per LED, so each LED
+    /// reads its column proportionally — the picture stretches across the
+    /// whole string rather than truncating at the 255th LED.
+    fn bytes(&self, frame: &Frame) -> Vec<u8> {
+        let columns = usize::from(self.geometry.columns);
+        let leds = usize::from(self.leds);
+        let mut bytes = Vec::with_capacity(leds * if self.rgbw { 4 } else { 3 });
+
+        for led in 0..leds {
+            let column = (led * columns / leds).min(columns - 1);
+            let colour = frame.get(0, column as u8);
+            if self.rgbw {
+                // The white channel stays dark: the compositor works in RGB,
+                // and inventing a white level would double-count lightness.
+                bytes.push(0);
+            }
+            bytes.extend_from_slice(&[colour.r, colour.g, colour.b]);
+        }
+        bytes
+    }
 }
 
 /// Where a runner's frames are composed for. Approximated devices still get a
@@ -46,11 +102,43 @@ pub struct Runner {
 
 impl Runner {
     /// Asks the device what it can take, and prepares accordingly.
+    ///
+    /// The participant prefix decides the protocol — the one place outside the
+    /// backends allowed to read it (`discovery` says so). A `twinkly-` name is
+    /// asked over HTTP what it is; anything else is asked over the platform
+    /// backend. Either refusal becomes a `Skipped` with its reason, never a
+    /// fault.
     pub async fn attach(
         backend: Arc<dyn DeviceBackend>,
+        strips: &TwinklyPool,
         serial: impl Into<String>,
     ) -> Result<Self, BackendError> {
         let serial = serial.into();
+
+        if serial.starts_with("twinkly-") {
+            let device = strips.device(&serial).await?;
+            let gestalt = device.gestalt().await.map_err(convert)?;
+            if gestalt.number_of_led == 0 {
+                return Err(BackendError::Protocol(format!(
+                    "{serial} reports a string of zero LEDs"
+                )));
+            }
+            let columns = gestalt.number_of_led.min(u16::from(u8::MAX)) as u8;
+            let surface = Surface::Streamed(Strip {
+                device,
+                leds: gestalt.number_of_led,
+                rgbw: gestalt.bytes_per_led == 4,
+                geometry: Geometry::new(1, columns),
+                asserted: None,
+                last: None,
+            });
+            return Ok(Self {
+                backend,
+                serial,
+                surface,
+            });
+        }
+
         let canvas = Canvas::discover(backend.as_ref(), &serial).await?;
 
         let surface = match canvas.geometry() {
@@ -73,11 +161,13 @@ impl Runner {
         match &self.surface {
             Surface::Painted(painter) => painter.geometry(),
             Surface::Approximated { .. } => SINGLE,
+            Surface::Streamed(strip) => strip.geometry,
         }
     }
 
     pub fn is_painted(&self) -> bool {
-        matches!(self.surface, Surface::Painted(_))
+        // Streamed counts: the string shows the full picture, not an average.
+        !matches!(self.surface, Surface::Approximated { .. })
     }
 
     /// Redraws until the ambience channel closes.
@@ -153,6 +243,8 @@ impl Runner {
                 }
             }
         }
+
+        self.rest().await;
     }
 
     async fn show(&mut self, ambience: &Ambience, elapsed: Duration) -> Result<(), BackendError> {
@@ -177,6 +269,27 @@ impl Runner {
                     *showing = Some(colour);
                 }
             }
+            Surface::Streamed(strip) => {
+                let frame = ambience.compose(strip.geometry, tick);
+                strip.last = Some(frame.average());
+
+                // HTTP only every few seconds; the frames themselves are UDP.
+                if strip.asserted.map_or(true, |at| at.elapsed() > REASSERT_RT) {
+                    strip
+                        .device
+                        .set_mode(twinkly::Mode::Rt)
+                        .await
+                        .map_err(convert)?;
+                    strip.asserted = Some(Instant::now());
+                }
+
+                // ⚠️ Sent even when nothing changed — the opposite of the two
+                // arms above. Frames are what keep the device in rt mode; a
+                // still ambience that stopped sending would watch the string
+                // wander back to its movie a few seconds later.
+                let bytes = strip.bytes(&frame);
+                strip.device.realtime_frame(&bytes).await.map_err(convert)?;
+            }
         }
         Ok(())
     }
@@ -185,6 +298,22 @@ impl Runner {
         match &mut self.surface {
             Surface::Painted(painter) => painter.forget(),
             Surface::Approximated { showing } => *showing = None,
+            // Frames are stateless; what a failure poisons is the trust that
+            // the device is still in rt mode.
+            Surface::Streamed(strip) => strip.asserted = None,
+        }
+    }
+
+    /// A Razer device keeps its last frame when the runner stops; a string in
+    /// rt mode would fall back to its movie instead. The closest thing to the
+    /// promise is the last frame's average, pinned as the stored static
+    /// colour. Best effort — stopping must never fail.
+    async fn rest(&self) {
+        if let Surface::Streamed(strip) = &self.surface {
+            if let Some(colour) = strip.last {
+                let _ = strip.device.set_color(colour.r, colour.g, colour.b).await;
+                let _ = strip.device.set_mode(twinkly::Mode::Color).await;
+            }
         }
     }
 }

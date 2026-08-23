@@ -11,6 +11,7 @@ use std::time::Duration;
 use serde::Serialize;
 use specta::Type;
 
+use crate::capability::TwinklyPool;
 use crate::razer::engine::group::ParticipantId;
 
 /// How long a sweep listens. Long enough for a device that is busy drawing,
@@ -18,7 +19,10 @@ use crate::razer::engine::group::ParticipantId;
 const DISCOVERY_WINDOW: Duration = Duration::from_secs(2);
 
 /// A Twinkly, as the interface needs it.
-#[derive(Debug, Clone, Serialize, Type)]
+///
+/// `PartialEq` because the watcher diffs sweeps: an event goes out only when
+/// the list actually changed.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Type)]
 pub struct TwinklyDevice {
     /// `twinkly-1c9dc285dd79`.
     pub participant: ParticipantId,
@@ -47,50 +51,53 @@ pub fn participant_id(mac: &str) -> ParticipantId {
 /// ⚠️ A device that answers discovery but not HTTP is still reported, with the
 /// fields it could not supply left empty. It exists, the user can see it, and
 /// saying nothing about it would look like the application had missed it.
-pub async fn twinkly_devices() -> Vec<TwinklyDevice> {
-    let found = match twinkly::discover(DISCOVERY_WINDOW).await {
-        Ok(found) => found,
-        Err(error) => {
-            eprintln!("warn: twinkly discovery failed — {error}");
-            return Vec::new();
-        }
-    };
+///
+/// A sweep that could not even run is an `Err`, distinct from an empty
+/// network: the watcher must not read a failed socket as "everything left".
+pub async fn twinkly_devices(pool: &TwinklyPool) -> Result<Vec<TwinklyDevice>, twinkly::Error> {
+    let found = twinkly::discover(DISCOVERY_WINDOW).await?;
 
-    let described = found.into_iter().map(|device| async move {
-        describe(device.address, device.name).await
-    });
+    let described = found
+        .into_iter()
+        .map(|device| async move { describe(pool, device.address, device.name).await });
 
-    futures::future::join_all(described)
+    Ok(futures::future::join_all(described)
         .await
         .into_iter()
         .flatten()
-        .collect()
+        .collect())
 }
 
-async fn describe(address: Ipv4Addr, name: String) -> Option<TwinklyDevice> {
-    match twinkly::Device::new(address).gestalt().await {
-        Ok(gestalt) => Some(TwinklyDevice {
+async fn describe(pool: &TwinklyPool, address: Ipv4Addr, name: String) -> Option<TwinklyDevice> {
+    let described = match twinkly::Device::new(address).gestalt().await {
+        Ok(gestalt) => TwinklyDevice {
             participant: participant_id(&gestalt.mac),
             name: gestalt.device_name,
             address: address.to_string(),
             product_code: gestalt.product_code,
             leds: gestalt.number_of_led,
             profile: gestalt.led_profile,
-        }),
+        },
         Err(error) => {
             eprintln!("warn: {address} answered discovery but not HTTP — {error}");
             // No MAC, so no stable identifier: the address has to stand in, and
             // the participant will change name if the lease does.
-            Some(TwinklyDevice {
+            TwinklyDevice {
                 participant: format!("twinkly-at-{address}"),
                 name,
                 address: address.to_string(),
                 product_code: String::new(),
                 leds: 0,
                 profile: String::new(),
-            })
+            }
         }
-    }
+    };
+
+    // Both branches, deliberately: even a device that refused HTTP just now
+    // gets its address remembered, so a later capability tries the network
+    // rather than answering "never seen" about something on the screen.
+    pool.remember(described.participant.clone(), address).await;
+    Some(described)
 }
 
 #[cfg(test)]
@@ -100,9 +107,6 @@ mod tests {
     #[test]
     fn keys_a_participant_by_its_mac() {
         // Stable across a change of address, which an IP is not.
-        assert_eq!(
-            participant_id("1C:9D:C2:85:DD:79"),
-            "twinkly-1c9dc285dd79"
-        );
+        assert_eq!(participant_id("1C:9D:C2:85:DD:79"), "twinkly-1c9dc285dd79");
     }
 }

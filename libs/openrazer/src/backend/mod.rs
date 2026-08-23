@@ -142,4 +142,27 @@ pub trait DeviceBackend: Send + Sync + 'static {
     /// Shows the rows written so far, all at once. Drawing row by row without
     /// this would tear the picture as it is built.
     fn show_custom_frame(&self, serial: &str) -> BoxFuture<'_, Result<(), BackendError>>;
+
+    // ── hotplug ───────────────────────────────────────────────────────────────
+
+    /// One notice per device arriving or leaving, for as long as the channel
+    /// stays open.
+    ///
+    /// A `tokio` channel rather than a `Stream`, so the trait stays
+    /// dyn-compatible without a stream crate in its signature. The sender side
+    /// lives in a task the backend spawns; the channel closing means the
+    /// subscription itself is gone — a daemon restart, a dropped connection —
+    /// and the caller should treat the list as stale rather than settled.
+    fn hotplug_events(
+        &self,
+    ) -> BoxFuture<'_, Result<tokio::sync::mpsc::Receiver<Hotplug>, BackendError>>;
+}
+
+/// A device arrived or left. Coarse on purpose: OpenRazer's signals carry no
+/// payload a consumer could trust anyway, so either kind means the same thing
+/// — enumerate again.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Hotplug {
+    Added,
+    Removed,
 }

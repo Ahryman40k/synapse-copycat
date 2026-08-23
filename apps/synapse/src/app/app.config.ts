@@ -9,10 +9,12 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import {
 	type Mock,
 	mockGroups,
+	mockTwinkly,
 	provideBackendApi,
 	withMock,
 } from '@synapse-copycat/backend-api';
 import { appRoutes } from './app.routes';
+import { ApplicationStore } from './core/stores/application-store';
 import { AmbienceTheme } from './core/theming/ambience-theme';
 import type { ApplicationConfig as Config } from './models/config';
 
@@ -28,6 +30,14 @@ export const baseProviders = [
 	// shell component.
 	provideAppInitializer(() => {
 		inject(AmbienceTheme);
+	}),
+
+	// Plug and unplug, without a reload: the store subscribes to the backend's
+	// events and asserts the Twinkly watch from the saved preference. In the
+	// browser the mock holds the subscriptions and nothing ever fires — the
+	// same code path, with no hardware behind it.
+	provideAppInitializer(() => {
+		void inject(ApplicationStore).watchForChanges();
 	}),
 ];
 
@@ -119,6 +129,9 @@ export function makeAppConfig(config: Config) {
 					},
 				],
 
+				// The browser has no network to watch; the switch still answers.
+				watch_twinkly: null,
+
 				// The group commands change things, so they cannot be a table of
 				// fixed answers — `mockGroups` keeps the state, and the one rule
 				// worth keeping: a participant belongs to at most one group.
@@ -136,6 +149,11 @@ export function makeAppConfig(config: Config) {
 					'XX0000000527',
 					'XX0000000F08',
 				]),
+
+				// The strip above, controllable: lit or dark, one static
+				// colour. Stateful for the same reason the groups are — the
+				// panel writes, then reads what it wrote.
+				...mockTwinkly(['twinkly-1c9dc285dd79']),
 			} satisfies Mock)
 		: undefined;
 

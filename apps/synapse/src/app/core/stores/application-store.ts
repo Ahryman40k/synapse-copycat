@@ -4,6 +4,7 @@ import {
 	signalStore,
 	withComputed,
 	withMethods,
+	withProps,
 	withState,
 } from '@ngrx/signals';
 import {
@@ -13,15 +14,22 @@ import {
 } from '@synapse-copycat/backend-api';
 import type {
 	Ambience,
+	BackendEvents,
 	Cadence,
+	CapabilityResponse,
 	GroupId,
 	GroupOutcome,
 	GroupStatus,
 	ParticipantId,
 } from '@synapse-copycat/backend-api';
 import { attempt, refused } from '@synapse-copycat/backend-api';
+import { safeParse } from 'valibot';
 import type { ChromaEffect } from '../models/chroma-effect';
 import { type Language, LANGUAGE_DEFAULT } from '../models/language';
+import {
+	STRIP_LIGHTING_DEFAULT,
+	StripLighting,
+} from '../models/strip-lighting';
 import {
 	type Source,
 	type Sources,
@@ -54,6 +62,89 @@ function patchLighting(
 		}),
 		lighting,
 	);
+}
+
+/**
+ * One enumerated Razer device, off the wire and into the domain.
+ *
+ * Module-level because two paths produce the same list — the `devices` fetch
+ * and the `devices_changed` hotplug event — and a device must look identical
+ * whichever way it arrived.
+ */
+function toDevice(wire: BackendEvents['devices_changed'][number]): Device {
+	const vendorId = wire.vendor_id.toString().padStart(4, '0');
+	const productId = wire.product_id.toString().padStart(4, '0');
+
+	return {
+		__type: 'device',
+		kind: wire.kind,
+		// ⚠️ The serial, because that is what the rest of the backend names a
+		// participant by. Built from `vendor-product` this matched nothing
+		// against a real daemon, and every tile in a group showed a raw serial
+		// with no picture.
+		id: wire.serial,
+		name: wire.name,
+		// The picture is per model, so it stays keyed on the ids that identify
+		// a model rather than a unit. A model with no picture in the repository
+		// simply has none — the card drops an image it cannot load rather than
+		// showing it broken.
+		visual: `assets/devices/${vendorId}-${productId}.png`,
+	} satisfies Device;
+}
+
+/** One found strip — same rule, shared by the sweep and the watch event. */
+function toStrip(
+	wire: BackendEvents['twinkly_devices_changed'][number],
+): Device {
+	return {
+		__type: 'device',
+		kind: 'strip',
+		// The backend's identifier, taken as it is: it is keyed by MAC so it
+		// survives a change of address, and nothing here may read it to work
+		// out what it is.
+		id: wire.participant,
+		name: wire.name,
+		visual: 'assets/modules/twinkly.png',
+	} satisfies Device;
+}
+
+/**
+ * At most one write per key on the wire, and only the newest one waiting.
+ *
+ * For the strips: the colour picker applies live while it is open, so a drag
+ * is dozens of changes a second, each of which would be an HTTP round trip to
+ * a device with a three-second timeout. Sending them all queues seconds of
+ * stale colours behind the newest; keeping only the latest means the strip is
+ * never more than one write behind the hand. One queue per participant also
+ * keeps a power flip and a colour change in the order they were made.
+ *
+ * A failed write is logged and dropped — the strip keeps what it had, and the
+ * next read reports the truth.
+ */
+class LatestWins {
+	readonly #next = new Map<string, () => Promise<unknown>>();
+	readonly #busy = new Set<string>();
+
+	push(key: string, send: () => Promise<unknown>): void {
+		this.#next.set(key, send);
+		if (!this.#busy.has(key)) void this.#drain(key);
+	}
+
+	async #drain(key: string): Promise<void> {
+		this.#busy.add(key);
+		try {
+			for (let send = this.#next.get(key); send; send = this.#next.get(key)) {
+				this.#next.delete(key);
+				try {
+					await send();
+				} catch (error) {
+					console.warn(`a write to ${key} failed`, error);
+				}
+			}
+		} finally {
+			this.#busy.delete(key);
+		}
+	}
 }
 
 export type ApplicationState = {
@@ -93,6 +184,15 @@ export type ApplicationState = {
 	 * its defaults, which is why it starts empty rather than pre-filled.
 	 */
 	lighting: Record<string, DeviceLighting>;
+
+	/**
+	 * What each strip reported it is doing, by participant.
+	 *
+	 * Apart from `lighting` because it is a different kind of fact: `lighting`
+	 * is what the user chose here, this is what the device *said* — read over
+	 * the network when its panel opens, written back as the controls move.
+	 */
+	stripLighting: Record<string, StripLighting>;
 
 	/**
 	 * Whether a choice made on one device is made on all of them.
@@ -137,6 +237,7 @@ export const INITIAL_STATE: ApplicationState = {
 	claimable: [],
 	discovered: [],
 	lighting: {},
+	stripLighting: {},
 	syncEffect: false,
 	syncBrightness: false,
 	activeSection: {},
@@ -175,9 +276,10 @@ export const ApplicationStore = signalStore(
 		 * every group command, and a network sweep there would put two seconds
 		 * on each of them.
 		 *
-		 * ⚠️ A discovered device can be dropped into a group today, and the
-		 * group will report it as one it could not drive. That is truthful:
-		 * the engine does not speak Twinkly yet.
+		 * ⚠️ A discovered device dropped into a group is driven for real — the
+		 * engine streams to a Twinkly over UDP — but only once a sweep has
+		 * found its address. A saved group restarted before the first sweep
+		 * reports the strip as skipped until it is started again.
 		 */
 		unassigned: computed(() => {
 			const held = new Set(
@@ -193,6 +295,10 @@ export const ApplicationStore = signalStore(
 			];
 		}),
 	})),
+
+	// One write queue per store instance — a test's fresh store must not
+	// inherit another's backlog. The `_` prefix keeps it off the public type.
+	withProps(() => ({ _stripWrites: new LatestWins() })),
 
 	withMethods((store, backendApi = inject(BackendApi)) => ({
 		/**
@@ -222,6 +328,13 @@ export const ApplicationStore = signalStore(
 				typeof localStorage === 'undefined' ? undefined : localStorage,
 				sources,
 			);
+
+			// The backend half of the Twinkly switch: the poller sweeping the
+			// network. Fire and forget — the preference itself is already
+			// saved, and a failed toggle corrects itself at the next launch.
+			if (source === 'twinkly') {
+				void backendApi.invoke('watch_twinkly', { enabled });
+			}
 		},
 
 		setLanguage(language: Language): void {
@@ -317,6 +430,99 @@ export const ApplicationStore = signalStore(
 		setSyncBrightness(enabled: boolean, referenceId: string): void {
 			patchState(store, { syncBrightness: enabled });
 			this.setBrightness(referenceId, this.lightingFor(referenceId).brightness);
+		},
+
+		// ── strips ────────────────────────────────────────────────────────────
+		//
+		// Unlike the Razer lighting above, these write to the device: a strip
+		// is not driven by the engine, so what its panel sets goes straight
+		// over `run_capability` and what the panel shows was read back from it.
+
+		/** What the strip last reported, or dark-by-default before it has. */
+		stripLightingFor(deviceId: string | undefined): StripLighting {
+			if (!deviceId) return STRIP_LIGHTING_DEFAULT;
+			return store.stripLighting()[deviceId] ?? STRIP_LIGHTING_DEFAULT;
+		},
+
+		/**
+		 * Ask the strip what it is doing, so its panel opens telling the truth
+		 * rather than assuming its own last write.
+		 *
+		 * Parsed before it is believed (root AGENTS.md §6) — the colour lands
+		 * in a native `<input type="color">`, which reads anything but
+		 * `#rrggbb` as black without a word. A strip that cannot answer, or
+		 * answers in a shape this build does not read, simply keeps showing
+		 * the default: worth a warning, not a broken panel.
+		 */
+		async getStripLighting(id: ParticipantId): Promise<void> {
+			let answer: CapabilityResponse;
+			try {
+				answer = await backendApi.invoke('run_capability', {
+					participant: id,
+					request: { type: 'TwinklyGetLighting' },
+				});
+			} catch (error) {
+				console.warn(`could not read what ${id} is showing`, error);
+				return;
+			}
+
+			const parsed = safeParse(
+				StripLighting,
+				answer.type === 'Lighting' ? answer.value : undefined,
+			);
+			if (!parsed.success) {
+				console.warn(`${id} answered in an unexpected shape`, answer);
+				return;
+			}
+
+			patchState(store, (state) => ({
+				stripLighting: { ...state.stripLighting, [id]: parsed.output },
+			}));
+		},
+
+		/**
+		 * Light the strip with its stored colour, or turn it dark.
+		 *
+		 * The store is patched before the wire answers: the switch belongs to
+		 * the hand that flipped it, and snapping back while a slow device
+		 * thinks reads as refusal. A write that fails is logged by the queue
+		 * and the next read reports what is actually true.
+		 */
+		setStripPower(id: ParticipantId, on: boolean): void {
+			patchState(store, (state) => ({
+				stripLighting: {
+					...state.stripLighting,
+					[id]: { ...this.stripLightingFor(id), on },
+				},
+			}));
+			store._stripWrites.push(id, () =>
+				backendApi.invoke('run_capability', {
+					participant: id,
+					request: { type: 'TwinklySetPower', args: { on } },
+				}),
+			);
+		},
+
+		/**
+		 * Store a static colour on the strip — shown at once if it is lit.
+		 *
+		 * Through the queue, because the picker fires continuously while a
+		 * colour is being dragged; see `LatestWins` for why sending them all
+		 * would be worse than skipping to the newest.
+		 */
+		setStripColor(id: ParticipantId, color: string): void {
+			patchState(store, (state) => ({
+				stripLighting: {
+					...state.stripLighting,
+					[id]: { ...this.stripLightingFor(id), color },
+				},
+			}));
+			store._stripWrites.push(id, () =>
+				backendApi.invoke('run_capability', {
+					participant: id,
+					request: { type: 'TwinklySetColor', args: { color } },
+				}),
+			);
 		},
 
 		// ── groups ────────────────────────────────────────────────────────────
@@ -493,19 +699,7 @@ export const ApplicationStore = signalStore(
 
 			const found = await backendApi.invoke('twinkly_devices', {});
 
-			const discovered = found.map(
-				(strip) =>
-					({
-						__type: 'device',
-						kind: 'strip',
-						// The backend's identifier, taken as it is: it is keyed
-						// by MAC so it survives a change of address, and nothing
-						// here may read it to work out what it is.
-						id: strip.participant,
-						name: strip.name,
-						visual: 'assets/modules/twinkly.png',
-					}) satisfies Device,
-			);
+			const discovered = found.map(toStrip);
 
 			patchState(store, { discovered });
 			return discovered;
@@ -519,29 +713,39 @@ export const ApplicationStore = signalStore(
 
 			const result = await backendApi.invoke('devices', {});
 
-			const devices = result.map((r) => {
-				const vendorId = r.vendor_id.toString().padStart(4, '0');
-				const productId = r.product_id.toString().padStart(4, '0');
-
-				return {
-					__type: 'device',
-					kind: r.kind,
-					// ⚠️ The serial, because that is what the rest of the backend
-					// names a participant by. Built from `vendor-product` this
-					// matched nothing against a real daemon, and every tile in a
-					// group showed a raw serial with no picture.
-					id: r.serial,
-					name: r.name,
-					// The picture is per model, so it stays keyed on the ids that
-					// identify a model rather than a unit. A model with no
-					// picture in the repository simply has none — the card drops
-					// an image it cannot load rather than showing it broken.
-					visual: `assets/devices/${vendorId}-${productId}.png`,
-				} satisfies Device;
-			}); // TODO: write wrapper here + validator
+			const devices = result.map(toDevice); // TODO: write wrapper here + validator
 
 			patchState(store, { wired: devices });
 			return devices;
+		},
+
+		/**
+		 * Follow the backend's pushes, so plug and unplug reach the screen
+		 * without a reload. Called once at bootstrap.
+		 *
+		 * The Twinkly watch is asserted here from the saved preference: the
+		 * backend must not sweep a network it was asked to leave alone, and it
+		 * cannot read this interface's localStorage itself.
+		 */
+		async watchForChanges(): Promise<void> {
+			await backendApi.invoke('watch_twinkly', {
+				enabled: store.sources().twinkly,
+			});
+
+			await backendApi.listen('devices_changed', (found) => {
+				// The switch silences the events too: off means off, not "off
+				// until something is plugged in".
+				if (!store.sources().chroma) return;
+				patchState(store, { wired: found.map(toDevice) });
+				// Membership bookkeeping follows the list: a device that
+				// arrived is claimable, one that left no longer is.
+				void this.getGroups();
+			});
+
+			await backendApi.listen('twinkly_devices_changed', (found) => {
+				if (!store.sources().twinkly) return;
+				patchState(store, { discovered: found.map(toStrip) });
+			});
 		},
 		async getModules(): Promise<Module[]> {
 			const result = await backendApi.invoke('modules', {});

@@ -10,11 +10,18 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use openrazer::backend::{dbus::DbusBackend, DeviceBackend};
+use app_lib::capability::TwinklyPool;
 use app_lib::razer::engine::ambience::{Ambience, MotionSource};
 use app_lib::razer::engine::cadence::Cadence;
 use app_lib::razer::engine::frame::Rgb;
 use app_lib::razer::engine::group::Conductor;
+use openrazer::backend::{dbus::DbusBackend, DeviceBackend};
+
+/// An empty pool: these tests drive Razer devices only, and an empty pool is
+/// exactly what a machine with no Twinkly has.
+fn no_strips() -> TwinklyPool {
+    TwinklyPool::default()
+}
 
 const HUNTSMAN: &str = "XX0000000226";
 const BASILISK: &str = "XX0000000088";
@@ -62,8 +69,14 @@ async fn two_groups_draw_different_ambiences_at_once() {
         .create("Quiet", ids(&[KRAKEN]), still(Rgb::new(40, 0, 60)))
         .unwrap();
 
-    conductor.start(desk, backend.clone()).await.unwrap();
-    conductor.start(quiet, backend.clone()).await.unwrap();
+    conductor
+        .start(desk, backend.clone(), &no_strips())
+        .await
+        .unwrap();
+    conductor
+        .start(quiet, backend.clone(), &no_strips())
+        .await
+        .unwrap();
     tokio::time::sleep(Duration::from_millis(300)).await;
 
     let status = conductor.status();
@@ -91,7 +104,10 @@ async fn a_group_can_be_prepared_and_run_later() {
     assert!(!conductor.is_running(evening));
     assert!(!conductor.group(evening).unwrap().started);
 
-    conductor.start(evening, backend).await.unwrap();
+    conductor
+        .start(evening, backend, &no_strips())
+        .await
+        .unwrap();
     assert!(conductor.group(evening).unwrap().started);
 
     conductor.stop(evening).await;
@@ -108,7 +124,7 @@ async fn changing_a_running_group_takes_effect_without_a_restart() {
     let id = conductor
         .create("Desk", ids(&[HUNTSMAN]), still(Rgb::new(255, 0, 0)))
         .unwrap();
-    conductor.start(id, backend).await.unwrap();
+    conductor.start(id, backend, &no_strips()).await.unwrap();
     tokio::time::sleep(Duration::from_millis(100)).await;
 
     let blue = still(Rgb::new(0, 0, 255));
@@ -130,7 +146,7 @@ async fn the_first_run_lights_everything_in_one_group() {
     let serials = backend.list_devices().await.unwrap();
     let mut conductor = Conductor::with_everything(serials.clone(), moving());
 
-    conductor.start_marked(backend).await;
+    conductor.start_marked(backend, &no_strips()).await;
     tokio::time::sleep(Duration::from_millis(300)).await;
 
     let status = &conductor.status()[0];
@@ -149,7 +165,10 @@ async fn removing_a_group_stops_it_and_frees_its_participants() {
     let id = conductor
         .create("Desk", ids(&[HUNTSMAN, BASILISK]), moving())
         .unwrap();
-    conductor.start(id, backend.clone()).await.unwrap();
+    conductor
+        .start(id, backend.clone(), &no_strips())
+        .await
+        .unwrap();
 
     conductor.remove(id).await.unwrap();
 
@@ -172,8 +191,14 @@ async fn each_group_keeps_its_own_cadence() {
     let slow = conductor.create("Slow", ids(&[KRAKEN]), moving()).unwrap();
     conductor.set_cadence(slow, Cadence::Slow).unwrap();
 
-    conductor.start(fast, backend.clone()).await.unwrap();
-    conductor.start(slow, backend.clone()).await.unwrap();
+    conductor
+        .start(fast, backend.clone(), &no_strips())
+        .await
+        .unwrap();
+    conductor
+        .start(slow, backend.clone(), &no_strips())
+        .await
+        .unwrap();
     tokio::time::sleep(Duration::from_millis(1300)).await;
 
     let status = conductor.status();

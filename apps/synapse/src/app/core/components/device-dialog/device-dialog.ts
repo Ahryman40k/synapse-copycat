@@ -20,6 +20,7 @@ import { CameraPageComponent } from '../../../domains/devices/camera-page/camera
 import { KeyboardPageComponent } from '../../../domains/devices/keyboard-page/keyboard-page';
 import { MousePageComponent } from '../../../domains/devices/mouse-page/mouse-page';
 import { MousematPageComponent } from '../../../domains/devices/mousemat-page/mousemat-page';
+import { StripPage } from '../../../domains/devices/strip-page/strip-page';
 
 /** Everything the dialog shows, gathered by whoever opens it. */
 export type DeviceDetail = {
@@ -44,6 +45,7 @@ const PAGES: Partial<Record<Device['kind'], Type<unknown>>> = {
 	keyboard: KeyboardPageComponent,
 	mousemat: MousematPageComponent,
 	streaming: CameraPageComponent,
+	strip: StripPage,
 };
 
 /**

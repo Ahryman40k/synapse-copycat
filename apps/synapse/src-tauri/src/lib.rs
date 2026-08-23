@@ -1,7 +1,9 @@
+pub mod capability;
 mod commands;
 mod discovery;
 mod lifecycle;
 pub mod razer;
+mod watch;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -23,6 +25,11 @@ pub fn run() {
         .setup(|app| {
             lifecycle::install(app)?;
 
+            // Hotplug, forwarded for the window's whole life. The Twinkly
+            // poller is not spawned here: the frontend owns that preference
+            // and asserts it through `watch_twinkly` once it has read it.
+            watch::spawn_razer(app.handle().clone());
+
             if cfg!(debug_assertions) {
                 app.handle().plugin(
                     tauri_plugin_log::Builder::default()
@@ -33,9 +40,11 @@ pub fn run() {
             Ok(())
         })
         .manage(state)
+        .manage(watch::TwinklyWatch::default())
         .invoke_handler(tauri::generate_handler![
             commands::devices,
             commands::twinkly_devices,
+            commands::watch_twinkly,
             // commands::modules,
             commands::run_capability,
             // ── groups ──

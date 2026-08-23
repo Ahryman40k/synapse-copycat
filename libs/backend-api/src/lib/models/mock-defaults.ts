@@ -1,5 +1,6 @@
 import type { Mock } from './mock';
 import { mockGroups } from './mock-groups';
+import { mockTwinkly } from './mock-twinkly';
 
 /**
  * Answers for the commands a test or story does not exercise.
@@ -27,6 +28,8 @@ export function unusedCommands(): Mock {
 		devices: [],
 		modules: [],
 		twinkly_devices: [],
+		watch_twinkly: null,
 		...mockGroups([]),
+		...mockTwinkly([]),
 	};
 }

@@ -81,3 +81,43 @@ describe('BackendApi Service', () => {
 		await expect(service.invoke('modules', {})).rejects.toThrowError(/modules/);
 	});
 });
+
+/**
+ * The event channel, in mock mode: `listen` holds the handler and `emit` is
+ * the test's hand on the backend's lever. Under Tauri neither branch runs —
+ * `listen` goes to the real channel and `emit` refuses.
+ */
+describe('BackendApi Service, events', () => {
+	it('carries an emitted event to a listener', async () => {
+		const service = new BackendApiService(mock);
+		const seen: unknown[] = [];
+
+		await service.listen('twinkly_devices_changed', (found) => {
+			seen.push(found);
+		});
+		service.emit('twinkly_devices_changed', []);
+
+		expect(seen).toEqual([[]]);
+	});
+
+	it('stops carrying after the unsubscribe', async () => {
+		const service = new BackendApiService(mock);
+		const seen: unknown[] = [];
+
+		const unlisten = await service.listen('devices_changed', (found) => {
+			seen.push(found);
+		});
+		unlisten();
+		service.emit('devices_changed', []);
+
+		expect(seen).toEqual([]);
+	});
+
+	it('refuses to emit without a mock', () => {
+		// Under Tauri the Rust backend is the only emitter; a test that could
+		// emit past it would pass against a channel the app never uses.
+		const service = new BackendApiService(undefined);
+
+		expect(() => service.emit('devices_changed', [])).toThrowError(/mock/);
+	});
+});

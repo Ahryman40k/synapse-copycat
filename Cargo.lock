@@ -2788,9 +2788,11 @@ checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
 name = "openrazer"
 version = "0.1.0"
 dependencies = [
+ "futures",
  "reqwest 0.12.28",
  "serde",
  "thiserror 2.0.20",
+ "tokio",
  "zbus",
 ]
 
@@ -4961,6 +4963,8 @@ checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
 name = "twinkly"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
+ "getrandom 0.3.4",
  "reqwest 0.12.28",
  "serde",
  "serde_json",

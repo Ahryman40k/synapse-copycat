@@ -1,0 +1,9 @@
+// Structure only — nothing here needs a colour of its own: the panel, the
+// switch and the picker each carry their own theme.
+
+h2 {
+  margin: 0;
+  font-size: 1rem;
+  // The label reads LIGHTING whatever the markup says, like every panel title.
+  text-transform: uppercase;
+}

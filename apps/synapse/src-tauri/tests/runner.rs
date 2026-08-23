@@ -12,11 +12,18 @@ use std::time::{Duration, Instant};
 
 use tokio::sync::watch;
 
-use openrazer::backend::{dbus::DbusBackend, DeviceBackend};
+use app_lib::capability::TwinklyPool;
 use app_lib::razer::engine::ambience::{Ambience, MotionSource};
 use app_lib::razer::engine::cadence::{Achieved, Cadence};
 use app_lib::razer::engine::frame::{Geometry, Rgb};
 use app_lib::razer::engine::runner::Runner;
+use openrazer::backend::{dbus::DbusBackend, DeviceBackend};
+
+/// An empty pool: these tests drive Razer devices only, and an empty pool is
+/// exactly what a machine with no Twinkly has.
+fn no_strips() -> TwinklyPool {
+    TwinklyPool::default()
+}
 
 const HUNTSMAN: &str = "XX0000000226"; // 9 x 22
 const KRAKEN: &str = "XX0000000527"; // no matrix
@@ -45,18 +52,24 @@ fn moving() -> Ambience {
 async fn attaches_to_each_device_as_it_can_be_driven() {
     let backend = backend().await;
 
-    let keyboard = Runner::attach(backend.clone(), HUNTSMAN).await.unwrap();
+    let keyboard = Runner::attach(backend.clone(), &no_strips(), HUNTSMAN)
+        .await
+        .unwrap();
     assert!(keyboard.is_painted());
     assert_eq!(keyboard.geometry(), Geometry::new(9, 22));
 
     // No matrix at all: it belongs to the ambience through a single averaged
     // colour, which is not a failure to handle but the only thing it can show.
-    let headset = Runner::attach(backend.clone(), KRAKEN).await.unwrap();
+    let headset = Runner::attach(backend.clone(), &no_strips(), KRAKEN)
+        .await
+        .unwrap();
     assert!(!headset.is_painted());
 
     // And one that *has* a matrix of exactly one pixel. Painting it would cost
     // a round trip per frame to say what setStatic says once.
-    let mousemat = Runner::attach(backend.clone(), GOLIATHUS).await.unwrap();
+    let mousemat = Runner::attach(backend.clone(), &no_strips(), GOLIATHUS)
+        .await
+        .unwrap();
     assert!(!mousemat.is_painted());
 }
 
@@ -64,7 +77,9 @@ async fn attaches_to_each_device_as_it_can_be_driven() {
 #[ignore = "needs the fake daemon: scripts/openrazer-fake.sh start"]
 async fn runs_until_the_ambience_channel_closes() {
     let backend = backend().await;
-    let runner = Runner::attach(backend, HUNTSMAN).await.unwrap();
+    let runner = Runner::attach(backend, &no_strips(), HUNTSMAN)
+        .await
+        .unwrap();
     let (ambience, receiver) = watch::channel(moving());
 
     let task = tokio::spawn(runner.run(receiver, Cadence::Normal, None));
@@ -83,7 +98,9 @@ async fn runs_until_the_ambience_channel_closes() {
 #[ignore = "needs the fake daemon: scripts/openrazer-fake.sh start"]
 async fn reports_what_the_cadence_actually_cost() {
     let backend = backend().await;
-    let runner = Runner::attach(backend, HUNTSMAN).await.unwrap();
+    let runner = Runner::attach(backend, &no_strips(), HUNTSMAN)
+        .await
+        .unwrap();
     let (ambience, receiver) = watch::channel(moving());
     let (report, mut achieved) = watch::channel(Achieved {
         requested: Cadence::Normal,
@@ -127,7 +144,9 @@ async fn drives_a_whole_setup_at_once() {
 
     let mut tasks = Vec::new();
     for serial in [HUNTSMAN, KRAKEN, GOLIATHUS, "XX0000000088", "XX000000022B"] {
-        let runner = Runner::attach(backend.clone(), serial).await.unwrap();
+        let runner = Runner::attach(backend.clone(), &no_strips(), serial)
+            .await
+            .unwrap();
         tasks.push(tokio::spawn(runner.run(
             receiver.clone(),
             Cadence::Normal,
@@ -156,7 +175,9 @@ async fn drives_a_whole_setup_at_once() {
 #[ignore = "needs the fake daemon: scripts/openrazer-fake.sh start"]
 async fn follows_the_ambience_when_it_changes() {
     let backend = backend().await;
-    let runner = Runner::attach(backend, HUNTSMAN).await.unwrap();
+    let runner = Runner::attach(backend, &no_strips(), HUNTSMAN)
+        .await
+        .unwrap();
     let (ambience, receiver) = watch::channel(Ambience::still(Rgb::new(255, 0, 0)));
 
     let task = tokio::spawn(runner.run(receiver, Cadence::Normal, None));

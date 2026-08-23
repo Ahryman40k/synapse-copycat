@@ -29,6 +29,6 @@ mod device;
 mod discovery;
 mod error;
 
-pub use device::{Device, Gestalt};
+pub use device::{Device, Gestalt, Mode};
 pub use discovery::{decode_reply, discover, probe, Discovered};
 pub use error::{Error, Result};

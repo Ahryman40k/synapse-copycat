@@ -15,3 +15,8 @@ tokio = { workspace = true }
 # stack for a protocol that never uses one costs build time and a system
 # dependency for nothing.
 reqwest = { version = "0.12", default-features = false, features = ["json"] }
+# The login challenge — 32 random bytes, base64-encoded. Both crates are
+# already in the workspace's dependency tree through Tauri, so neither adds a
+# build.
+base64 = "0.22"
+getrandom = "0.3"

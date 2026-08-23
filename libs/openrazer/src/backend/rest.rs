@@ -278,4 +278,21 @@ impl DeviceBackend for RestBackend {
         let serial = serial.to_owned();
         Box::pin(async move { Err(BackendError::InterfaceUnsupported(serial)) })
     }
+
+    fn hotplug_events(
+        &self,
+    ) -> BoxFuture<'_, Result<tokio::sync::mpsc::Receiver<super::Hotplug>, BackendError>> {
+        Box::pin(async move {
+            // The REST bridge has no push channel, so the subscription
+            // succeeds and never speaks. The sender is parked in a task so the
+            // channel stays open — closing it would read as the daemon being
+            // lost, which is not what "no events here" means.
+            let (sender, receiver) = tokio::sync::mpsc::channel(1);
+            tokio::spawn(async move {
+                let _keep_open = sender;
+                std::future::pending::<()>().await;
+            });
+            Ok(receiver)
+        })
+    }
 }

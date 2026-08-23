@@ -9,10 +9,15 @@ license.workspace = true
 [dependencies]
 serde = { workspace = true }
 thiserror = { workspace = true }
+# The hotplug channel: the subscription hands back an mpsc receiver and a
+# spawned task feeds it. Already in the tree through zbus and Tauri.
+tokio = { workspace = true }
 
 # Linux only
 [target.'cfg(target_os = "linux")'.dependencies]
 zbus = { version = "5.12.0", features = ["tokio"] }
+# `StreamExt::next` on zbus's signal streams, nothing more.
+futures = { version = "0.3", default-features = false, features = ["std"] }
 
 # Windows only
 [target.'cfg(target_os = "windows")'.dependencies]

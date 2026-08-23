@@ -2,11 +2,12 @@ use std::sync::Arc;
 
 use tokio::sync::Mutex;
 
-use openrazer::backend::{BackendError, DeviceBackend};
+use crate::capability::TwinklyPool;
 use crate::razer::engine::ambience::Ambience;
 use crate::razer::engine::frame::Rgb;
 use crate::razer::engine::group::{Conductor, GroupId, GroupStatus, ParticipantId};
 use crate::razer::persistence;
+use openrazer::backend::{BackendError, DeviceBackend};
 
 /// Tauri managed state. Holds the platform backend behind a trait object
 /// so all command handlers are platform-agnostic.
@@ -35,6 +36,11 @@ pub struct RazerState {
     reason: Option<String>,
 
     conductor: Mutex<Conductor>,
+
+    /// Every Twinkly a sweep has seen. Here rather than its own managed state
+    /// because the engine needs it when a group starts: a strip participant is
+    /// driven through the same handle — and the same session — its page uses.
+    strips: Arc<TwinklyPool>,
 
     /// Where the groups are written. `None` when neither `XDG_CONFIG_HOME` nor
     /// `HOME` is set, in which case the app still runs — it just forgets.
@@ -67,13 +73,28 @@ impl RazerState {
             backend,
             reason,
             conductor: Mutex::new(conductor),
+            strips: Arc::new(TwinklyPool::default()),
             config_path,
         };
 
         if let Ok(backend) = state.backend_handle() {
-            state.conductor.lock().await.start_marked(backend).await;
+            // ⚠️ At startup the pool is empty — no sweep has run — so a saved
+            // group holding a strip reports it skipped until the group is
+            // started again after the dashboard's first sweep.
+            state
+                .conductor
+                .lock()
+                .await
+                .start_marked(backend, &state.strips)
+                .await;
         }
         state
+    }
+
+    /// The Twinklys, for the commands that talk to one and for discovery to
+    /// fill.
+    pub fn strips(&self) -> &TwinklyPool {
+        &self.strips
     }
 
     async fn initial_conductor(
@@ -162,7 +183,7 @@ impl RazerState {
         let backend = self.backend_handle()?;
         let mut conductor = self.conductor.lock().await;
         conductor
-            .start(id, backend)
+            .start(id, backend, &self.strips)
             .await
             .map_err(|error| BackendError::Protocol(error.to_string()))?;
         self.persist(&conductor);

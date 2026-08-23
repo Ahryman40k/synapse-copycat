@@ -61,6 +61,15 @@ BackendCommands        the contract: one entry per command, wire shapes
 supposed to keep the two in sync: adding a command makes every existing mock
 object incomplete, and TypeScript points at each place to fill in.
 
+**Events go the other way.** `BackendEvents` (one entry per Tauri event the
+Rust side emits — see `src-tauri/src/watch.rs`) types `listen(event, handler)`
+on the service. Under the mock nothing fires on its own; the handler is held,
+and a test or story drives it with `service.emit(event, payload)` — the same
+subscription path the running app uses, with the test's hand on the backend's
+lever. `emit` throws without a mock, so nothing can emit past the real backend.
+Every event payload is exactly what the matching command answers, so no second
+shape exists to drift.
+
 ⚠️ **That safety net is currently not armed.** Vitest transpiles through esbuild,
 which strips types without checking them, and the workspace has no `typecheck`
 target. So a mock whose shape is wrong compiles, runs, and passes green. There

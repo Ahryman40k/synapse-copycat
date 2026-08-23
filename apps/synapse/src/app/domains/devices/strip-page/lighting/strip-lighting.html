@@ -1,0 +1,7 @@
+<device-layout [device]="device()">
+  <strip-lighting-panel
+    [lighting]="lighting()"
+    (powerChange)="onPowerChange($event)"
+    (colorChange)="onColorChange($event)"
+  ></strip-lighting-panel>
+</device-layout>

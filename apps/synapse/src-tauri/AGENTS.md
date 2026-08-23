@@ -89,21 +89,29 @@ everything above the trait boundary is identical.
                     frontend (Tauri IPC)
                             │
                             ▼
-  commands.rs        run_capability(serial, request) / list_devices()
+  commands.rs        run_capability(participant, request) / list_devices()
                             │
-                            ▼
-  dispatch.rs        dispatch(backend, serial, request)
-                            │
-  request.rs         CapabilityRequest ──impl From──► Box<dyn Capability>
-                            │                        (pure routing table)
-                            ▼
-  capabilities/*     Capability::execute(backend, serial) -> CapabilityResponse
+  capability.rs      AnyCapabilityRequest — routed on the request type
+              ┌─────────────┴────────────────┐
+              ▼ Razer                        ▼ Twinkly*
+  dispatch.rs        dispatch(…)      TwinklyPool::execute(participant, …)
+                            │                │
+  request.rs         CapabilityRequest       │  participant → twinkly::Device,
+                            │                │  filled by every discovery sweep
+                            ▼                ▼
+  capabilities/*     Capability::execute   libs/twinkly (HTTP, xled)
                             │
                             ▼
   backend/mod.rs     trait DeviceBackend      ← the platform boundary
                        ├── backend/dbus.rs    (cfg linux,   zbus)
                        └── backend/rest.rs    (cfg windows, reqwest)
 ```
+
+The first argument is a `ParticipantId` — a Razer serial or `twinkly-<mac>` —
+which is why it is no longer called `serial`. The Razer half of the union lives
+in the openrazer crate; the Twinkly half lives here in `src/capability.rs`,
+because the protocol crates know nothing of each other and the application is
+the only place a cross-protocol type can exist.
 
 `state.rs` picks the implementation once at startup via `#[cfg(target_os = …)]`
 and stores it as `Box<dyn DeviceBackend>` in Tauri managed state. Unsupported
@@ -125,7 +133,14 @@ Do not "modernise" these signatures to `async fn`. It will not compile against
 
 ## Adding a capability
 
-Six edits, in this order. The first five are Rust, the sixth is TypeScript.
+**A Twinkly capability is three edits**: the device method in `libs/twinkly`
+(if the protocol call does not exist yet), a `TwinklyCapabilityRequest` variant
+plus its `execute` arm in `src/capability.rs`, and the entry in the TypeScript
+`CapabilityRequest` union in `libs/backend-api` — which is deliberately
+narrower than what Rust accepts, growing entry by entry like the mock.
+
+**A Razer capability is six edits**, in this order. The first five are Rust,
+the sixth is TypeScript.
 
 **1. `backend/mod.rs`** — add the method to the `DeviceBackend` trait, in the
 matching section (`── dpi ──`, `── lighting.chroma ──`, …):
@@ -214,6 +229,17 @@ that behaviour: one flaky peripheral must not blank the dashboard.
 Commands live in `commands.rs`, annotated `#[tauri::command]`, and must be added
 to `tauri::generate_handler![]` in `lib.rs`. **Forgetting the registration is a
 runtime error, not a compile error** — the frontend `invoke` just rejects.
+
+## Events — the backend pushing
+
+`src/watch.rs` is the other direction: Tauri events the backend emits without
+being asked. OpenRazer's `device_added`/`device_removed` DBus signals are
+forwarded as `devices_changed`; a poller re-sweeps for Twinklys while the
+frontend says to (`watch_twinkly` — the backend half of the sources switch)
+and emits `twinkly_devices_changed` when the list differs. **Every payload is
+exactly what the matching command answers**, and each event name must be
+mirrored in `BackendEvents` in `libs/backend-api` — like `BackendCommands`,
+that mirror is hand-written and nothing verifies it.
 
 ---
 

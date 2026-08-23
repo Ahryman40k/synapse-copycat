@@ -10,11 +10,18 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use openrazer::backend::{dbus::DbusBackend, DeviceBackend};
+use app_lib::capability::TwinklyPool;
 use app_lib::razer::engine::ambience::{Ambience, MotionSource};
 use app_lib::razer::engine::cadence::Cadence;
 use app_lib::razer::engine::frame::Rgb;
 use app_lib::razer::engine::Engine;
+use openrazer::backend::{dbus::DbusBackend, DeviceBackend};
+
+/// An empty pool: these tests drive Razer devices only, and an empty pool is
+/// exactly what a machine with no Twinkly has.
+fn no_strips() -> TwinklyPool {
+    TwinklyPool::default()
+}
 
 async fn backend() -> Arc<dyn DeviceBackend> {
     Arc::new(
@@ -44,7 +51,7 @@ async fn drives_every_device_it_is_given() {
     let backend = backend().await;
     let serials = every_device(&backend).await;
 
-    let engine = Engine::start(backend, &serials, moving(), Cadence::Normal).await;
+    let engine = Engine::start(backend, &no_strips(), &serials, moving(), Cadence::Normal).await;
 
     assert_eq!(engine.device_count(), serials.len());
     assert!(engine.skipped().is_empty(), "{:?}", engine.skipped());
@@ -68,7 +75,7 @@ async fn a_device_it_cannot_reach_is_skipped_not_fatal() {
     let mut serials = every_device(&backend).await;
     serials.push("XXNOTADEVICE".to_string());
 
-    let engine = Engine::start(backend, &serials, moving(), Cadence::Normal).await;
+    let engine = Engine::start(backend, &no_strips(), &serials, moving(), Cadence::Normal).await;
 
     // A peripheral unplugged between enumeration and here must not cost the
     // user the ambience on everything else.
@@ -87,6 +94,7 @@ async fn changing_the_ambience_is_one_send() {
     let serials = every_device(&backend).await;
     let engine = Engine::start(
         backend,
+        &no_strips(),
         &serials,
         Ambience::still(Rgb::new(255, 0, 0)),
         Cadence::Normal,
@@ -106,7 +114,7 @@ async fn changing_the_ambience_is_one_send() {
 async fn reports_what_each_device_costs() {
     let backend = backend().await;
     let serials = every_device(&backend).await;
-    let engine = Engine::start(backend, &serials, moving(), Cadence::Normal).await;
+    let engine = Engine::start(backend, &no_strips(), &serials, moving(), Cadence::Normal).await;
 
     // The meters report about once a second.
     tokio::time::sleep(Duration::from_millis(1400)).await;
@@ -164,7 +172,14 @@ async fn dropping_the_engine_stops_the_drawing() {
     let serials = every_device(&backend).await;
 
     {
-        let _engine = Engine::start(backend.clone(), &serials, moving(), Cadence::Normal).await;
+        let _engine = Engine::start(
+            backend.clone(),
+            &no_strips(),
+            &serials,
+            moving(),
+            Cadence::Normal,
+        )
+        .await;
         tokio::time::sleep(Duration::from_millis(100)).await;
         // Falls out of scope here, taking the ambience sender with it.
     }

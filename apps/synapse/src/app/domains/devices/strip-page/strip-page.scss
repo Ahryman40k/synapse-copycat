@@ -1,0 +1,7 @@
+// The same frame as every device page — see mousemat-page.scss for why the
+// children stretch rather than centre.
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}

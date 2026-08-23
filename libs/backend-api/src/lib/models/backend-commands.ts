@@ -1,4 +1,5 @@
 import type { Ambience } from './ambience';
+import type { CapabilityRequest, CapabilityResponse } from './capability';
 import type { Device } from './device';
 import type { Cadence, GroupId, GroupStatus, ParticipantId } from './group';
 import type { Module } from './module';
@@ -60,6 +61,31 @@ export type BackendCommands = {
 			leds: number;
 			profile: string;
 		}[];
+	};
+
+	/**
+	 * One device capability, on any participant — a Razer serial or a
+	 * `twinkly-<mac>`. The request's `type` decides which protocol answers;
+	 * the caller never has to know. See `capability.ts` for the request and
+	 * response unions and for why they are narrower than what Rust accepts.
+	 */
+	run_capability: {
+		args: { participant: ParticipantId; request: CapabilityRequest };
+		options: Record<string, never>;
+		returnType: CapabilityResponse;
+	};
+
+	/**
+	 * Turn the backend's Twinkly poller on or off — the backend half of the
+	 * sources switch. While on, the network is re-swept every few seconds and
+	 * a change arrives as a `twinkly_devices_changed` event; off means off,
+	 * exactly like the switch promises. Idempotent, so the preference can be
+	 * asserted at every launch.
+	 */
+	watch_twinkly: {
+		args: { enabled: boolean };
+		options: Record<string, never>;
+		returnType: null;
 	};
 
 	// ── groups ────────────────────────────────────────────────────────────────

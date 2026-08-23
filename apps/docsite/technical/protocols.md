@@ -50,17 +50,26 @@ A participant is keyed by **MAC**, not by address: a device that takes a new
 lease overnight is the same device, and a group that named it by address would
 quietly lose it.
 
-### ⚠️ What is missing
+### What works, and what to know
 
-Discovery and `gestalt` work; a Twinkly appears in the device list and can be
-put into a group, where it is reported as one the engine could not drive. What
-is not written yet:
+Discovery, `gestalt`, **authentication** (the challenge login, a token the
+device expires after four hours, one re-login on a 401), **static control**
+(`led/mode`, `led/color` — the strip's page can light it, darken it and set its
+one colour) and **real-time mode** (v3 datagrams on UDP port 7777, generation
+II firmware 2.4.14+) are written. A Twinkly in a group is driven like any other
+participant: the ambience is composed across the string's LEDs and streamed as
+frames, with the engine's usual per-device pacing.
 
-- **Authentication** — a token obtained by a challenge and renewed periodically.
-- **Real-time mode** — frames pushed over UDP on port 7777.
+Three behaviours worth knowing:
 
-Until those exist, a Twinkly is visible and not drivable, and the interface says
-so rather than pretending.
+- Frames are sent even when nothing changed — they are what keeps the device
+  in rt mode, and `rt` is re-asserted over HTTP every few seconds so an
+  expired token or a device that wandered back to movie mode heals itself.
+- A stopped group leaves the strip showing the last frame's **average** as its
+  static colour: rt mode cannot "keep the last frame" the way a Razer device
+  does, because the device abandons it once frames stop.
+- ⚠️ None of this has been verified against a real device yet — it is written
+  to xled-docs, and the first run in Tauri mode is the check.
 
 ## Adding another
 

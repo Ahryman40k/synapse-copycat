@@ -52,6 +52,8 @@ use tokio::task::JoinHandle;
 
 use openrazer::backend::DeviceBackend;
 
+use crate::capability::TwinklyPool;
+
 use ambience::Ambience;
 use cadence::{Achieved, Cadence};
 use runner::Runner;
@@ -114,6 +116,7 @@ impl Engine {
     /// the ambience on everything else.
     pub async fn start(
         backend: Arc<dyn DeviceBackend>,
+        strips: &TwinklyPool,
         serials: &[String],
         ambience: Ambience,
         cadence: Cadence,
@@ -123,7 +126,7 @@ impl Engine {
         let mut skipped = Vec::new();
 
         for serial in serials {
-            match Runner::attach(backend.clone(), serial.clone()).await {
+            match Runner::attach(backend.clone(), strips, serial.clone()).await {
                 Ok(runner) => {
                     let painted = runner.is_painted();
                     // Seeded with a zero-frame figure rather than an Option: a

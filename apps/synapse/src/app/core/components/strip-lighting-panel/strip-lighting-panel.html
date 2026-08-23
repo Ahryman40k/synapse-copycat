@@ -1,0 +1,22 @@
+<syn-panel>
+  <h2>Lighting</h2>
+
+  <syn-switch
+    [checked]="lighting().on"
+    (checkedChange)="powerChange.emit($event)"
+  >
+    Lit
+  </syn-switch>
+
+  <!--
+    Enabled while the strip is dark, deliberately: choosing the colour first
+    and lighting it second is the natural order, and a disabled picker would
+    force the strip on before the colour is known.
+  -->
+  <syn-color-picker
+    [value]="lighting().color"
+    (valueChange)="onColorChange($event)"
+  >
+    Colour
+  </syn-color-picker>
+</syn-panel>

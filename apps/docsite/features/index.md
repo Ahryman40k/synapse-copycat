@@ -5,20 +5,22 @@ automated coverage; everything else says what is missing.
 
 ## At a glance
 
-| Capability                                | State                                              |
-| ----------------------------------------- | -------------------------------------------------- |
-| Enumerate Razer devices                   | ✅ Working (OpenRazer, DBus on Linux)              |
-| Groups: create, rename, remove            | ✅ Working, saved across restarts                  |
-| Move a participant between groups         | ✅ Working, by drag or without a pointer           |
-| Ambiences: colour, motion, brightness     | ✅ Working, composed and previewed live            |
-| Paint a device's matrix                   | ✅ Working, dirty rows only                        |
-| Per-device pacing when one cannot keep up | ✅ Working, and reported                           |
-| Interface colour follows the hardware     | ✅ Working, from the first group                   |
-| Discover Twinkly light strings            | ✅ Working — they appear in the device list        |
-| **Drive** a Twinkly                       | ❌ Not yet — see [protocols](/technical/protocols) |
-| Govee, Hue, Nanoleaf                      | ❌ Not started                                     |
-| Per-device settings (DPI, key bindings)   | ⚠️ Interface only — see below                      |
-| Live refresh of achieved frame rates      | ❌ Not yet — the figures update on reload          |
+| Capability                                | State                                                       |
+| ----------------------------------------- | ----------------------------------------------------------- |
+| Enumerate Razer devices                   | ✅ Working (OpenRazer, DBus on Linux)                       |
+| Groups: create, rename, remove            | ✅ Working, saved across restarts                           |
+| Move a participant between groups         | ✅ Working, by drag or without a pointer                    |
+| Ambiences: colour, motion, brightness     | ✅ Working, composed and previewed live                     |
+| Paint a device's matrix                   | ✅ Working, dirty rows only                                 |
+| Per-device pacing when one cannot keep up | ✅ Working, and reported                                    |
+| Interface colour follows the hardware     | ✅ Working, from the first group                            |
+| Discover Twinkly light strings            | ✅ Working — they appear in the device list                 |
+| Twinkly: lit/dark and one static colour   | ⚠️ New — written to xled-docs, unverified on a real strip   |
+| **Drive** a Twinkly from an ambience      | ⚠️ New — real-time frames over UDP, same caveat             |
+| Govee, Hue, Nanoleaf                      | ❌ Not started                                              |
+| Per-device settings (DPI, key bindings)   | ⚠️ Interface only — see below                               |
+| Device list follows plug and unplug       | ⚠️ New — DBus signals for Razer, a gated poller for Twinkly |
+| Live refresh of achieved frame rates      | ❌ Not yet — the figures update on reload                   |
 
 ## Groups and ambiences
 
@@ -78,9 +80,12 @@ interface breathe and a circadian one does not make it drift all day.
 
 ## ⚠️ Per-device settings do not reach the hardware
 
-The per-device pages — DPI, polling rate, key bindings, lighting effects — are
-**interface only**. Every control writes to application state and nothing else:
-not one of them calls the backend. They are a design that is built and not yet
-wired.
+The per-device pages for Razer devices — DPI, polling rate, key bindings,
+lighting effects — are **interface only**. Every control writes to application
+state and nothing else: not one of them calls the backend. They are a design
+that is built and not yet wired.
+
+The one exception is the **strip page**: its switch and colour go over the wire
+to the Twinkly, and what it shows was read back from the device.
 
 What _does_ reach the hardware is the group's ambience. That path is complete.

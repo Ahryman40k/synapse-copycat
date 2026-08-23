@@ -1,5 +1,6 @@
 use tauri::State;
 
+use crate::capability::{AnyCapabilityRequest, AnyCapabilityResponse};
 use crate::discovery::TwinklyDevice;
 use crate::razer::engine::ambience::Ambience;
 use crate::razer::engine::cadence::Cadence;
@@ -7,7 +8,6 @@ use crate::razer::engine::group::{GroupError, GroupId, GroupStatus, ParticipantI
 use openrazer::{
     backend::{BackendError, DeviceBackend},
     dispatch::dispatch,
-    request::{CapabilityRequest, CapabilityResponse},
 };
 
 use crate::razer::{
@@ -15,16 +15,27 @@ use crate::razer::{
     state::RazerState,
 };
 
-/// Invoke any device capability by serial + typed request.
-/// Works identically on Linux (DBus) and Windows (REST) —
-/// the backend is resolved transparently via the trait object in RazerState.
+/// Invoke any device capability by participant + typed request.
+///
+/// One command across every protocol: the request's discriminator decides
+/// whether it goes to the platform Razer backend (DBus on Linux, REST on
+/// Windows) or to a Twinkly over HTTP — see `capability.rs`. The first
+/// argument is a `ParticipantId` (a Razer serial, or `twinkly-<mac>`), which
+/// is why it is no longer called `serial`.
 #[tauri::command]
 pub async fn run_capability(
-    serial: String,
-    request: CapabilityRequest,
+    participant: String,
+    request: AnyCapabilityRequest,
     state: State<'_, RazerState>,
-) -> Result<CapabilityResponse, BackendError> {
-    dispatch(state.backend()?, &serial, request).await
+) -> Result<AnyCapabilityResponse, BackendError> {
+    match request {
+        AnyCapabilityRequest::Razer(request) => dispatch(state.backend()?, &participant, request)
+            .await
+            .map(AnyCapabilityResponse::Razer),
+        AnyCapabilityRequest::Twinkly(request) => {
+            state.strips().execute(&participant, request).await
+        }
+    }
 }
 
 /// List all connected device serials.
@@ -32,7 +43,12 @@ pub async fn run_capability(
 pub async fn devices(state: State<'_, RazerState>) -> Result<Vec<Device>, BackendError> {
     let backend = state.backend()?;
     let serials = backend.list_devices().await?;
+    Ok(enumerate(backend, &serials).await)
+}
 
+/// Every reported device, enriched. Shared by the `devices` command and the
+/// hotplug watcher, so an event carries exactly what a fetch would answer.
+pub(crate) async fn enumerate(backend: &dyn DeviceBackend, serials: &[String]) -> Vec<Device> {
     // Fetch misc info for all devices concurrently
     let futures: Vec<_> = serials
         .iter()
@@ -42,7 +58,7 @@ pub async fn devices(state: State<'_, RazerState>) -> Result<Vec<Device>, Backen
     let results = futures::future::join_all(futures).await;
 
     // Log failures but don't abort — return whatever succeeded
-    Ok(results
+    results
         .into_iter()
         .zip(serials.iter())
         .filter_map(|(result, serial)| match result {
@@ -52,7 +68,7 @@ pub async fn devices(state: State<'_, RazerState>) -> Result<Vec<Device>, Backen
                 None
             }
         })
-        .collect())
+        .collect()
 }
 
 async fn fetch_device(backend: &dyn DeviceBackend, serial: &str) -> Result<Device, BackendError> {
@@ -92,8 +108,32 @@ pub async fn groups(state: State<'_, RazerState>) -> Result<Vec<GroupStatus>, Ba
 /// list that is only refreshed at startup is wrong the moment someone plugs
 /// something in. The sweep costs a couple of seconds and 254 small datagrams.
 #[tauri::command]
-pub async fn twinkly_devices() -> Result<Vec<TwinklyDevice>, BackendError> {
-    Ok(crate::discovery::twinkly_devices().await)
+pub async fn twinkly_devices(
+    state: State<'_, RazerState>,
+) -> Result<Vec<TwinklyDevice>, BackendError> {
+    // An unreachable network answers an empty list here, not an error: the
+    // dashboard shows what could be found, and "nothing" is what that is.
+    Ok(crate::discovery::twinkly_devices(state.strips())
+        .await
+        .unwrap_or_else(|error| {
+            eprintln!("warn: twinkly discovery failed — {error}");
+            Vec::new()
+        }))
+}
+
+/// Turn the Twinkly poller on or off — the backend half of the sources switch.
+///
+/// The interface holds the preference (it survives in its localStorage), so it
+/// is the one that says. The backend must never sweep a network it was asked
+/// to leave alone, which is why the poller cannot simply always run.
+#[tauri::command]
+pub async fn watch_twinkly(
+    enabled: bool,
+    app: tauri::AppHandle,
+    watch: State<'_, crate::watch::TwinklyWatch>,
+) -> Result<(), BackendError> {
+    crate::watch::set_twinkly_watch(app, &watch, enabled).await;
+    Ok(())
 }
 
 /// The devices no group has claimed. Not driven and not broken — worth showing,

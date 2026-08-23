@@ -23,6 +23,8 @@ use serde::{Deserialize, Serialize};
 
 use openrazer::backend::DeviceBackend;
 
+use crate::capability::TwinklyPool;
+
 use super::ambience::Ambience;
 use super::cadence::Cadence;
 use super::{DeviceStatus, Engine, Skipped};
@@ -247,12 +249,20 @@ impl Conductor {
         &mut self,
         id: GroupId,
         backend: Arc<dyn DeviceBackend>,
+        strips: &TwinklyPool,
     ) -> Result<(), GroupError> {
         self.require(id)?;
         self.stop(id).await;
 
         let group = self.group(id).expect("checked").clone();
-        let engine = Engine::start(backend, &group.members, group.ambience, group.cadence).await;
+        let engine = Engine::start(
+            backend,
+            strips,
+            &group.members,
+            group.ambience,
+            group.cadence,
+        )
+        .await;
         self.running.insert(id, engine);
         self.group_mut(id).started = true;
         Ok(())
@@ -271,7 +281,7 @@ impl Conductor {
 
     /// Starts every group marked as started. What launch does, once there is a
     /// saved configuration to restore.
-    pub async fn start_marked(&mut self, backend: Arc<dyn DeviceBackend>) {
+    pub async fn start_marked(&mut self, backend: Arc<dyn DeviceBackend>, strips: &TwinklyPool) {
         let wanted: Vec<GroupId> = self
             .groups
             .iter()
@@ -279,7 +289,7 @@ impl Conductor {
             .map(|group| group.id)
             .collect();
         for id in wanted {
-            let _ = self.start(id, backend.clone()).await;
+            let _ = self.start(id, backend.clone(), strips).await;
         }
     }
 
