@@ -133,6 +133,33 @@ describe('DashboardPage', () => {
 	// ⚠️ The dialog is rendered into the CDK's overlay container, which is
 	// attached to the body and not to the fixture. `screen` reaches it; a query
 	// scoped to the rendered component would not.
+	it('removes a group, after asking', async () => {
+		// ⚠️ Two presses. The groups are written to disk as soon as they change,
+		// so a mis-click is a rebuild and there is no undo.
+		const { fixture, store } = await setup(['XX0000000088']);
+
+		click('Remove All devices').click();
+		fixture.detectChanges();
+		click('Remove').click();
+
+		await waitFor(() => {
+			expect(store.groups()).toHaveLength(0);
+		});
+		// The participant is not deleted with it — it goes back to waiting.
+		expect(store.unassigned()).toContain('XX0000000088');
+	});
+
+	it('leaves a group alone when the removal is backed out of', async () => {
+		const { fixture, store } = await setup(['XX0000000088']);
+
+		click('Remove All devices').click();
+		fixture.detectChanges();
+		click('Keep it').click();
+		fixture.detectChanges();
+
+		expect(store.groups()).toHaveLength(1);
+	});
+
 	it('creates a group, empty and stopped', async () => {
 		const { fixture } = await setup(['XX0000000088']);
 

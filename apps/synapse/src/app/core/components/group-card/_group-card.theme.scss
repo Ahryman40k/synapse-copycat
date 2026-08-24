@@ -63,16 +63,40 @@
     }
   }
 
-  // Destructive, and deliberately quiet until reached for: it is one click
-  // away from throwing away an arrangement, and it sits in a disclosure that
-  // has to be opened first.
+  // Quiet at rest and unmistakable on approach. It is in the header now, where
+  // someone would look for it, so what stops a mis-click is the second press
+  // rather than the button being hard to find.
   group-card .group-card__remove {
-    border-color: var(--syn-outline);
     color: var(--syn-on-surface-variant);
 
     &:hover {
-      border-color: var(--syn-error);
+      background-color: var(--syn-surface-variant);
       color: var(--syn-error);
     }
+
+    &:focus-visible {
+      outline: 2px solid var(--syn-primary);
+    }
+  }
+
+  group-card .group-card__confirm {
+    border-color: var(--syn-error);
+    background-color: var(--syn-surface-variant);
+    color: var(--syn-on-surface);
+  }
+
+  group-card .group-card__keep {
+    border-color: var(--syn-outline);
+    color: var(--syn-on-surface);
+
+    &:hover {
+      border-color: var(--syn-primary);
+    }
+  }
+
+  group-card .group-card__really {
+    border-color: var(--syn-error);
+    background-color: var(--syn-error);
+    color: var(--syn-on-error);
   }
 }

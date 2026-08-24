@@ -124,9 +124,50 @@ h3 {
   border-width: 0;
 }
 
+// In the header, beside the switch. Small and unlabelled: it is one of three
+// things on that row and the only destructive one, so it earns an icon rather
+// than words that would compete with the name.
 .group-card__remove {
-  align-self: flex-start;
-  padding: 0.25rem 0.5rem;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+
+  border: none;
+  border-radius: 0.25rem;
+  background: none;
+  cursor: pointer;
+}
+
+.group-card__confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  padding: 0.5rem 0.75rem;
+  border: 1px solid;
+  border-radius: 0.25rem;
+
+  p {
+    flex: 1 1 12rem;
+    margin: 0;
+    font-size: 0.8125rem;
+  }
+}
+
+.group-card__confirm-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.group-card__keep,
+.group-card__really {
+  padding: 0.25rem 0.75rem;
   border: 1px solid;
   border-radius: 0.25rem;
   background: none;

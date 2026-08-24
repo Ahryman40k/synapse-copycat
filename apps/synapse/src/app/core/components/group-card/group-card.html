@@ -32,7 +32,66 @@
       [checked]="running()"
       (checkedChange)="startedChange.emit($event)"
     ></syn-switch>
+
+    <!--
+      Where someone would look for it. This lived at the bottom of the closed
+      disclosure, under the whole ambience panel — quiet enough to be
+      unfindable, which is a different thing from quiet.
+    -->
+    <button
+      type="button"
+      class="group-card__remove"
+      [attr.aria-label]="'Remove ' + group().name"
+      (click)="confirming.set(true)"
+    >
+      <svg viewBox="0 0 16 16" aria-hidden="true" width="13" height="13">
+        <path
+          fill="currentColor"
+          d="M6 1h4v1h4v2H2V2h4V1zM3 5h10l-.8 10H3.8L3 5zm3 2v6h1V7H6zm3 0v6h1V7H9z"
+        />
+      </svg>
+    </button>
   </div>
+
+  <!--
+    Two deliberate presses, not one. Removing a group throws away an
+    arrangement and there is no undo, so the second press says what it costs —
+    the participants are not deleted, they go back to waiting.
+  -->
+  @if (confirming()) {
+    <div
+      class="group-card__confirm"
+      role="group"
+      [attr.aria-label]="'Remove ' + group().name + '?'"
+    >
+      <p>
+        Remove {{ group().name }}?
+        @if (memberCount()) {
+          Its {{ memberCount() }} participant{{
+            memberCount() === 1 ? '' : 's'
+          }}
+          go back to waiting for a group.
+        }
+      </p>
+
+      <div class="group-card__confirm-actions">
+        <button
+          type="button"
+          class="group-card__keep"
+          (click)="confirming.set(false)"
+        >
+          Keep it
+        </button>
+        <button
+          type="button"
+          class="group-card__really"
+          (click)="confirmRemoval()"
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  }
 
   <ambience-preview
     [ambience]="ambience()"
@@ -69,10 +128,6 @@
         [ambience]="ambience()"
         (ambienceChange)="ambienceChange.emit($event)"
       ></ambience-panel>
-
-      <button type="button" class="group-card__remove" (click)="removed.emit()">
-        Remove this group
-      </button>
     </div>
   </details>
 

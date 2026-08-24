@@ -355,3 +355,35 @@ export const AlreadyHere: Story = {
 		).not.toBeInTheDocument();
 	},
 };
+
+/**
+ * Removing a group.
+ *
+ * ⚠️ It used to sit at the bottom of the closed disclosure, under the whole
+ * ambience panel — "quiet until reached for", which in practice meant nobody
+ * found it. It is in the header now, and what stops a mis-click is the second
+ * press rather than the button being hard to see.
+ */
+export const Removing: Story = {
+	name: 'Removing a group',
+	decorators: [moduleMetadata({ imports: [GroupCardStoryHost] })],
+	args: { status: desk, catalogue: CATALOGUE },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+
+		// Findable without opening anything.
+		await userEvent.click(canvas.getByRole('button', { name: 'Remove Desk' }));
+
+		// And the second press says what it costs: the participants are not
+		// deleted, they go back to waiting.
+		await expect(
+			canvas.getByText(/Its 3 participants go back to waiting/),
+		).toBeVisible();
+
+		// Backing out leaves everything alone.
+		await userEvent.click(canvas.getByRole('button', { name: 'Keep it' }));
+		await expect(
+			canvas.queryByRole('button', { name: 'Remove' }),
+		).not.toBeInTheDocument();
+	},
+};

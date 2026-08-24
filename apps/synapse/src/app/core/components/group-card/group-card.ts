@@ -110,6 +110,14 @@ export class GroupCard {
 	protected readonly renaming = signal(false);
 
 	/**
+	 * Waiting for a second press before removing the group.
+	 *
+	 * Two presses rather than one because there is no undo: the groups are
+	 * written to disk as soon as they change, so a mis-click is a rebuild.
+	 */
+	protected readonly confirming = signal(false);
+
+	/**
 	 * ⚠️ `read: ElementRef` is required. `syn-text-field` is a component, so a
 	 * bare `viewChild` hands back its instance, not its element — the type said
 	 * `ElementRef`, the optional chain swallowed the mismatch, and the focus
@@ -194,6 +202,11 @@ export class GroupCard {
 	protected onDropped(event: CdkDragDrop<GroupStatus['group']['id']>): void {
 		if (event.previousContainer === event.container) return;
 		this.participantDropped.emit(event.item.data as ParticipantId);
+	}
+
+	protected confirmRemoval(): void {
+		this.confirming.set(false);
+		this.removed.emit();
 	}
 
 	protected onCadence(value: string | undefined): void {
