@@ -172,7 +172,19 @@ impl RazerState {
 
     /// Everything the daemon reports that no group has claimed.
     pub async fn unassigned(&self) -> Result<Vec<ParticipantId>, BackendError> {
-        let all = self.backend()?.list_devices().await?;
+        // ⚠️ No daemon means "no Razer devices", **not** "no participants".
+        // This used to refuse outright, which on a machine with a light string
+        // and no Razer hardware took the whole dashboard down with it: the
+        // frontend read the groups and this in one go, so the refusal buried
+        // the groups too and nothing could be created or filled.
+        //
+        // A live call that fails is still an error — that is a fault worth
+        // surfacing, and a different thing from hardware that was never there.
+        let all = match self.backend() {
+            Ok(backend) => backend.list_devices().await?,
+            Err(_) => Vec::new(),
+        };
+
         let conductor = self.conductor.lock().await;
         Ok(conductor.unassigned(&all).into_iter().cloned().collect())
     }

@@ -655,3 +655,59 @@ describe('ApplicationStore, sources', () => {
 		expect(store.discovered()).toEqual([]);
 	});
 });
+
+/**
+ * A machine with a light string and no Razer hardware.
+ *
+ * ⚠️ This is the shape of a real failure: `unassigned_participants` refused
+ * because there was no daemon to list, the store read it alongside the groups
+ * in one `Promise.all`, and the refusal buried them. The dashboard showed no
+ * groups, and creating one appeared to do nothing — every group command
+ * re-reads through `getGroups`, and the re-read threw.
+ */
+describe('ApplicationStore, with half the backend answering', () => {
+	const setup = () => {
+		TestBed.configureTestingModule({
+			providers: [
+				provideBackendApi(
+					withMock({
+						...unusedCommands(),
+						...mockGroups(['aaa']),
+						unassigned_participants: () => {
+							throw new Error('The OpenRazer daemon is unavailable');
+						},
+					}),
+				),
+			],
+		});
+		return TestBed.inject(ApplicationStore);
+	};
+
+	it('still reads the groups when the daemon cannot be asked', async () => {
+		const store = setup();
+
+		await store.getGroups();
+
+		expect(store.groups()).toHaveLength(1);
+	});
+
+	it('still creates a group', async () => {
+		// The command succeeded in the backend; it was the re-read that threw,
+		// so the interface never saw what it had just made.
+		const store = setup();
+		await store.getGroups();
+
+		const outcome = await store.createGroup('Desk', [], still('#00ff00'));
+
+		expect(outcome).toEqual({ ok: true });
+		expect(store.groups().map(({ group }) => group.name)).toContain('Desk');
+	});
+
+	it('leaves the tray empty rather than the page', async () => {
+		const store = setup();
+
+		await store.getGroups();
+
+		expect(store.claimable()).toEqual([]);
+	});
+});

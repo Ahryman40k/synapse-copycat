@@ -51,3 +51,26 @@ async fn names_the_missing_daemon_rather_than_blaming_the_transport() {
         Err(other) => panic!("expected DaemonUnavailable, got {other:?}"),
     }
 }
+
+/// The groups are the application's own, not the daemon's.
+///
+/// ⚠️ This is what broke a dashboard on a machine with a Twinkly and no Razer
+/// hardware. `unassigned_participants` refused because there was no daemon to
+/// list, and the frontend read it alongside the groups — so a refusal about
+/// hardware nobody owns hid the groups, and nothing could be created or filled.
+#[tokio::test]
+async fn groups_survive_a_missing_daemon() {
+    let state = RazerState::new().await;
+
+    // Answers, rather than refusing: no daemon means no Razer devices, and a
+    // participant found over the network is not the daemon's business.
+    let unassigned = state.unassigned().await;
+    assert!(
+        unassigned.is_ok(),
+        "a missing daemon must not hide the groups: {unassigned:?}"
+    );
+
+    // Nothing in the list, because nothing was found — which is a different
+    // answer from refusing to say.
+    assert_eq!(unassigned.unwrap(), Vec::<String>::new());
+}

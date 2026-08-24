@@ -539,13 +539,46 @@ export const ApplicationStore = signalStore(
 		// precisely so the interface can offer to move it. Thrown, that name
 		// would have to be dug back out of an error message.
 
+		/**
+		 * Read the groups, and who is unclaimed.
+		 *
+		 * ⚠️ **Two independent answers, read independently.** They were a single
+		 * `Promise.all`, and one refusal took the other down with it: on a
+		 * machine with a light string and no Razer hardware,
+		 * `unassigned_participants` refused because there was no daemon to
+		 * list, so the groups never arrived either. The dashboard showed none,
+		 * and every group command appeared to do nothing — because each one
+		 * re-reads through here, and the re-read threw.
+		 *
+		 * The backend no longer refuses that particular question, and this no
+		 * longer lets one answer bury another. Both were wrong; either alone
+		 * would have hidden the other.
+		 */
 		async getGroups(): Promise<GroupStatus[]> {
-			const [groups, claimable] = await Promise.all([
+			const [groups, claimable] = await Promise.allSettled([
 				backendApi.invoke('groups', {}),
 				backendApi.invoke('unassigned_participants', {}),
 			]);
-			patchState(store, { groups, claimable });
-			return groups;
+
+			if (groups.status === 'fulfilled') {
+				patchState(store, { groups: groups.value });
+			} else {
+				console.warn('[synapse] could not read the groups', groups.reason);
+			}
+
+			if (claimable.status === 'fulfilled') {
+				patchState(store, { claimable: claimable.value });
+			} else {
+				// Not fatal, and not silent: the tray will be short of whatever
+				// the backend could not enumerate, and the groups above are
+				// still worth showing.
+				console.warn(
+					'[synapse] could not read the unclaimed participants',
+					claimable.reason,
+				);
+			}
+
+			return store.groups();
 		},
 
 		async createGroup(
