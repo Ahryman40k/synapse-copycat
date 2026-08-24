@@ -1,5 +1,14 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { Panel } from '@synapse-copycat/ui';
+import {
+	ChangeDetectionStrategy,
+	Component,
+	computed,
+	inject,
+} from '@angular/core';
+import type { GroupId, Wallpaper } from '@synapse-copycat/backend-api';
+import { Button, Panel } from '@synapse-copycat/ui';
+import { AmbiencePreview } from '../../core/components/ambience-preview/ambience-preview';
+import { ApplicationStore } from '../../core/stores/application-store';
+import { WallpapersStore } from '../../core/stores/wallpapers-store';
 
 /**
  * Wallpapers, the colours in them, and the groups they drive.
@@ -7,37 +16,79 @@ import { Panel } from '@synapse-copycat/ui';
  * Three parts, and the middle one is what makes it worth having:
  *
  * 1. **A library of images** — a folder the user points at.
- * 2. **The colours in each** — a handful pulled out of the picture, not one
+ * 2. **The colours in each** — a handful cut out of the picture, not one
  *    average, which on most photographs is mud.
- * 3. **Applied to a group** — the wallpaper is set *and* the lighting takes a
- *    colour from it, so the desk and the display agree.
+ * 3. **Applied to a group** — the lighting takes the picture's colours.
  *
- * Only the third step touches anything that already exists: a group's ambience
- * takes a fixed colour today, and handing it one is a call that is already
- * written.
+ * Two of the three work. ⚠️ Setting the wallpaper itself does not, and the page
+ * says so: there is no common way in on Linux, so it needs an adapter per
+ * desktop rather than a call.
  *
- * ⚠️ **Nothing is wired**, and the hard part is not the interface. Setting a
- * wallpaper on Linux means driving whatever the user's desktop uses, and there
- * is no common way in:
- *
- * - **GNOME** — `gsettings set org.gnome.desktop.background picture-uri`, and
- *   `picture-uri-dark` separately, or a light theme keeps the old one.
- * - **KDE Plasma** — no setting to write. It takes a Plasma script over DBus,
- *   evaluated by the shell.
- * - **XFCE** — `xfconf-query`, once per monitor and per workspace, because the
- *   property path contains both.
- * - **swww, hyprpaper** and the other daemons used with tiling window managers
- *   — their own client, or their own socket, and each one different.
- *
- * So this is a set of adapters, not a call. Whichever land will say which ones
- * were found on the machine rather than offering one control that silently does
- * nothing on three desktops out of four.
+ * The library lives in `WallpapersStore`; the only thing that reaches the
+ * application store is a **palette**, handed to a group. `ApplicationStore` has
+ * no idea an image was involved, which is what keeps a second source of colours
+ * — a camera, a theme file, one picked off the screen — from having to be
+ * threaded through it as another special case.
  */
 @Component({
 	selector: 'backgrounds-page',
 	templateUrl: './backgrounds-page.html',
 	styleUrl: './backgrounds-page.scss',
-	imports: [Panel],
+	imports: [AmbiencePreview, Button, Panel],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BackgroundsPage {}
+export class BackgroundsPage {
+	readonly #store = inject(ApplicationStore);
+	readonly #library = inject(WallpapersStore);
+
+	protected readonly folder = this.#library.folder;
+	protected readonly wallpapers = this.#library.wallpapers;
+	protected readonly reading = this.#library.reading;
+	protected readonly chosen = this.#library.chosen;
+
+	protected readonly groups = this.#store.groups;
+
+	/** What that palette would look like on a device, before committing to it. */
+	protected readonly preview = computed(() => {
+		const chosen = this.chosen();
+		if (!chosen) return undefined;
+
+		return {
+			colour: {
+				type: 'palette' as const,
+				colours: chosen.palette,
+				// Held still: this palette is about the picture, and drifting
+				// loses the mapping.
+				turnsPerSecond: 0,
+			},
+			motion: { type: 'none' as const },
+			brightness: { type: 'fixed' as const, level: 1 },
+		};
+	});
+
+	protected choose(): Promise<void> {
+		return this.#library.chooseFolder();
+	}
+
+	protected reread(): Promise<unknown> {
+		return this.#library.read();
+	}
+
+	protected pick(wallpaper: Wallpaper): void {
+		this.#library.choose(wallpaper);
+	}
+
+	/**
+	 * Hand the picture's colours to a group.
+	 *
+	 * ⚠️ The lighting only. The wallpaper is not set, because nothing here can
+	 * set one yet — and doing half of it silently would be worse than doing
+	 * half of it out loud.
+	 */
+	protected async apply(group: GroupId): Promise<void> {
+		const ambience = this.preview();
+		if (!ambience) return;
+
+		await this.#store.setGroupAmbience(group, ambience);
+	}
+}

@@ -2,28 +2,107 @@
 
 <p class="backgrounds-page__lead">
   A folder of images, the colours in each of them, and a group to give those
-  colours to. Setting the wallpaper and setting the lighting become one gesture,
-  so the desk and the display agree.
+  colours to.
 </p>
 
-<syn-panel class="backgrounds-page__plan">
-  <h2>What it will do</h2>
-  <ol>
-    <li>Keep a library of images from a folder you point at.</li>
-    <li>
-      Pull a handful of colours out of each — not one average, which on most
-      photographs is mud.
-    </li>
-    <li>
-      Apply one to a group: the wallpaper is set and the lighting takes a colour
-      from the same picture.
-    </li>
-  </ol>
-  <p>
-    Only the last step touches anything that exists today — a group's ambience
-    already takes a fixed colour, and handing it one is a call that is written.
+<div class="backgrounds-page__folder">
+  <button syn-button type="button" (click)="choose()">Choose a folder…</button>
+
+  @if (folder(); as folder) {
+    <span class="backgrounds-page__path">{{ folder }}</span>
+    <button syn-button variant="secondary" type="button" (click)="reread()">
+      Read it again
+    </button>
+  }
+</div>
+
+@if (reading()) {
+  <!--
+    Said out loud: every image is decoded and cut, which takes a moment on a
+    folder of photographs. Silence here reads as a page that has hung.
+  -->
+  <p class="backgrounds-page__quiet">
+    Reading the folder — decoding each image…
   </p>
-</syn-panel>
+} @else if (!folder()) {
+  <p class="backgrounds-page__quiet">No folder chosen yet.</p>
+} @else if (!wallpapers().length) {
+  <p class="backgrounds-page__quiet">
+    Nothing in that folder this can read. It looks for images, and does not walk
+    into subfolders.
+  </p>
+} @else {
+  <section class="backgrounds-page__grid">
+    @for (wallpaper of wallpapers(); track wallpaper.path) {
+      <button
+        type="button"
+        class="backgrounds-page__image"
+        [class.backgrounds-page__image--chosen]="
+          chosen()?.path === wallpaper.path
+        "
+        [attr.aria-pressed]="chosen()?.path === wallpaper.path"
+        (click)="pick(wallpaper)"
+      >
+        <img [src]="wallpaper.thumbnail" alt="" />
+        <span class="backgrounds-page__name">{{ wallpaper.name }}</span>
+
+        <!--
+          The colours under the picture, in the order they will be laid along a
+          device — which is the order the extractor returns them in.
+        -->
+        <span class="backgrounds-page__swatches">
+          @for (colour of wallpaper.palette; track $index) {
+            <span
+              class="backgrounds-page__swatch"
+              [style.background-color]="colour"
+            ></span>
+          }
+        </span>
+      </button>
+    }
+  </section>
+}
+
+@if (chosen(); as chosen) {
+  <syn-panel class="backgrounds-page__apply">
+    <h2>{{ chosen.name }}</h2>
+
+    <!--
+      What the palette becomes, before committing to it. The same component the
+      dashboard uses, so what is shown here is what will be shown there.
+    -->
+    @if (preview(); as preview) {
+      <ambience-preview
+        [ambience]="preview"
+        [ariaLabel]="chosen.name + ' as an ambience'"
+      ></ambience-preview>
+    }
+
+    <p class="backgrounds-page__quiet">
+      ⚠️ This gives the colours to a group. It does not set the wallpaper —
+      nothing here can yet.
+    </p>
+
+    @if (groups().length) {
+      <div class="backgrounds-page__targets">
+        @for (status of groups(); track status.group.id) {
+          <button
+            syn-button
+            variant="secondary"
+            type="button"
+            (click)="apply(status.group.id)"
+          >
+            Give to {{ status.group.name }}
+          </button>
+        }
+      </div>
+    } @else {
+      <p class="backgrounds-page__quiet">
+        No group to give them to. Make one on the dashboard.
+      </p>
+    }
+  </syn-panel>
+}
 
 <!--
   The page states the problem rather than offering a control that works on some

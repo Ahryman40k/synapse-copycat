@@ -10,9 +10,35 @@
 
   backgrounds-page .backgrounds-page__lead,
   backgrounds-page dd,
-  backgrounds-page ol,
-  backgrounds-page .backgrounds-page__plan p,
+  backgrounds-page .backgrounds-page__path,
+  backgrounds-page .backgrounds-page__quiet,
   backgrounds-page .backgrounds-page__pending p {
     color: var(--syn-on-surface-variant);
+  }
+
+  backgrounds-page .backgrounds-page__image {
+    border-color: color-mix(
+      in srgb,
+      var(--syn-primary) 45%,
+      var(--syn-surface-container)
+    );
+    background-color: var(--syn-surface-container);
+    color: var(--syn-on-surface);
+
+    &:hover {
+      border-color: var(--syn-primary);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--syn-primary);
+      outline-offset: 2px;
+    }
+  }
+
+  // The chosen one, marked by a filled border rather than a tick: the tile is
+  // mostly picture, and something small in a corner is lost against it.
+  backgrounds-page .backgrounds-page__image--chosen {
+    border-color: var(--syn-primary);
+    box-shadow: inset 0 0 0 1px var(--syn-primary);
   }
 }

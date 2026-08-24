@@ -3,6 +3,7 @@ import type { CapabilityRequest, CapabilityResponse } from './capability';
 import type { Device } from './device';
 import type { Cadence, GroupId, GroupStatus, ParticipantId } from './group';
 import type { Module } from './module';
+import type { Wallpaper } from './wallpaper';
 
 export type BackendCommands = {
 	devices: {
@@ -50,6 +51,36 @@ export type BackendCommands = {
 	 * empty for a device that answered discovery but not HTTP: it exists and
 	 * saying nothing about it would look like it had been missed.
 	 */
+	/**
+	 * Ask for a folder of wallpapers, with the platform's own picker.
+	 *
+	 * `null` when the dialog was dismissed. ⚠️ Not an error: changing your mind
+	 * is not a failure, and an interface that apologises for it is worse than
+	 * one that says nothing.
+	 */
+	choose_wallpaper_folder: {
+		args: Record<string, never>;
+		options: Record<string, never>;
+		returnType: string | null;
+	};
+
+	/**
+	 * The images in a folder, each with a thumbnail and the colours in it.
+	 *
+	 * ⚠️ Decoding and cutting a folder of 4K photographs takes a moment, so this
+	 * is called deliberately rather than on every refresh.
+	 *
+	 * The thumbnail arrives as a `data:` URI rather than a path. The webview
+	 * cannot read an arbitrary path without opening the asset protocol to the
+	 * whole filesystem, and the browser path has no filesystem at all — one
+	 * shape works in both.
+	 */
+	wallpapers: {
+		args: { folder: string };
+		options: Record<string, never>;
+		returnType: Wallpaper[];
+	};
+
 	twinkly_devices: {
 		args: Record<string, never>;
 		options: Record<string, never>;

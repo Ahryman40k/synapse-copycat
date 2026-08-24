@@ -26,21 +26,93 @@ p {
   max-width: 44rem;
 }
 
-.backgrounds-page__plan,
-.backgrounds-page__pending {
+.backgrounds-page__pending,
+.backgrounds-page__apply {
   max-width: 44rem;
 }
 
-.backgrounds-page__plan {
+// The folder, and what to do with it, on one line until there is no room.
+.backgrounds-page__folder {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
   margin-bottom: 1rem;
 }
 
-ol {
-  margin: 0;
-  padding-left: 1.25rem;
+.backgrounds-page__path {
+  flex: 1 1 12rem;
+  min-width: 0;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8125rem;
+  // A long path truncates at the front: the folder is the end of it, and the
+  // home directory is the part nobody needs to read.
+  direction: rtl;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.backgrounds-page__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(14rem, 100%), 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.backgrounds-page__image {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.5rem;
+  padding: 0.5rem;
+
+  border: 1px solid;
+  border-radius: 0.5rem;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  img {
+    display: block;
+    width: 100%;
+    // A fixed box, so a portrait and a landscape make the same tile and the
+    // grid does not go ragged.
+    height: 7rem;
+    object-fit: cover;
+    border-radius: 0.25rem;
+  }
+}
+
+.backgrounds-page__name {
+  font-weight: 500;
+  font-size: 0.8125rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// The palette as a strip, in the order it will be laid along a device.
+.backgrounds-page__swatches {
+  display: flex;
+  height: 0.75rem;
+  border-radius: 0.25rem;
+  overflow: hidden;
+}
+
+.backgrounds-page__swatch {
+  flex: 1 1 0;
+}
+
+.backgrounds-page__apply {
+  margin-bottom: 1.5rem;
+}
+
+.backgrounds-page__targets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 // The desktop and what can be read from it, on one row each.

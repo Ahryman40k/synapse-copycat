@@ -10,11 +10,13 @@ import {
 	type Mock,
 	mockGroups,
 	mockTwinkly,
+	mockWallpapers,
 	provideBackendApi,
 	withMock,
 } from '@synapse-copycat/backend-api';
 import { appRoutes } from './app.routes';
 import { ApplicationStore } from './core/stores/application-store';
+import { WallpapersStore } from './core/stores/wallpapers-store';
 import { AmbienceTheme } from './core/theming/ambience-theme';
 import type { ApplicationConfig as Config } from './models/config';
 
@@ -30,6 +32,16 @@ export const baseProviders = [
 	// shell component.
 	provideAppInitializer(() => {
 		inject(AmbienceTheme);
+
+		// ⚠️ Asked for here so the wallpaper library is part of the shell rather
+		// than of the tab that shows it. Moving the file into `core/stores` was
+		// not enough and could not be: what lands in a lazy chunk is decided by
+		// the import graph, not by where a file sits, and the backgrounds page
+		// was the only thing importing it. Referenced from the application's own
+		// configuration, it is in the first bundle — so the folder is known
+		// before the tab is ever opened, and anything else that wants the
+		// palette can have it without dragging a page in behind it.
+		inject(WallpapersStore);
 	}),
 
 	// Plug and unplug, without a reload: the store subscribes to the backend's
@@ -141,6 +153,10 @@ export function makeAppConfig(config: Config) {
 				// group shows a raw identifier and no picture — which is what
 				// happened against a real daemon while this list held invented
 				// `<vendor>-<product>` strings.
+				// No filesystem in a browser and no native picker, so the folder
+				// and its pictures are invented — in the shape the backend sends.
+				...mockWallpapers(),
+
 				...mockGroups([
 					'XX0000000088',
 					'XX0000000226',

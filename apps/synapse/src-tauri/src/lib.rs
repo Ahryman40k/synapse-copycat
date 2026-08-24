@@ -3,6 +3,7 @@ mod commands;
 mod discovery;
 mod lifecycle;
 pub mod razer;
+mod wallpapers;
 mod watch;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -41,9 +42,15 @@ pub fn run() {
         })
         .manage(state)
         .manage(watch::TwinklyWatch::default())
+        // The folder picker is the one native dialog this application needs.
+        // `dialog:allow-open` in the capability, and nothing else — a save
+        // dialog it has no use for is a permission it should not hold.
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             commands::devices,
             commands::twinkly_devices,
+            commands::choose_wallpaper_folder,
+            commands::wallpapers,
             commands::watch_twinkly,
             // commands::modules,
             commands::run_capability,

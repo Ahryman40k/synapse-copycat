@@ -2,6 +2,7 @@ use tauri::State;
 
 use crate::capability::{AnyCapabilityRequest, AnyCapabilityResponse};
 use crate::discovery::TwinklyDevice;
+use crate::wallpapers::Wallpaper;
 use crate::razer::engine::ambience::Ambience;
 use crate::razer::engine::cadence::Cadence;
 use crate::razer::engine::group::{GroupError, GroupId, GroupStatus, ParticipantId};
@@ -134,6 +135,25 @@ pub async fn watch_twinkly(
 ) -> Result<(), BackendError> {
     crate::watch::set_twinkly_watch(app, &watch, enabled).await;
     Ok(())
+}
+
+/// Ask for a folder of wallpapers.
+///
+/// `None` when the dialog was dismissed. Not an error: changing your mind is
+/// not a failure, and reporting it as one makes the interface apologise for
+/// something the user did on purpose.
+#[tauri::command]
+pub async fn choose_wallpaper_folder(app: tauri::AppHandle) -> Result<Option<String>, BackendError> {
+    Ok(crate::wallpapers::choose_folder(&app))
+}
+
+/// The images in a folder, each with its palette and a thumbnail.
+///
+/// Reading and cutting a folder of 4K photographs takes a moment, so it is one
+/// call the interface makes deliberately rather than on every refresh.
+#[tauri::command]
+pub async fn wallpapers(folder: String) -> Result<Vec<Wallpaper>, BackendError> {
+    Ok(crate::wallpapers::wallpapers(&folder))
 }
 
 /// The devices no group has claimed. Not driven and not broken — worth showing,
