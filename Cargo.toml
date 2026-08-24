@@ -10,7 +10,12 @@
 # where anything lands.
 [workspace]
 resolver = "2"
-members = ["apps/synapse/src-tauri", "libs/openrazer", "libs/twinkly"]
+members = [
+	"apps/synapse/src-tauri",
+	"libs/openrazer",
+	"libs/palette",
+	"libs/twinkly",
+]
 
 [workspace.package]
 edition = "2021"

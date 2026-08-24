@@ -1,0 +1,22 @@
+[package]
+name = "palette"
+version = "0.1.0"
+description = "Pull a small palette out of an image, and a thumbnail to show beside it"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+thiserror = { workspace = true }
+
+# Only the formats a wallpaper is actually in. The default feature set pulls in
+# a dozen decoders — TIFF, DDS, farbfeld — that cost build time and answer no
+# question anyone here is asking.
+[dependencies.image]
+version = "0.25"
+default-features = false
+features = ["jpeg", "png", "webp", "gif", "bmp"]
+
+[dev-dependencies]
+# The tests build their own images rather than carrying fixture files.
+image = { version = "0.25", default-features = false }
