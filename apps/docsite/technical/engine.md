@@ -11,7 +11,7 @@ An ambience is three sources, chosen independently:
 
 ```rust
 Ambience {
-    colour:     Fixed { rgb } | Rainbow { turns_per_second, spread },
+    colour:     Fixed { rgb } | Rainbow { … } | Palette { colours, turns_per_second },
     motion:     None | Wave { laps_per_second, width } | Pulse { period },
     brightness: Fixed { level } | Circadian { day, night },
 }

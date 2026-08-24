@@ -170,7 +170,7 @@ impl Engine {
     }
 
     pub fn ambience(&self) -> Ambience {
-        *self.ambience.borrow()
+        self.ambience.borrow().clone()
     }
 
     pub fn cadence(&self) -> Cadence {

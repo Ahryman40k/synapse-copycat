@@ -128,7 +128,7 @@ async fn changing_a_running_group_takes_effect_without_a_restart() {
     tokio::time::sleep(Duration::from_millis(100)).await;
 
     let blue = still(Rgb::new(0, 0, 255));
-    conductor.set_ambience(id, blue).unwrap();
+    conductor.set_ambience(id, blue.clone()).unwrap();
     tokio::time::sleep(Duration::from_millis(150)).await;
 
     // One send down the watch channel — the engine is not rebuilt, so nothing

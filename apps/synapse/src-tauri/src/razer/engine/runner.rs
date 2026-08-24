@@ -206,7 +206,7 @@ impl Runner {
             if ambience.has_changed().is_err() {
                 break;
             }
-            let ambience_now = *ambience.borrow_and_update();
+            let ambience_now = ambience.borrow_and_update().clone();
 
             tick_number = tick_number.wrapping_add(1);
             if every > 1 && tick_number % every != 0 {

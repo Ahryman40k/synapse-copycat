@@ -86,10 +86,62 @@ function colourAt(
 ): Rgb {
 	if (source.type === 'fixed') return fromHex(source.rgb);
 
+	if (source.type === 'palette') {
+		return paletteAt(
+			source.colours,
+			source.turnsPerSecond,
+			column,
+			columns,
+			tick,
+		);
+	}
+
 	const across = columns > 1 ? column / (columns - 1) : 0;
 	return hueToRgb(
 		tick.seconds * source.turnsPerSecond + across * source.spread,
 	);
+}
+
+/**
+ * Where a column lands in a palette that wraps.
+ *
+ * Divided by the column count and not by one less — the same reason the wave
+ * is. Positions then sit at 0, 1/n … (n-1)/n, so the step from the last column
+ * back to the first is like every other and the blend does not hesitate once a
+ * lap.
+ *
+ * ⚠️ The blend is linear in sRGB, like the Rust one. Between two nearby hues —
+ * which is what an image gives — that is indistinguishable from anything
+ * better; between two opposite ones it passes through grey.
+ */
+function paletteAt(
+	colours: string[],
+	turnsPerSecond: number,
+	column: number,
+	columns: number,
+	tick: Tick,
+): Rgb {
+	if (colours.length === 0) return { r: 0, g: 0, b: 0 };
+	if (colours.length === 1) return fromHex(colours[0]);
+
+	const across = column / Math.max(1, columns);
+	const drift = tick.seconds * turnsPerSecond;
+	const position = ((((across + drift) % 1) + 1) % 1) * colours.length;
+
+	const first = Math.floor(position) % colours.length;
+	const second = (first + 1) % colours.length;
+	return blend(
+		fromHex(colours[first]),
+		fromHex(colours[second]),
+		position - Math.floor(position),
+	);
+}
+
+/** Straight-line mix of two colours, `amount` from the first to the second. */
+function blend(from: Rgb, to: Rgb, amount: number): Rgb {
+	const by = clampUnit(amount);
+	const mix = (a: number, b: number) => Math.round(a + (b - a) * by);
+	return { r: mix(from.r, to.r), g: mix(from.g, to.g), b: mix(from.b, to.b) };
 }
 
 function motionAt(

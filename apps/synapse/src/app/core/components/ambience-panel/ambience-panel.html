@@ -37,6 +37,55 @@
       ></syn-color-picker>
     }
 
+    @if (palette(); as palette) {
+      <!--
+        The colours in order, each editable in place. A row rather than a list
+        of fields: a palette is read as a strip, and the controls are laid out
+        the way the result will be.
+      -->
+      <div class="ambience-panel__palette">
+        @for (colour of palette.colours; track $index) {
+          <div class="ambience-panel__swatch">
+            <syn-color-picker
+              [ariaLabel]="'Palette colour ' + ($index + 1)"
+              [value]="colour"
+              [disabled]="disabled()"
+              (valueChange)="onPaletteColour($index, $event)"
+            ></syn-color-picker>
+
+            <button
+              type="button"
+              class="ambience-panel__drop"
+              [attr.aria-label]="'Remove palette colour ' + ($index + 1)"
+              [disabled]="disabled() || !canRemoveColour()"
+              (click)="removeColour($index)"
+            >
+              &times;
+            </button>
+          </div>
+        }
+
+        <button
+          type="button"
+          class="ambience-panel__add"
+          aria-label="Add a palette colour"
+          [disabled]="disabled() || !canAddColour()"
+          (click)="addColour()"
+        >
+          +
+        </button>
+      </div>
+
+      <div class="ambience-panel__settings">
+        <syn-slider
+          ariaLabel="Palette drift"
+          [value]="percent(palette.turnsPerSecond)"
+          [disabled]="disabled()"
+          (valueChange)="onPaletteDrift($event)"
+        ></syn-slider>
+      </div>
+    }
+
     @if (rainbow(); as rainbow) {
       <div class="ambience-panel__settings">
         <syn-slider

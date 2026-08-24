@@ -8,7 +8,7 @@ describe('StudioPage', () => {
 		expect(
 			screen.getByRole('heading', { name: 'Effect studio' }),
 		).toBeVisible();
-		expect(screen.getByText(/becomes a third choice/)).toBeVisible();
+		expect(screen.getByText(/becomes another choice/)).toBeVisible();
 	});
 
 	it('previews what is being built, and lets it be changed', async () => {

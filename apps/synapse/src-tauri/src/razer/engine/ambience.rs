@@ -68,7 +68,11 @@ impl Tick {
 }
 
 /// Where the hue comes from.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+///
+/// ⚠️ Not `Copy`, unlike the other two channels: `Palette` carries a `Vec`.
+/// That is what makes `Ambience` non-`Copy` too, and the reason a handful of
+/// call sites clone where they used to copy.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum ColourSource {
     /// One colour, chosen by the user or reported by a device.
@@ -82,6 +86,26 @@ pub enum ColourSource {
         /// How much of the wheel is visible across the matrix at once, in
         /// turns. 0 paints every LED the same hue.
         spread: f32,
+    },
+    /// A handful of colours, spread along the device and blended between.
+    ///
+    /// What an image gives you. Extracting a palette from a photograph and
+    /// laying it across the desk is the whole point — and it is parametric like
+    /// the other two, so the same palette reads on a 22-column keyboard, a
+    /// 50-LED string and a mousemat with one LED, none of which knows the
+    /// others exist. A pre-computed frame could not do that.
+    ///
+    /// It **wraps**: the last colour blends back into the first, so a band
+    /// travelling round the device meets no seam.
+    #[serde(rename_all = "camelCase")]
+    Palette {
+        /// In order. One colour paints everything; none paints nothing, which
+        /// is refused at the boundary rather than drawn.
+        colours: Vec<Rgb>,
+        /// Full turns of the palette per second. 0 holds it still, which is
+        /// what an image-derived palette usually wants — the mapping to the
+        /// picture is the point, and drifting loses it.
+        turns_per_second: f32,
     },
 }
 
@@ -134,7 +158,7 @@ pub enum BrightnessSource {
 }
 
 /// The three channels together.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Ambience {
     pub colour: ColourSource,
     pub motion: MotionSource,
@@ -186,9 +210,9 @@ impl Ambience {
 }
 
 impl ColourSource {
-    fn at(self, column: u8, geometry: Geometry, tick: Tick) -> Rgb {
+    fn at(&self, column: u8, geometry: Geometry, tick: Tick) -> Rgb {
         match self {
-            Self::Fixed { rgb } => rgb,
+            Self::Fixed { rgb } => *rgb,
             Self::Rainbow {
                 turns_per_second,
                 spread,
@@ -201,8 +225,57 @@ impl ColourSource {
                 let turn = tick.elapsed.as_secs_f32() * turns_per_second + across * spread;
                 hue_to_rgb(turn.rem_euclid(1.0))
             }
+            Self::Palette {
+                colours,
+                turns_per_second,
+            } => palette_at(colours, *turns_per_second, column, geometry, tick),
         }
     }
+}
+
+/// Where a column lands in a palette that wraps.
+///
+/// Divided by the column count and not by one less — the same reason the wave
+/// is. Positions then sit at 0, 1/n … (n-1)/n, so the step from the last column
+/// back to the first is like every other and the blend does not hesitate once
+/// a lap.
+///
+/// ⚠️ The blend is linear in sRGB. Between two nearby hues — which is what an
+/// image gives — that is indistinguishable from anything better. Between two
+/// opposite ones it passes through grey, because the straight line between
+/// them in RGB goes near the middle of the cube. Interpolating in OKLab would
+/// fix it and is not written: no palette in hand needs it yet, and guessing at
+/// the shape of a fix is how unused code arrives.
+fn palette_at(
+    colours: &[Rgb],
+    turns_per_second: f32,
+    column: u8,
+    geometry: Geometry,
+    tick: Tick,
+) -> Rgb {
+    match colours.len() {
+        // Refused at the boundary; drawn as black if it ever gets here, which
+        // is at least visibly wrong rather than a panic.
+        0 => Rgb::new(0, 0, 0),
+        1 => colours[0],
+        count => {
+            let across = f32::from(column) / f32::from(geometry.columns.max(1));
+            let drift = tick.elapsed.as_secs_f32() * turns_per_second;
+            let position = (across + drift).rem_euclid(1.0) * count as f32;
+
+            let first = position.floor() as usize % count;
+            let second = (first + 1) % count;
+            blend(colours[first], colours[second], position.fract())
+        }
+    }
+}
+
+/// Straight-line mix of two colours, `amount` from the first to the second.
+fn blend(from: Rgb, to: Rgb, amount: f32) -> Rgb {
+    let mix = |a: u8, b: u8| {
+        (f32::from(a) + (f32::from(b) - f32::from(a)) * amount.clamp(0.0, 1.0)).round() as u8
+    };
+    Rgb::new(mix(from.r, to.r), mix(from.g, to.g), mix(from.b, to.b))
 }
 
 impl MotionSource {
@@ -563,5 +636,127 @@ mod tests {
             ambience.compose(SINGLE, Tick::at(0.25)).get(0, 0),
             Rgb::BLACK
         );
+    }
+
+    // ── palette ──────────────────────────────────────────────────────────────
+
+    const BLUE: Rgb = Rgb::new(0, 0, 255);
+
+    fn palette(colours: &[Rgb]) -> Ambience {
+        Ambience {
+            colour: ColourSource::Palette {
+                colours: colours.to_vec(),
+                turns_per_second: 0.0,
+            },
+            motion: MotionSource::None,
+            brightness: BrightnessSource::Fixed { level: 1.0 },
+        }
+    }
+
+    #[test]
+    fn paints_a_single_palette_colour_everywhere() {
+        let frame = palette(&[RED]).compose(Geometry::new(1, 8), Tick::at(0.0));
+
+        for column in 0..8 {
+            assert_eq!(frame.get(0, column), RED);
+        }
+    }
+
+    #[test]
+    fn spreads_a_palette_along_the_columns() {
+        // Two colours over eight columns: the first is pure at column 0, and
+        // the middle of the run is where the second is pure.
+        let frame = palette(&[RED, BLUE]).compose(Geometry::new(1, 8), Tick::at(0.0));
+
+        assert_eq!(frame.get(0, 0), RED);
+        assert_eq!(frame.get(0, 4), BLUE);
+    }
+
+    #[test]
+    fn blends_between_palette_colours() {
+        // A quarter of the way is halfway from the first to the second.
+        let frame = palette(&[RED, BLUE]).compose(Geometry::new(1, 8), Tick::at(0.0));
+        let middle = frame.get(0, 2);
+
+        assert!(middle.r > 100 && middle.r < 160, "{middle:?}");
+        assert!(middle.b > 100 && middle.b < 160, "{middle:?}");
+    }
+
+    #[test]
+    fn wraps_the_palette_without_a_seam() {
+        // The last column is on its way back to the first colour, not stranded
+        // on the last one — otherwise a band travelling round meets a step.
+        let frame = palette(&[RED, BLUE]).compose(Geometry::new(1, 8), Tick::at(0.0));
+        let last = frame.get(0, 7);
+
+        assert!(last.r > 0, "the wrap never returns towards the first colour");
+        assert!(last.b > 0, "the wrap left the last colour too early");
+    }
+
+    #[test]
+    fn holds_a_palette_still_at_zero_turns() {
+        let ambience = palette(&[RED, BLUE]);
+        let geometry = Geometry::new(1, 8);
+
+        assert_eq!(
+            ambience.compose(geometry, Tick::at(0.0)),
+            ambience.compose(geometry, Tick::at(9.5))
+        );
+    }
+
+    #[test]
+    fn drifts_a_palette_when_asked() {
+        let ambience = Ambience {
+            colour: ColourSource::Palette {
+                colours: vec![RED, BLUE],
+                turns_per_second: 0.5,
+            },
+            ..palette(&[RED, BLUE])
+        };
+        let geometry = Geometry::new(1, 8);
+
+        assert_ne!(
+            ambience.compose(geometry, Tick::at(0.0)),
+            ambience.compose(geometry, Tick::at(1.0))
+        );
+    }
+
+    #[test]
+    fn still_gives_a_single_cell_a_palette_colour() {
+        // A Goliathus is one LED, and dividing by the column count must not
+        // leave it black.
+        let frame = palette(&[RED, BLUE]).compose(Geometry::new(1, 1), Tick::at(0.0));
+
+        assert_ne!(frame.get(0, 0), Rgb::new(0, 0, 0));
+    }
+
+    #[test]
+    fn composes_a_palette_with_the_other_channels() {
+        // The point of the source: it is a colour, so every motion and every
+        // brightness still applies to it.
+        let ambience = Ambience {
+            colour: ColourSource::Palette {
+                colours: vec![RED, BLUE],
+                turns_per_second: 0.0,
+            },
+            motion: MotionSource::Wave {
+                laps_per_second: 1.0,
+                width: 0.2,
+            },
+            brightness: BrightnessSource::Fixed { level: 0.5 },
+        };
+        let frame = ambience.compose(Geometry::new(1, 14), Tick::at(0.0));
+
+        let lit: Vec<Rgb> = (0..14)
+            .map(|column| frame.get(0, column))
+            .filter(|colour| *colour != Rgb::new(0, 0, 0))
+            .collect();
+
+        assert!(!lit.is_empty(), "the wave put out the whole palette");
+        assert!(lit.len() < 14, "the wave lit everything");
+        for colour in lit {
+            let brightest = colour.r.max(colour.g).max(colour.b);
+            assert!(brightest <= 128, "brightness did not halve it: {colour:?}");
+        }
     }
 }

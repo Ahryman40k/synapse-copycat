@@ -3,7 +3,7 @@ import { Component, signal } from '@angular/core';
 import { type Ambience, still } from '@synapse-copycat/backend-api';
 import type { Meta, StoryObj } from '@storybook/angular';
 import { moduleMetadata } from '@storybook/angular';
-import { expect, waitFor, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { AmbiencePanel } from './ambience-panel';
 
 const meta: Meta<AmbiencePanel> = {
@@ -182,5 +182,85 @@ export const Binding: Story = {
 		await expect(
 			canvas.getByRole('slider', { name: 'Wave width' }),
 		).toHaveValue('60');
+	},
+};
+
+/**
+ * A palette: the third colour source, and the one an image gives you.
+ *
+ * ⚠️ It is a *colour* source and nothing more, which is the point. The wave
+ * over it below comes from the motion channel, and the two know nothing about
+ * each other — a pre-computed frame could not be combined that way.
+ */
+export const Palette: Story = {
+	name: 'A palette from an image',
+	args: {
+		ambience: {
+			colour: {
+				type: 'palette',
+				colours: ['#1b3a5c', '#c86a3d', '#f2c14e'],
+				turnsPerSecond: 0,
+			},
+			motion: { type: 'wave', lapsPerSecond: 0.3, width: 0.35 },
+			brightness: { type: 'fixed', level: 1 },
+		},
+	},
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+
+		await expect(
+			canvas.getByRole('combobox', { name: 'Colour source' }),
+		).toHaveValue('palette');
+
+		// One picker per colour, in order.
+		for (const position of [1, 2, 3]) {
+			await expect(
+				canvas.getByLabelText(`Palette colour ${position}`),
+			).toBeVisible();
+		}
+		await expect(canvas.getByLabelText('Palette colour 2')).toHaveValue(
+			'#c86a3d',
+		);
+	},
+};
+
+/**
+ * Adding and dropping colours.
+ *
+ * The floor is one, not zero: an empty palette has nothing to paint, and the
+ * contract refuses it. The ceiling is eight, which is more than any image
+ * palette worth reading.
+ */
+export const PaletteEditing: Story = {
+	name: 'Adding and dropping colours',
+	decorators: [moduleMetadata({ imports: [AmbiencePanelStoryHost] })],
+	render: () => ({ template: '<ambience-panel-story-host />' }),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		const bound = () => canvasElement.querySelector('[data-testid="bound"]');
+
+		const colour = canvas.getByRole('combobox', {
+			name: 'Colour source',
+		}) as HTMLSelectElement;
+		colour.value = 'palette';
+		colour.dispatchEvent(new Event('change'));
+
+		await waitFor(() => {
+			if (!bound()?.textContent?.includes('"palette"')) {
+				throw new Error('the palette did not reach the model');
+			}
+		});
+
+		// Two by default, then three.
+		await expect(canvas.getAllByLabelText(/^Palette colour/)).toHaveLength(2);
+		await userEvent.click(
+			canvas.getByRole('button', { name: 'Add a palette colour' }),
+		);
+		await expect(canvas.getAllByLabelText(/^Palette colour/)).toHaveLength(3);
+
+		await userEvent.click(
+			canvas.getByRole('button', { name: 'Remove palette colour 2' }),
+		);
+		await expect(canvas.getAllByLabelText(/^Palette colour/)).toHaveLength(2);
 	},
 };

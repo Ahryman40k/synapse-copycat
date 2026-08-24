@@ -216,7 +216,7 @@ impl Conductor {
     /// this is the one change the engine can absorb without rebuilding.
     pub fn set_ambience(&mut self, id: GroupId, ambience: Ambience) -> Result<(), GroupError> {
         self.require(id)?;
-        self.group_mut(id).ambience = ambience;
+        self.group_mut(id).ambience = ambience.clone();
         if let Some(engine) = self.running.get(&id) {
             engine.set_ambience(ambience);
         }
@@ -440,7 +440,7 @@ mod tests {
         let id = conductor.create("Evening", ids(&["kbd"]), red()).unwrap();
         let blue = Ambience::still(Rgb::new(0, 0, 255));
 
-        conductor.set_ambience(id, blue).unwrap();
+        conductor.set_ambience(id, blue.clone()).unwrap();
 
         assert_eq!(conductor.group(id).unwrap().ambience, blue);
     }

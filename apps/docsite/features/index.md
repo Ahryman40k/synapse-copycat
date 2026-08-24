@@ -30,8 +30,9 @@ something the moment it opens.
 
 An ambience is three independent channels:
 
-- **Colour** — one fixed colour, or a rainbow across the strip. A third,
-  authored in the effect studio, is planned.
+- **Colour** — one fixed colour, a rainbow across the strip, or a **palette**:
+  a handful of colours spread along the device and blended between, which wraps
+  so a band travelling round meets no seam. It is what an image gives you.
 - **Motion** — still, a wave travelling round, or a pulse.
 - **Brightness** — one level, or one that follows the hour.
 

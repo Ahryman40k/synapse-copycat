@@ -37,7 +37,11 @@ type BrightnessKind = BrightnessSource['type'];
 const COLOUR_SOURCES: readonly SelectOption[] = [
 	{ value: 'fixed', label: 'One colour' },
 	{ value: 'rainbow', label: 'Rainbow' },
+	{ value: 'palette', label: 'A palette' },
 ];
+
+/** How many colours a palette may hold. */
+const PALETTE_MOST = 8;
 
 const MOTION_SOURCES: readonly SelectOption[] = [
 	{ value: 'none', label: 'Still' },
@@ -55,6 +59,13 @@ const DEFAULTS = {
 	colour: {
 		fixed: { type: 'fixed', rgb: '#00ff00' },
 		rainbow: { type: 'rainbow', turnsPerSecond: 0.2, spread: 1 },
+		// Held still by default: a palette taken from a picture is about the
+		// picture, and drifting loses the mapping.
+		palette: {
+			type: 'palette',
+			colours: ['#00ff00', '#0033ff'],
+			turnsPerSecond: 0,
+		},
 	},
 	motion: {
 		none: { type: 'none' },
@@ -120,6 +131,18 @@ export class AmbiencePanel {
 		const colour = this.colour();
 		return colour.type === 'rainbow' ? colour : undefined;
 	});
+	protected readonly palette = computed(() => {
+		const colour = this.colour();
+		return colour.type === 'palette' ? colour : undefined;
+	});
+
+	/** Room for another. A palette of one is legal; a palette of none is not. */
+	protected readonly canAddColour = computed(
+		() => (this.palette()?.colours.length ?? 0) < PALETTE_MOST,
+	);
+	protected readonly canRemoveColour = computed(
+		() => (this.palette()?.colours.length ?? 0) > 1,
+	);
 	protected readonly wave = computed(() => {
 		const motion = this.motion();
 		return motion.type === 'wave' ? motion : undefined;
@@ -171,6 +194,51 @@ export class AmbiencePanel {
 	protected onColour(rgb: string | undefined): void {
 		// The picker is not `clearable`, so `undefined` cannot arrive.
 		if (rgb) this.#patch({ colour: { type: 'fixed', rgb } });
+	}
+
+	// ── the palette ───────────────────────────────────────────────────────────
+
+	protected onPaletteColour(index: number, rgb: string | undefined): void {
+		const palette = this.palette();
+		// The picker is not `clearable`, so `undefined` cannot arrive.
+		if (!palette || !rgb) return;
+
+		const colours = palette.colours.map((existing, at) =>
+			at === index ? rgb : existing,
+		);
+		this.#patch({ colour: { ...palette, colours } });
+	}
+
+	protected addColour(): void {
+		const palette = this.palette();
+		if (!palette || !this.canAddColour()) return;
+
+		// A copy of the last, so the new entry is visible and the reader picks
+		// what it becomes rather than hunting for where it went.
+		const last = palette.colours[palette.colours.length - 1];
+		this.#patch({
+			colour: { ...palette, colours: [...palette.colours, last] },
+		});
+	}
+
+	protected removeColour(index: number): void {
+		const palette = this.palette();
+		if (!palette || !this.canRemoveColour()) return;
+
+		this.#patch({
+			colour: {
+				...palette,
+				colours: palette.colours.filter((_, at) => at !== index),
+			},
+		});
+	}
+
+	protected onPaletteDrift(value: number): void {
+		const palette = this.palette();
+		if (!palette) return;
+		this.#patch({
+			colour: { ...palette, turnsPerSecond: this.#hundredth(value) },
+		});
 	}
 
 	protected onRainbow(field: 'turnsPerSecond' | 'spread', value: number): void {

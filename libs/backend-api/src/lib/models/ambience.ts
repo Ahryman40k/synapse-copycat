@@ -1,8 +1,10 @@
 import { HexColor } from '@synapse-copycat/ui';
 import {
+	array,
 	type InferOutput,
 	literal,
 	maxValue,
+	minLength,
 	minValue,
 	number,
 	object,
@@ -39,7 +41,37 @@ export const RainbowColour = object({
 	spread: number(),
 });
 
-export const ColourSource = variant('type', [FixedColour, RainbowColour]);
+/**
+ * A handful of colours, spread along the device and blended between.
+ *
+ * What an image gives you. Parametric like the other two, so one palette reads
+ * on a 22-column keyboard, a 50-LED string and a single-LED mousemat, none of
+ * which knows the others exist — which a pre-computed frame could never do.
+ *
+ * It wraps: the last colour blends back into the first, so a band travelling
+ * round the device meets no seam.
+ */
+export const PaletteColour = object({
+	type: literal('palette'),
+	/**
+	 * In order. ⚠️ At least one — an empty palette has nothing to paint, and
+	 * refusing it here is what stops the backend having to decide what black
+	 * means.
+	 */
+	colours: pipe(array(HexColor), minLength(1, 'A palette needs a colour')),
+	/**
+	 * Full turns of the palette per second. 0 holds it still, which is what an
+	 * image-derived palette usually wants — the mapping to the picture is the
+	 * point, and drifting loses it.
+	 */
+	turnsPerSecond: number(),
+});
+
+export const ColourSource = variant('type', [
+	FixedColour,
+	RainbowColour,
+	PaletteColour,
+]);
 export type ColourSource = InferOutput<typeof ColourSource>;
 
 // ── motion ───────────────────────────────────────────────────────────────────

@@ -6,4 +6,25 @@
   ambience-panel h2 {
     color: var(--syn-primary);
   }
+
+  ambience-panel .ambience-panel__drop {
+    border-color: var(--syn-outline);
+    background-color: var(--syn-surface-container);
+    color: var(--syn-on-surface-variant);
+
+    &:not(:disabled):hover {
+      border-color: var(--syn-error);
+      color: var(--syn-error);
+    }
+  }
+
+  ambience-panel .ambience-panel__add {
+    border-color: var(--syn-outline);
+    color: var(--syn-on-surface-variant);
+
+    &:not(:disabled):hover {
+      border-color: var(--syn-primary);
+      color: var(--syn-primary);
+    }
+  }
 }

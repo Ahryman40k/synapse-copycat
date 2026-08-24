@@ -147,4 +147,92 @@ describe('composeStrip', () => {
 
 		expect(composeStrip(ambience, 1, at(0.25))[0]).not.toBe(BLACK);
 	});
+
+	// ── palette ───────────────────────────────────────────────────────────────
+	//
+	// The same properties `razer::engine::ambience` asserts, under the same
+	// names. That is what keeps two copies of one calculation honest.
+
+	const palette = (colours: string[], turnsPerSecond = 0): Ambience => ({
+		colour: { type: 'palette', colours, turnsPerSecond },
+		motion: { type: 'none' },
+		brightness: { type: 'fixed', level: 1 },
+	});
+
+	const BLUE = '#0000ff';
+
+	it('paints a single palette colour everywhere', () => {
+		const strip = composeStrip(palette([RED]), 8, at(0));
+
+		expect(new Set(strip)).toEqual(new Set([RED]));
+	});
+
+	it('spreads a palette along the columns', () => {
+		const strip = composeStrip(palette([RED, BLUE]), 8, at(0));
+
+		expect(strip[0]).toBe(RED);
+		expect(strip[4]).toBe(BLUE);
+	});
+
+	it('blends between palette colours', () => {
+		const strip = composeStrip(palette([RED, BLUE]), 8, at(0));
+		const middle = strip[2];
+
+		const red = Number.parseInt(middle.slice(1, 3), 16);
+		const blue = Number.parseInt(middle.slice(5, 7), 16);
+		expect(red).toBeGreaterThan(100);
+		expect(red).toBeLessThan(160);
+		expect(blue).toBeGreaterThan(100);
+		expect(blue).toBeLessThan(160);
+	});
+
+	it('wraps the palette without a seam', () => {
+		// The last column is on its way back to the first colour, not stranded
+		// on the last one — otherwise a band travelling round meets a step.
+		const last = composeStrip(palette([RED, BLUE]), 8, at(0))[7];
+
+		expect(Number.parseInt(last.slice(1, 3), 16)).toBeGreaterThan(0);
+		expect(Number.parseInt(last.slice(5, 7), 16)).toBeGreaterThan(0);
+	});
+
+	it('holds a palette still at zero turns', () => {
+		expect(composeStrip(palette([RED, BLUE]), 8, at(0))).toEqual(
+			composeStrip(palette([RED, BLUE]), 8, at(9.5)),
+		);
+	});
+
+	it('drifts a palette when asked', () => {
+		expect(composeStrip(palette([RED, BLUE], 0.5), 8, at(0))).not.toEqual(
+			composeStrip(palette([RED, BLUE], 0.5), 8, at(1)),
+		);
+	});
+
+	it('still gives a single cell a palette colour', () => {
+		// A Goliathus is one LED, and dividing by the column count must not
+		// leave it black.
+		expect(composeStrip(palette([RED, BLUE]), 1, at(0))[0]).not.toBe(BLACK);
+	});
+
+	it('composes a palette with the other channels', () => {
+		// The point of the source: it is a colour, so every motion and every
+		// brightness still applies to it.
+		const ambience: Ambience = {
+			colour: { type: 'palette', colours: [RED, BLUE], turnsPerSecond: 0 },
+			motion: { type: 'wave', lapsPerSecond: 1, width: 0.2 },
+			brightness: { type: 'fixed', level: 0.5 },
+		};
+
+		const lit = composeStrip(ambience, 14, at(0)).filter(
+			(colour) => colour !== BLACK,
+		);
+
+		expect(lit.length).toBeGreaterThan(0);
+		expect(lit.length).toBeLessThan(14);
+		for (const colour of lit) {
+			const channels = [1, 3, 5].map((offset) =>
+				Number.parseInt(colour.slice(offset, offset + 2), 16),
+			);
+			expect(Math.max(...channels)).toBeLessThanOrEqual(128);
+		}
+	});
 });
