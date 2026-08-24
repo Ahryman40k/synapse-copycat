@@ -5,6 +5,7 @@ import {
 	Component,
 	computed,
 	inject,
+	signal,
 	type Type,
 } from '@angular/core';
 import type {
@@ -16,11 +17,6 @@ import type {
 } from '@synapse-copycat/backend-api';
 import { effectiveHertz } from '@synapse-copycat/backend-api';
 import { Button } from '@synapse-copycat/ui';
-import { CameraPageComponent } from '../../../domains/devices/camera-page/camera-page';
-import { KeyboardPageComponent } from '../../../domains/devices/keyboard-page/keyboard-page';
-import { MousePageComponent } from '../../../domains/devices/mouse-page/mouse-page';
-import { MousematPageComponent } from '../../../domains/devices/mousemat-page/mousemat-page';
-import { StripPage } from '../../../domains/devices/strip-page/strip-page';
 
 /** Everything the dialog shows, gathered by whoever opens it. */
 export type DeviceDetail = {
@@ -40,12 +36,27 @@ export type DeviceDetail = {
  * `accessory` has none — the dock is not something you set anything on — so the
  * dialog shows the summary alone rather than an empty frame.
  */
-const PAGES: Partial<Record<Device['kind'], Type<unknown>>> = {
-	mouse: MousePageComponent,
-	keyboard: KeyboardPageComponent,
-	mousemat: MousematPageComponent,
-	streaming: CameraPageComponent,
-	strip: StripPage,
+const PAGES: Partial<Record<Device['kind'], () => Promise<Type<unknown>>>> = {
+	mouse: () =>
+		import('../../../domains/devices/mouse-page/mouse-page').then(
+			(m) => m.MousePageComponent,
+		),
+	keyboard: () =>
+		import('../../../domains/devices/keyboard-page/keyboard-page').then(
+			(m) => m.KeyboardPageComponent,
+		),
+	mousemat: () =>
+		import('../../../domains/devices/mousemat-page/mousemat-page').then(
+			(m) => m.MousematPageComponent,
+		),
+	streaming: () =>
+		import('../../../domains/devices/camera-page/camera-page').then(
+			(m) => m.CameraPageComponent,
+		),
+	strip: () =>
+		import('../../../domains/devices/strip-page/strip-page').then(
+			(m) => m.StripPage,
+		),
 };
 
 /**
@@ -84,11 +95,41 @@ export class DeviceDialog {
 		() => this.detail.device?.name ?? this.detail.participant,
 	);
 
-	/** The page for this kind, or nothing when the kind has none. */
-	protected readonly page = computed(() => {
-		const kind = this.detail.device?.kind;
-		return kind ? PAGES[kind] : undefined;
-	});
+	/**
+	 * The page for this kind, fetched when the dialog opens.
+	 *
+	 * ⚠️ Imported rather than referenced, and that is the point. Five device
+	 * pages were reachable from here by a plain import — with the key grid, the
+	 * assignment editor and the camera panel's media handling behind them — so
+	 * every one of them was in the first bundle, on a dashboard that shows none
+	 * of it until a tile is clicked.
+	 *
+	 * `undefined` covers two different things and neither is an error: a kind
+	 * with no page at all, and the moment before the chunk has arrived. Both
+	 * show the dialog's header, which is the part worth having immediately.
+	 */
+	protected readonly page = signal<Type<unknown> | undefined>(undefined);
+
+	/** True while a chunk is on its way, so the frame is not silently empty. */
+	protected readonly loading = signal(false);
+
+	constructor() {
+		const load = this.detail.device?.kind
+			? PAGES[this.detail.device.kind]
+			: undefined;
+		if (!load) return;
+
+		this.loading.set(true);
+		void load()
+			.then((page) => this.page.set(page))
+			.catch((error) => {
+				// A chunk that will not load is worth saying out loud: the dialog
+				// would otherwise sit there looking like a device with nothing to
+				// set on it, which is a different thing entirely.
+				console.error('[synapse] could not load the device page', error);
+			})
+			.finally(() => this.loading.set(false));
+	}
 
 	/** What `ngComponentOutlet` hands the page — the same input the route bound. */
 	protected readonly pageInputs = computed(() => ({

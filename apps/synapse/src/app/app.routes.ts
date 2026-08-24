@@ -3,9 +3,6 @@ import type { ResolveFn, Route } from '@angular/router';
 import type { Device, GroupStatus, Module } from '@synapse-copycat/backend-api';
 import { ApplicationStore } from './core/stores/application-store';
 import { DashboardPage } from './domains/dashboard-page/dashboard-page';
-import { BackgroundsPage } from './domains/backgrounds-page/backgrounds-page';
-import { SettingsPage } from './domains/settings-page/settings-page';
-import { StudioPage } from './domains/studio-page/studio-page';
 
 export const devicesResolver: ResolveFn<Device[]> = () => {
 	const store = inject(ApplicationStore);
@@ -61,16 +58,30 @@ export const appRoutes: Route[] = [
 	// there and here, which is one duplication too many — the table is what the
 	// bar and the address reader agree on, and a mismatch shows up as an entry
 	// that highlights nothing.
+	//
+	// ⚠️ Loaded on demand, and worth little on its own: the dashboard is the
+	// initial route, so what these three save is only the code nothing else
+	// already needs — and the studio's ambience panel is shared with a group
+	// card, so it stays in the first bundle either way. The weight was never
+	// here. It was the five device pages behind the detail dialog, which
+	// `device-dialog.ts` now imports rather than references.
 	{
 		path: 'studio',
-		component: StudioPage,
+		loadComponent: () =>
+			import('./domains/studio-page/studio-page').then((m) => m.StudioPage),
 	},
 	{
 		path: 'backgrounds',
-		component: BackgroundsPage,
+		loadComponent: () =>
+			import('./domains/backgrounds-page/backgrounds-page').then(
+				(m) => m.BackgroundsPage,
+			),
 	},
 	{
 		path: 'settings',
-		component: SettingsPage,
+		loadComponent: () =>
+			import('./domains/settings-page/settings-page').then(
+				(m) => m.SettingsPage,
+			),
 	},
 ];

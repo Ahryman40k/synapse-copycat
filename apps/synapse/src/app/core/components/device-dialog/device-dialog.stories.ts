@@ -109,8 +109,11 @@ export const Driven: Story = {
 		).toBeVisible();
 
 		// The device's own page, rendered in place — its tabs are the proof.
+		// ⚠️ `findBy`, because the page is a chunk fetched when the dialog opens.
+		// This is also the only place that assertion can live: the promise a
+		// dynamic `import()` returns never settles under jsdom.
 		await expect(
-			inside.getByRole('tablist', { name: 'Keyboard sections' }),
+			await inside.findByRole('tablist', { name: 'Keyboard sections' }),
 		).toBeVisible();
 
 		await close(dialog);
@@ -212,7 +215,7 @@ export const NoPage: Story = {
 		const dialog = await open(canvasElement);
 
 		await expect(
-			within(dialog).getByText(/Nothing to set on this one/),
+			await within(dialog).findByText(/Nothing to set on this one/),
 		).toBeVisible();
 		await close(dialog);
 	},

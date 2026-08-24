@@ -17,7 +17,9 @@
   </button>
 </header>
 
-@if (page(); as page) {
+@if (loading()) {
+  <p class="device-dialog__quiet">Loading…</p>
+} @else if (page(); as page) {
   <!--
     The device's own page, unchanged and rendered in place. It already took its
     device as an input, because the route bound it that way — so moving it here
