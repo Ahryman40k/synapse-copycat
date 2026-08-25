@@ -125,3 +125,33 @@ async fn a_group_starts_without_a_daemon() {
 
     let _ = std::fs::remove_dir_all(&temporary);
 }
+
+/// ⚠️ A first run with nothing to put in a group must **not** write a file.
+///
+/// The companion to `a_first_run_is_on_disk_before_anything_is_changed` in
+/// `state_engine.rs`, and it lives here because it needs a process with no
+/// daemon in it — which is what this whole test binary is for.
+///
+/// A machine whose daemon is not installed yet would otherwise write an empty
+/// file, and that file makes every later launch a returning one. The welcome
+/// — everything in one group, already drawing — would be spent on an empty
+/// machine and never offered again once the hardware arrived.
+#[tokio::test]
+async fn a_first_run_with_no_devices_stays_a_first_run() {
+    std::env::set_var(
+        "DBUS_SESSION_BUS_ADDRESS",
+        "unix:path=/nonexistent/openrazer-test-bus",
+    );
+    let dir = std::env::temp_dir().join("synapse-state-first-run-empty");
+    std::fs::remove_dir_all(&dir).ok();
+    std::fs::create_dir_all(&dir).unwrap();
+    std::env::set_var("XDG_CONFIG_HOME", &dir);
+
+    let state = RazerState::new().await;
+
+    assert!(state.groups().await.is_empty());
+    assert!(
+        !dir.join("synapse/groups.json").exists(),
+        "an empty first run wrote a file, so the welcome is spent"
+    );
+}

@@ -123,3 +123,42 @@ async fn every_change_is_on_disk_before_it_returns() {
 
     state.stop_all().await;
 }
+/// ⚠️ A first run has to write itself down.
+///
+/// Every other save happens because the user changed something. A first run
+/// changes nothing — the "All devices" group is invented at startup — so the
+/// file did not exist until the user happened to rename a group or move a
+/// slider, and until then a quit lost the lot. `next_id` went with it, which
+/// is worse than losing a group: ids would be handed out a second time and a
+/// reference the interface still held would quietly address a different group.
+#[tokio::test]
+#[ignore = "needs the fake daemon: scripts/openrazer-fake.sh start"]
+async fn a_first_run_is_on_disk_before_anything_is_changed() {
+    let dir = scratch("first-run-saves");
+
+    let state = RazerState::new().await;
+    let invented = state.groups().await;
+
+    // Nothing has been asked of it — no rename, no slider.
+    let written = std::fs::read_to_string(dir.join("synapse/groups.json"))
+        .expect("a first run saved nothing, so quitting would lose it");
+
+    assert!(written.contains("All devices"), "{written}");
+    // The counter matters as much as the groups: reused ids address the
+    // wrong group rather than merely losing one.
+    assert!(
+        written.contains("\"nextId\":1") || written.contains("\"nextId\": 1"),
+        "next_id did not survive: {written}"
+    );
+
+    state.stop_all().await;
+
+    // And a relaunch restores rather than re-inventing — same id, not a
+    // second group built from scratch.
+    let relaunched = RazerState::new().await;
+    let restored = relaunched.groups().await;
+    assert_eq!(restored.len(), 1);
+    assert_eq!(restored[0].group.id, invented[0].group.id);
+
+    relaunched.stop_all().await;
+}

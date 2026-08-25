@@ -68,7 +68,8 @@ impl RazerState {
         };
 
         let config_path = persistence::default_path();
-        let conductor = Self::initial_conductor(backend.as_ref(), config_path.as_deref()).await;
+        let (conductor, invented) =
+            Self::initial_conductor(backend.as_ref(), config_path.as_deref()).await;
 
         let state = Self {
             backend,
@@ -89,6 +90,20 @@ impl RazerState {
                 .start_marked(Some(backend), &state.strips)
                 .await;
         }
+
+        // ⚠️ The first run has to write itself down.
+        //
+        // Everywhere else, saving happens because the user changed something.
+        // A first run changes nothing — the "All devices" group is invented
+        // here — so without this the file did not exist until the user
+        // happened to rename a group or move a slider, and everything before
+        // that was lost on quit. `next_id` went with it, which is worse than
+        // losing a group: ids would be handed out again after a restart and a
+        // reference the interface still held would address a different group.
+        if invented {
+            state.persist(&*state.conductor.lock().await);
+        }
+
         state
     }
 
@@ -98,12 +113,19 @@ impl RazerState {
         &self.strips
     }
 
+    /// The groups to start from, and whether they were **invented here** and
+    /// so have never been written down.
+    ///
+    /// That second half is what tells `new` when to save. Only the first run
+    /// with something to put in a group answers `true`: a restored file is
+    /// already on disk, and a file that cannot be read must not be written
+    /// over.
     async fn initial_conductor(
         backend: Option<&Arc<dyn DeviceBackend>>,
         config_path: Option<&std::path::Path>,
-    ) -> Conductor {
+    ) -> (Conductor, bool) {
         match config_path.map(persistence::load) {
-            Some(Ok(saved)) => Conductor::restore(saved.groups, saved.next_id),
+            Some(Ok(saved)) => (Conductor::restore(saved.groups, saved.next_id), false),
 
             // Nothing saved: the first run. Everything in one group, drawing.
             Some(Err(persistence::LoadError::Absent)) | None => {
@@ -112,9 +134,17 @@ impl RazerState {
                     None => Vec::new(),
                 };
                 if participants.is_empty() {
-                    Conductor::default()
+                    // ⚠️ Deliberately **not** saved, so this stays a first run.
+                    // A machine with no daemon yet would otherwise write an
+                    // empty file, and the welcome — everything in one group,
+                    // already drawing — would be spent on nothing and never
+                    // offered again once the hardware did arrive.
+                    (Conductor::default(), false)
                 } else {
-                    Conductor::with_everything(participants, Ambience::still(DEFAULT_COLOUR))
+                    (
+                        Conductor::with_everything(participants, Ambience::still(DEFAULT_COLOUR)),
+                        true,
+                    )
                 }
             }
 
@@ -123,7 +153,7 @@ impl RazerState {
             // next save — the user can still repair it by hand.
             Some(Err(error)) => {
                 eprintln!("warn: {error}; starting with no groups and saving nothing");
-                Conductor::default()
+                (Conductor::default(), false)
             }
         }
     }
