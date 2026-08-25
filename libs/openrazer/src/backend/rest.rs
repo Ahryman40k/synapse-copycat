@@ -279,6 +279,29 @@ impl DeviceBackend for RestBackend {
         Box::pin(async move { Err(BackendError::InterfaceUnsupported(serial)) })
     }
 
+    fn supported_methods(
+        &self,
+        _serial: &str,
+    ) -> BoxFuture<'_, Result<std::collections::BTreeSet<String>, BackendError>> {
+        Box::pin(async move {
+            // ⚠️ **Optimistic, and it has to be said plainly.** The REST bridge
+            // publishes no introspection, so there is nothing to ask. Claiming
+            // the whole catalogue keeps Windows behaving exactly as it does
+            // today — every control offered, an unsupported one failing when
+            // it is used — rather than claiming nothing, which would grey out
+            // the entire interface on a platform where the capabilities are
+            // merely unknown, not absent.
+            //
+            // The honest fix is a bridge endpoint that reports them. Until
+            // there is one, this is a stated assumption rather than a silent
+            // one. See `libs/openrazer/AGENTS.md` on Windows being unverified.
+            Ok(crate::request::CATALOGUE
+                .iter()
+                .flat_map(|(_, methods)| methods.iter().map(|m| (*m).to_string()))
+                .collect())
+        })
+    }
+
     fn hotplug_events(
         &self,
     ) -> BoxFuture<'_, Result<tokio::sync::mpsc::Receiver<super::Hotplug>, BackendError>> {

@@ -35,7 +35,6 @@ describe('ApplicationStore', () => {
 								name: 'Test keyboard',
 							},
 						],
-						modules: [],
 					}),
 				),
 			],
@@ -709,5 +708,226 @@ describe('ApplicationStore, with half the backend answering', () => {
 		await store.getGroups();
 
 		expect(store.claimable()).toEqual([]);
+	});
+});
+
+/**
+ * What reaches the store when the backend answers something it should not.
+ *
+ * ⚠️ These are the tests that make the validators worth having. Every read
+ * crossing the IPC boundary is parsed now (root AGENTS.md §6), and the
+ * behaviour chosen was **degrade and say so**, not throw: the route resolvers
+ * do not await these calls, so a rejection would be an unhandled promise rather
+ * than anything a reader ever sees.
+ *
+ * The console is spied on rather than left to print — a suite that shouts on
+ * every run teaches people to ignore it — but it is also *asserted*, because
+ * "dropped in silence" is the failure mode this whole change exists to prevent.
+ */
+describe('ApplicationStore, against a backend that answers badly', () => {
+	let warn: ReturnType<typeof vi.spyOn>;
+
+	beforeEach(() => {
+		warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+	});
+
+	afterEach(() => warn.mockRestore());
+
+	const withDevices = (devices: unknown) => {
+		TestBed.configureTestingModule({
+			providers: [
+				provideBackendApi(
+					withMock({
+						...unusedCommands(),
+						// Cast at the mock, deliberately: the point of the test is
+						// an answer the contract says is impossible.
+						devices: devices as never,
+					}),
+				),
+			],
+		});
+		return TestBed.inject(ApplicationStore);
+	};
+
+	it('keeps the devices it can read and drops the one it cannot', async () => {
+		const store = withDevices([
+			{
+				serial: 'XX0000000001',
+				kind: 'mouse',
+				name: 'Test mouse',
+				vendor_id: 2,
+				product_id: 1,
+			},
+			// No serial — so nothing could name it as a group member anyway.
+			{ kind: 'keyboard', name: 'Nameless', vendor_id: 2, product_id: 2 },
+		]);
+
+		await store.getDevices();
+
+		expect(store.wired().map((device) => device.id)).toEqual(['XX0000000001']);
+		expect(warn).toHaveBeenCalledWith(
+			expect.stringContaining('dropped 1 of 2'),
+		);
+	});
+
+	/**
+	 * `strip` is invented by the store for a Twinkly and can only ever reach the
+	 * `devices` wire by mistake — see `WireDeviceKind`.
+	 */
+	it('refuses a kind no enumeration can carry', async () => {
+		const store = withDevices([
+			{
+				serial: 'XX0000000001',
+				kind: 'strip',
+				name: 'Not a Razer device',
+				vendor_id: 2,
+				product_id: 1,
+			},
+		]);
+
+		await store.getDevices();
+
+		expect(store.wired()).toEqual([]);
+	});
+
+	it('shows no groups rather than a broken one', async () => {
+		TestBed.configureTestingModule({
+			providers: [
+				provideBackendApi(
+					withMock({
+						...unusedCommands(),
+						// `Slow` — the casing tauri-typegen guessed, against the
+						// `#[serde(rename_all = "lowercase")]` the Rust enum
+						// actually carries.
+						groups: [
+							{
+								group: {
+									id: 0,
+									name: 'Desk',
+									members: [],
+									ambience: still('#00ff00'),
+									cadence: 'Slow',
+									started: true,
+								},
+								devices: [],
+								skipped: [],
+							},
+						] as never,
+					}),
+				),
+			],
+		});
+		const store = TestBed.inject(ApplicationStore);
+
+		await store.getGroups();
+
+		expect(store.groups()).toEqual([]);
+		expect(warn).toHaveBeenCalledWith(expect.stringContaining('cadence'));
+	});
+
+	/**
+	 * The hotplug event carries exactly what the fetch answers, so it has to be
+	 * held to exactly the same standard — a validator on only one of the two
+	 * would leave the other as the way in.
+	 */
+	it('holds a hotplug event to the same rule as a fetch', async () => {
+		TestBed.configureTestingModule({
+			providers: [provideBackendApi(withMock({ ...unusedCommands() }))],
+		});
+		const store = TestBed.inject(ApplicationStore);
+		const api = TestBed.inject(BackendApi);
+		await store.watchForChanges();
+
+		api.emit('devices_changed', [{ kind: 'mouse' }] as never);
+
+		expect(store.wired()).toEqual([]);
+		expect(warn).toHaveBeenCalledWith(
+			expect.stringContaining('dropped 1 of 1'),
+		);
+	});
+});
+
+/**
+ * A machine with a light string and no OpenRazer daemon.
+ *
+ * ⚠️ Not a fault, and the ordinary case for anyone who owns a Twinkly and no
+ * Razer hardware. `getGroups` was fixed for exactly this and documents it; the
+ * device reads beside it were not, and this is that parity.
+ */
+describe('ApplicationStore, with no daemon at all', () => {
+	let warn: ReturnType<typeof vi.spyOn>;
+
+	beforeEach(() => {
+		warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+	});
+
+	afterEach(() => warn.mockRestore());
+
+	const refuse = () => {
+		throw new Error('The OpenRazer daemon is unavailable');
+	};
+
+	const setup = () => {
+		TestBed.configureTestingModule({
+			providers: [
+				provideBackendApi(
+					withMock({
+						...unusedCommands(),
+						devices: refuse,
+						twinkly_devices: refuse,
+						watch_twinkly: refuse,
+					}),
+				),
+			],
+		});
+		return TestBed.inject(ApplicationStore);
+	};
+
+	/**
+	 * ⚠️ It used to reject. `devicesResolver` calls this and returns what the
+	 * store already holds without awaiting, so the rejection was unhandled: the
+	 * dashboard rendered anyway, every tile showing a raw serial with no name
+	 * and no picture, and nothing said the daemon was missing.
+	 */
+	it('does not reject when the daemon cannot be asked', async () => {
+		const store = setup();
+
+		await expect(store.getDevices()).resolves.toEqual([]);
+		expect(warn).toHaveBeenCalledWith(
+			expect.stringContaining('could not enumerate the devices'),
+			expect.anything(),
+		);
+	});
+
+	it('does not reject when the sweep fails', async () => {
+		const store = setup();
+
+		await expect(store.getDiscovered()).resolves.toEqual([]);
+	});
+
+	/**
+	 * ⚠️ The worst of the three, and invisible. Asserting the Twinkly watch was
+	 * the first `await` in `watchForChanges`, so a backend that refused it threw
+	 * before either `listen` ran — plugging a keyboard in then did nothing at
+	 * all, for the rest of the session, with no error anyone would see.
+	 */
+	it('still subscribes to hotplug when the watch cannot be asserted', async () => {
+		const store = setup();
+		const api = TestBed.inject(BackendApi);
+
+		await store.watchForChanges();
+		api.emit('devices_changed', [
+			{
+				serial: 'XX0000000226',
+				kind: 'keyboard',
+				name: 'Razer Huntsman Elite',
+				vendor_id: 5426,
+				product_id: 550,
+			},
+		]);
+
+		expect(store.wired().map((device) => device.name)).toEqual([
+			'Razer Huntsman Elite',
+		]);
 	});
 });

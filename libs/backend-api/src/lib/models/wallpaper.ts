@@ -31,3 +31,18 @@ export const Wallpaper = object({
 	palette: pipe(array(HexColor), minLength(1)),
 });
 export type Wallpaper = InferOutput<typeof Wallpaper>;
+
+/**
+ * One wallpaper setter this machine could use — the mirror of
+ * `wallpapers::WallpaperSetter`.
+ *
+ * ⚠️ An empty *list* of these is a real answer and not a failure; an entry with
+ * no name is not, which is the difference this schema draws.
+ */
+export const WallpaperSetter = object({
+	/** `GNOME`, `swww` — shown to the reader. */
+	name: pipe(string(), minLength(1)),
+	/** The program it drives, so a reader can tell why it is or is not there. */
+	program: string(),
+});
+export type WallpaperSetter = InferOutput<typeof WallpaperSetter>;

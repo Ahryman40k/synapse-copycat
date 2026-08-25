@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use tokio::sync::Mutex;
 
-use crate::capability::TwinklyPool;
+use crate::capability::{TwinklyPool, TWINKLY_CATALOGUE};
 use crate::razer::engine::ambience::Ambience;
 use crate::razer::engine::cadence::Cadence;
 use crate::razer::engine::frame::Rgb;
@@ -230,6 +230,39 @@ impl RazerState {
 
         let conductor = self.conductor.lock().await;
         Ok(conductor.unassigned(&all).into_iter().cloned().collect())
+    }
+
+    // ── discovery ─────────────────────────────────────────────────────────────
+
+    /// What this specific participant can actually be asked to do.
+    ///
+    /// The question every per-device control has to ask before it renders.
+    /// Not every device has DPI stages or a battery, and the difference is
+    /// finer than the device's kind: introspected against the daemon, a
+    /// Goliathus publishes the chroma interface **without `setWave`** and a
+    /// Kraken publishes it without `setKeyRow`. A control offered from the
+    /// interface alone answers `UnknownMethod` the moment it is used, which is
+    /// worse than never offering it — the user has already tried by then.
+    ///
+    /// Answers the `type` names `run_capability` takes, so the interface can
+    /// ask "may I send this?" in the same vocabulary it would send.
+    pub async fn capabilities(&self, participant: &str) -> Result<Vec<String>, BackendError> {
+        // ⚠️ The third place reading the participant prefix, after `darken`
+        // here and `Runner::attach`. It belongs inside a Twinkly source rather
+        // than in the façade — see the `Surface` design; this is deliberately
+        // consistent with the two that exist rather than inventing a fourth
+        // shape ahead of that refactor.
+        if participant.starts_with("twinkly-") {
+            // Asked for, so the pool is checked: a participant no sweep has
+            // seen cannot be driven, and saying "these are its capabilities"
+            // about something unreachable is a lie the interface would render
+            // as a working panel.
+            self.strips.device(participant).await?;
+            return Ok(TWINKLY_CATALOGUE.iter().map(|c| (*c).to_string()).collect());
+        }
+
+        let methods = self.backend()?.supported_methods(participant).await?;
+        Ok(openrazer::request::supported_from(&methods))
     }
 
     /// Make a group.

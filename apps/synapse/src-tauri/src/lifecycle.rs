@@ -15,9 +15,13 @@
 //!   - the window's own close button only hides it, so it is never gone by
 //!     accident
 
+use std::time::Duration;
+
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::{App, AppHandle, Manager, RunEvent, WindowEvent};
+
+use crate::razer::state::RazerState;
 
 /// The window Tauri creates from `tauri.conf.json`.
 const MAIN: &str = "main";
@@ -80,17 +84,97 @@ fn install_tray(app: &AppHandle) -> tauri::Result<()> {
     Ok(())
 }
 
-/// Keeps the process alive when the last window goes.
+/// What an exit request turns out to mean.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Exiting {
+    /// A window went away. The application has not — and neither has the
+    /// ambience, which is the whole thing this module exists to prevent.
+    Refuse,
+    /// Somebody really asked to quit. Stop the devices before the process that
+    /// is driving them disappears.
+    Quiesce,
+}
+
+/// Whether an exit request is the real thing.
 ///
-/// Without this the engine stops the moment the window is closed, which is the
-/// whole thing this module exists to prevent.
-pub fn keep_running(event: &RunEvent) {
-    if let RunEvent::ExitRequested { api, code, .. } = event {
-        // `code` is `Some` when the exit was asked for in code — the tray's
-        // Quit, through `app.exit(0)`. That one is honoured; a window closing
-        // is not.
-        if code.is_none() {
-            api.prevent_exit();
-        }
+/// `code` is `Some` only when the exit was asked for in code, which here means
+/// the tray's Quit through `app.exit(0)`. A window closing carries none.
+///
+/// Split out from the event so the rule can be tested: `RunEvent` and its
+/// `ExitRequestApi` cannot be built outside Tauri, and the decision is the
+/// part worth pinning.
+pub const fn exiting(code: Option<i32>) -> Exiting {
+    match code {
+        Some(_) => Exiting::Quiesce,
+        None => Exiting::Refuse,
+    }
+}
+
+/// Keeps the process alive when the last window goes, and stops the devices
+/// when it is genuinely going.
+pub fn keep_running(app: &AppHandle, event: &RunEvent) {
+    let RunEvent::ExitRequested { api, code, .. } = event else {
+        return;
+    };
+
+    match exiting(*code) {
+        Exiting::Refuse => api.prevent_exit(),
+        Exiting::Quiesce => quiesce(app),
+    }
+}
+
+/// How long quitting waits for the devices to be told to stop.
+///
+/// Bounded on purpose. Stopping lets each runner finish its frame and then
+/// darken its device, which is device I/O — so a wedged daemon or a strip that
+/// has left the network could otherwise make Quit the one button that appears
+/// to do nothing. Long enough for several groups of real devices, short enough
+/// that giving up still feels like quitting.
+const QUIESCE: Duration = Duration::from_secs(5);
+
+/// Stops every group before the process goes.
+///
+/// ⚠️ Without this, Quit left every device showing the last frame a process
+/// that no longer exists had painted: lit hardware, and nothing still running
+/// that could turn it off. `RazerState::stop_all` was written for exactly this
+/// and was wired to nothing — it is `pub`, so it never showed up as dead code.
+///
+/// The groups keep their `started` flag and nothing is saved here, so the next
+/// launch resumes them. Quitting the application and switching an ambience off
+/// are two different requests, the same way stopping a group and darkening it
+/// are.
+fn quiesce(app: &AppHandle) {
+    let state = app.state::<RazerState>();
+
+    // The event loop thread is not a runtime worker — `lib.rs` already blocks
+    // on it once at startup — so the runners keep being driven while this
+    // waits for them.
+    let stopped = tauri::async_runtime::block_on(async move {
+        tokio::time::timeout(QUIESCE, state.stop_all()).await
+    });
+
+    if stopped.is_err() {
+        eprintln!("warn: the devices did not stop within {QUIESCE:?}; some may be left lit");
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn closing_a_window_is_not_quitting() {
+        // The close button hides; the engine keeps running. A window carries
+        // no exit code precisely because nobody asked for one.
+        assert_eq!(exiting(None), Exiting::Refuse);
+    }
+
+    #[test]
+    fn quitting_stops_the_devices_first() {
+        // ⚠️ The tray's Quit is `app.exit(0)`, and zero is a code like any
+        // other — read as "no code" it would leave the application unable to
+        // exit at all.
+        assert_eq!(exiting(Some(0)), Exiting::Quiesce);
+        assert_eq!(exiting(Some(1)), Exiting::Quiesce);
     }
 }

@@ -10,15 +10,21 @@ import {
 import { BackendApi, type Device } from '@synapse-copycat/backend-api';
 import type {
 	Ambience,
-	BackendEvents,
 	Cadence,
 	CapabilityResponse,
 	GroupId,
 	GroupOutcome,
-	GroupStatus,
 	ParticipantId,
 } from '@synapse-copycat/backend-api';
-import { attempt, refused } from '@synapse-copycat/backend-api';
+import {
+	attempt,
+	GroupStatus,
+	ParticipantId as ParticipantIdSchema,
+	parsedList,
+	refused,
+	WireDevice,
+	WireTwinklyDevice,
+} from '@synapse-copycat/backend-api';
 import { safeParse } from 'valibot';
 import type { ChromaEffect } from '../models/chroma-effect';
 import { type Language, LANGUAGE_DEFAULT } from '../models/language';
@@ -66,8 +72,11 @@ function patchLighting(
  * Module-level because two paths produce the same list — the `devices` fetch
  * and the `devices_changed` hotplug event — and a device must look identical
  * whichever way it arrived.
+ *
+ * Takes an already-parsed `WireDevice`: validation is `toDevices` below, so
+ * the two entry points cannot disagree about whether it happened.
  */
-function toDevice(wire: BackendEvents['devices_changed'][number]): Device {
+function toDevice(wire: WireDevice): Device {
 	const vendorId = wire.vendor_id.toString().padStart(4, '0');
 	const productId = wire.product_id.toString().padStart(4, '0');
 
@@ -88,10 +97,20 @@ function toDevice(wire: BackendEvents['devices_changed'][number]): Device {
 	} satisfies Device;
 }
 
+/**
+ * Every device in an enumeration answer, parsed before it is believed.
+ *
+ * ⚠️ **The one door.** Both the `devices` fetch and the `devices_changed`
+ * hotplug event come through here, because the event carries exactly what the
+ * fetch answers and a validator on only one of them would leave the other as
+ * the way a malformed device gets in.
+ */
+function toDevices(wire: unknown): Device[] {
+	return parsedList(WireDevice, wire, 'devices').map(toDevice);
+}
+
 /** One found strip — same rule, shared by the sweep and the watch event. */
-function toStrip(
-	wire: BackendEvents['twinkly_devices_changed'][number],
-): Device {
+function toStrip(wire: WireTwinklyDevice): Device {
 	return {
 		__type: 'device',
 		kind: 'strip',
@@ -102,6 +121,11 @@ function toStrip(
 		name: wire.name,
 		visual: 'assets/modules/twinkly.png',
 	} satisfies Device;
+}
+
+/** Every found strip, parsed — the sweep and the watch event share this door. */
+function toStrips(wire: unknown): Device[] {
+	return parsedList(WireTwinklyDevice, wire, 'twinkly_devices').map(toStrip);
 }
 
 /**
@@ -555,13 +579,25 @@ export const ApplicationStore = signalStore(
 			]);
 
 			if (groups.status === 'fulfilled') {
-				patchState(store, { groups: groups.value });
+				// Parsed, not trusted. `GroupStatus` has been a complete schema
+				// since groups arrived and nothing ever ran it — every group
+				// reached the dashboard on the strength of its static type
+				// alone, `Achieved` figures and all.
+				patchState(store, {
+					groups: parsedList(GroupStatus, groups.value, 'groups'),
+				});
 			} else {
 				console.warn('[synapse] could not read the groups', groups.reason);
 			}
 
 			if (claimable.status === 'fulfilled') {
-				patchState(store, { claimable: claimable.value });
+				patchState(store, {
+					claimable: parsedList(
+						ParticipantIdSchema,
+						claimable.value,
+						'unassigned_participants',
+					),
+				});
 			} else {
 				// Not fatal, and not silent: the tray will be short of whatever
 				// the backend could not enumerate, and the groups above are
@@ -724,9 +760,18 @@ export const ApplicationStore = signalStore(
 				return [];
 			}
 
-			const found = await backendApi.invoke('twinkly_devices', {});
+			let found: unknown;
+			try {
+				found = await backendApi.invoke('twinkly_devices', {});
+			} catch (error) {
+				// Same rule as `getGroups`: what could not be re-read keeps its
+				// last value rather than being wiped. A sweep that failed says
+				// nothing about whether the strips are still there.
+				console.warn('[synapse] could not sweep for strips', error);
+				return store.discovered();
+			}
 
-			const discovered = found.map(toStrip);
+			const discovered = toStrips(found);
 
 			patchState(store, { discovered });
 			return discovered;
@@ -738,9 +783,22 @@ export const ApplicationStore = signalStore(
 				return [];
 			}
 
-			const result = await backendApi.invoke('devices', {});
+			let answer: unknown;
+			try {
+				answer = await backendApi.invoke('devices', {});
+			} catch (error) {
+				// ⚠️ Caught for the same reason `getGroups` catches: nobody is
+				// waiting on this promise. `devicesResolver` calls it and
+				// returns what the store already holds, so a rejection here was
+				// an unhandled promise — the dashboard rendered anyway, with
+				// every tile showing a raw serial instead of a name and no word
+				// about why. A household with a light string and no daemon is
+				// the ordinary case, not a fault.
+				console.warn('[synapse] could not enumerate the devices', error);
+				return store.wired();
+			}
 
-			const devices = result.map(toDevice); // TODO: write wrapper here + validator
+			const devices = toDevices(answer);
 
 			patchState(store, { wired: devices });
 			return devices;
@@ -755,15 +813,25 @@ export const ApplicationStore = signalStore(
 		 * cannot read this interface's localStorage itself.
 		 */
 		async watchForChanges(): Promise<void> {
-			await backendApi.invoke('watch_twinkly', {
-				enabled: store.sources().twinkly,
-			});
+			// ⚠️ **Asserted, but never allowed to stop the subscriptions.** This
+			// was the first `await` in the method, so a backend that refused it
+			// aborted the whole thing and `devices_changed` was never
+			// subscribed to — hotplug then silently did not work for the rest of
+			// the session, on the machines least able to afford it. The watch is
+			// a preference; the subscriptions are the feature.
+			try {
+				await backendApi.invoke('watch_twinkly', {
+					enabled: store.sources().twinkly,
+				});
+			} catch (error) {
+				console.warn('[synapse] could not assert the Twinkly watch', error);
+			}
 
 			await backendApi.listen('devices_changed', (found) => {
 				// The switch silences the events too: off means off, not "off
 				// until something is plugged in".
 				if (!store.sources().chroma) return;
-				patchState(store, { wired: found.map(toDevice) });
+				patchState(store, { wired: toDevices(found) });
 				// Membership bookkeeping follows the list: a device that
 				// arrived is claimable, one that left no longer is.
 				void this.getGroups();
@@ -771,7 +839,7 @@ export const ApplicationStore = signalStore(
 
 			await backendApi.listen('twinkly_devices_changed', (found) => {
 				if (!store.sources().twinkly) return;
-				patchState(store, { discovered: found.map(toStrip) });
+				patchState(store, { discovered: toStrips(found) });
 			});
 		},
 	})),

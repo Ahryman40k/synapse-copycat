@@ -1,6 +1,6 @@
 import type { Ambience } from './ambience';
 import type { CapabilityRequest, CapabilityResponse } from './capability';
-import type { Device } from './device';
+import type { WireDeviceKind } from './device';
 import type { Cadence, GroupId, GroupStatus, ParticipantId } from './group';
 import type { WireTwinklyDevice } from './twinkly';
 import type { Wallpaper, WallpaperSetter } from './wallpaper';
@@ -25,7 +25,14 @@ export type BackendCommands = {
 			 * is supposed to prevent and instead hid.
 			 */
 			serial: string;
-			kind: Device['kind'];
+			/**
+			 * ⚠️ Narrower than the domain `Device['kind']`, which also has
+			 * `strip` — a kind the store invents for a Twinkly and that no
+			 * enumeration answer can carry. `WireDevice` is the schema that
+			 * checks it; see `device.ts` for why `streaming` survives the cut
+			 * and `strip` does not.
+			 */
+			kind: WireDeviceKind;
 			vendor_id: number;
 			product_id: number;
 			name: string;
@@ -81,7 +88,7 @@ export type BackendCommands = {
 	wallpaper_setters: {
 		args: Record<string, never>;
 		options: Record<string, never>;
-		returnType: { name: string; program: string }[];
+		returnType: WallpaperSetter[];
 	};
 
 	/**
@@ -97,14 +104,7 @@ export type BackendCommands = {
 	twinkly_devices: {
 		args: Record<string, never>;
 		options: Record<string, never>;
-		returnType: {
-			participant: string;
-			name: string;
-			address: string;
-			product_code: string;
-			leds: number;
-			profile: string;
-		}[];
+		returnType: WireTwinklyDevice[];
 	};
 
 	/**

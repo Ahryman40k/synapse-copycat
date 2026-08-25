@@ -60,6 +60,7 @@ pub fn run() {
             commands::set_wallpaper,
             commands::watch_twinkly,
             commands::run_capability,
+            commands::capabilities,
             // ── groups ──
             commands::groups,
             commands::unassigned_participants,
@@ -75,6 +76,7 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         // `run` rather than the builder's, so the exit can be refused: closing
-        // the last window must not take the engine with it.
-        .run(|_app, event| lifecycle::keep_running(&event));
+        // the last window must not take the engine with it — and so the one
+        // exit that is real can stop the devices on the way out.
+        .run(|app, event| lifecycle::keep_running(app, &event));
 }

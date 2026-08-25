@@ -430,6 +430,30 @@ impl DeviceBackend for DbusBackend {
         })
     }
 
+    fn supported_methods(
+        &self,
+        serial: &str,
+    ) -> BoxFuture<'_, Result<std::collections::BTreeSet<String>, BackendError>> {
+        let path = Self::device_path(serial);
+        Box::pin(async move {
+            let proxy = zbus::fdo::IntrospectableProxy::builder(&self.conn)
+                .destination("org.razer")
+                .map_err(|e| BackendError::Transport(e.to_string()))?
+                .path(path)
+                .map_err(|e| BackendError::Transport(e.to_string()))?
+                .build()
+                .await
+                .map_err(|e| BackendError::Transport(e.to_string()))?;
+
+            let xml = proxy
+                .introspect()
+                .await
+                .map_err(|e| BackendError::Transport(e.to_string()))?;
+
+            parse_methods(&xml)
+        })
+    }
+
     fn hotplug_events(
         &self,
     ) -> BoxFuture<'_, Result<tokio::sync::mpsc::Receiver<super::Hotplug>, BackendError>> {
@@ -471,5 +495,139 @@ impl DeviceBackend for DbusBackend {
 
             Ok(receiver)
         })
+    }
+}
+
+// ─── Introspection ────────────────────────────────────────────────────────────
+
+/// Pull `interface.method` out of a DBus introspection document.
+///
+/// Hand-walked rather than deserialised into a document tree: the only thing
+/// wanted is which methods exist, the format is fixed by the DBus
+/// specification, and a method with no arguments arrives as an empty element
+/// while one with arguments arrives as a start tag — which is the single
+/// wrinkle worth knowing and the reason both are matched below.
+fn parse_methods(xml: &str) -> Result<std::collections::BTreeSet<String>, BackendError> {
+    use quick_xml::events::{BytesStart, Event};
+    use quick_xml::Reader;
+
+    fn attribute(element: &BytesStart<'_>, wanted: &[u8]) -> Option<String> {
+        element
+            .attributes()
+            .flatten()
+            .find(|attribute| attribute.key.as_ref() == wanted)
+            // `Implicit1_0`, matching what the deprecated `unescape_value` did.
+            // Introspection documents declare no version, and DBus names are
+            // restricted to `[A-Za-z0-9_]` anyway, so no entity ever appears
+            // here — the normalisation is for correctness, not for a case that
+            // arises.
+            .and_then(|attribute| {
+                attribute
+                    .normalized_value(quick_xml::XmlVersion::Implicit1_0)
+                    .ok()
+            })
+            .map(|value| value.into_owned())
+    }
+
+    let mut reader = Reader::from_str(xml);
+    let mut methods = std::collections::BTreeSet::new();
+    let mut interface: Option<String> = None;
+
+    loop {
+        match reader.read_event() {
+            Ok(Event::Eof) => break,
+
+            Ok(Event::Start(element)) | Ok(Event::Empty(element)) => {
+                match element.name().as_ref() {
+                    b"interface" => interface = attribute(&element, b"name"),
+                    b"method" => {
+                        // A method outside any interface is not addressable,
+                        // so it is dropped rather than recorded namelessly.
+                        if let (Some(interface), Some(method)) =
+                            (&interface, attribute(&element, b"name"))
+                        {
+                            methods.insert(format!("{interface}.{method}"));
+                        }
+                    }
+                    _ => {}
+                }
+            }
+
+            Ok(Event::End(element)) if element.name().as_ref() == b"interface" => interface = None,
+
+            Ok(_) => {}
+
+            // A document that cannot be read is not "a device with no
+            // capabilities" — that would quietly grey out every control on a
+            // working device. Say so instead.
+            Err(error) => {
+                return Err(BackendError::Protocol(format!(
+                    "could not read the introspection document: {error}"
+                )))
+            }
+        }
+    }
+
+    Ok(methods)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Shaped exactly like what the daemon answers, down to the two forms a
+    /// method takes.
+    const SAMPLE: &str = r#"<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="org.freedesktop.DBus.Introspectable">
+    <method name="Introspect">
+      <arg direction="out" type="s"/>
+    </method>
+  </interface>
+  <interface name="razer.device.misc">
+    <method name="getDeviceName">
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="suspendDevice"/>
+  </interface>
+  <interface name="razer.device.lighting.chroma">
+    <method name="setStatic">
+      <arg direction="in" type="y"/>
+    </method>
+  </interface>
+</node>"#;
+
+    #[test]
+    fn reads_both_forms_a_method_arrives_in() {
+        let methods = parse_methods(SAMPLE).unwrap();
+
+        // With arguments, so a start tag.
+        assert!(methods.contains("razer.device.misc.getDeviceName"));
+        // Without, so an empty element — the form that is easy to miss.
+        assert!(methods.contains("razer.device.misc.suspendDevice"));
+        assert!(methods.contains("razer.device.lighting.chroma.setStatic"));
+    }
+
+    #[test]
+    fn keeps_each_method_with_the_interface_it_belongs_to() {
+        let methods = parse_methods(SAMPLE).unwrap();
+
+        // ⚠️ The interface has to be cleared at its closing tag. Left set, the
+        // next interface's methods would be filed under the previous one and
+        // every capability lookup after the first would silently miss.
+        assert!(!methods.contains("razer.device.misc.setStatic"));
+        assert!(methods.contains("org.freedesktop.DBus.Introspectable.Introspect"));
+    }
+
+    #[test]
+    fn a_device_publishing_no_interfaces_has_no_methods() {
+        assert!(parse_methods("<node></node>").unwrap().is_empty());
+    }
+
+    #[test]
+    fn a_document_that_cannot_be_read_is_an_error_not_an_empty_device() {
+        // Answering "no capabilities" here would grey out every control on a
+        // working device and look like the hardware's fault.
+        assert!(parse_methods("<node><interface name=").is_err());
     }
 }

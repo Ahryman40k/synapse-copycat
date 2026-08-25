@@ -164,6 +164,18 @@
 				"command": "for _ in $(seq 1 20); do curl -sf -m 1 http://127.0.0.1:6006/index.html >/dev/null 2>&1 || break; sleep 0.5; done; if curl -sf -m 1 http://127.0.0.1:6006/index.html >/dev/null 2>&1; then echo 'port 6006 is still serving something after 10s - refusing to test it' >&2; exit 1; fi; pnpm exec start-server-and-test 'pnpm exec nx run synapse:serve-storybook-static' http://127.0.0.1:6006/index.html 'pnpm exec test-storybook --config-dir apps/synapse/.storybook --url http://127.0.0.1:6006'",
 				"cwd": "."
 			}
+		},
+		"typecheck": {
+			"executor": "nx:run-commands",
+			"cache": true,
+			"inputs": ["default", "^default"],
+			"options": {
+				"cwd": "{projectRoot}",
+				"commands": [
+					"../../node_modules/.bin/tsc -p tsconfig.app.json --noEmit"
+				],
+				"parallel": false
+			}
 		}
 	}
 }

@@ -1,7 +1,6 @@
 use serde::Serialize;
-use specta::Type;
 
-#[derive(Debug, Serialize, Clone, Type)]
+#[derive(Debug, Serialize, Clone)]
 pub struct Device {
     pub serial: String,
     pub name: String,
@@ -11,7 +10,7 @@ pub struct Device {
     pub image: String,
 }
 
-#[derive(Debug, Serialize, Clone, Type)]
+#[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum DeviceKind {
     Keyboard,

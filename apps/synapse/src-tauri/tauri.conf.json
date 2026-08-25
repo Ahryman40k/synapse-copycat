@@ -2,9 +2,9 @@
 	"$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
 	"productName": "synapse-copycat",
 	"version": "0.1.0",
-	"identifier": "com.tauri.dev",
+	"identifier": "dev.ahryman.synapse",
 	"build": {
-		"frontendDist": "../../../../dist/apps/synapse",
+		"frontendDist": "../../../dist/apps/synapse/browser",
 		"devUrl": "http://localhost:4200",
 		"beforeDevCommand": "pnpm exec nx run synapse:serve",
 		"beforeBuildCommand": "pnpm exec nx run synapse:build:production"
@@ -34,12 +34,5 @@
 			"icons/icon.ico"
 		]
 	},
-	"plugins": {
-		"tauri-typegen": {
-			"project_path": "../../../libs/backend-api/src/lib/",
-			"output_path": "../src/generated",
-			"validation_library": "none",
-			"verbose": true
-		}
-	}
+	"plugins": {}
 }

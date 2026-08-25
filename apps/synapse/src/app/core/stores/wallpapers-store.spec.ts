@@ -123,3 +123,92 @@ describe('WallpapersStore', () => {
 		expect(setup().folder()).toBeUndefined();
 	});
 });
+
+/**
+ * The listing is parsed now, and one of the rules bites in a way worth pinning.
+ */
+describe('WallpapersStore, against a folder it cannot fully read', () => {
+	let warn: ReturnType<typeof vi.spyOn>;
+
+	beforeEach(() => {
+		localStorage.clear();
+		warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+	});
+
+	afterEach(() => warn.mockRestore());
+
+	/**
+	 * ⚠️ A deliberate consequence, not an oversight. `Wallpaper.palette` is
+	 * `minLength(1)` — "an image with no colour in it is not an image" — and
+	 * Rust's `palette::extract(path, …).unwrap_or_default()` really can answer
+	 * with none for a picture it failed to cut. So a file that is in the folder
+	 * can be missing from the grid, and the warning is the only thing that says
+	 * so. Raised with the backend; pinned here so the behaviour is a decision
+	 * rather than a surprise.
+	 */
+	it('drops an image it got no colours for, and keeps the rest', async () => {
+		TestBed.configureTestingModule({
+			providers: [
+				provideBackendApi(
+					withMock({
+						...unusedCommands(),
+						choose_wallpaper_folder: '/pictures',
+						wallpapers: [
+							{
+								path: '/pictures/dusk.jpg',
+								name: 'Dusk',
+								thumbnail: 'data:image/svg+xml,x',
+								palette: ['#1b3a5c'],
+							},
+							{
+								path: '/pictures/unreadable.jpg',
+								name: 'Unreadable',
+								thumbnail: 'data:image/svg+xml,x',
+								palette: [],
+							},
+						],
+					}),
+				),
+			],
+		});
+		const store = TestBed.inject(WallpapersStore);
+
+		await store.chooseFolder();
+
+		expect(store.wallpapers().map((paper) => paper.name)).toEqual(['Dusk']);
+		expect(warn).toHaveBeenCalledWith(
+			expect.stringContaining('dropped 1 of 2'),
+		);
+	});
+
+	it('reports a setter it cannot name rather than showing nothing happened', async () => {
+		TestBed.configureTestingModule({
+			providers: [
+				provideBackendApi(
+					withMock({
+						...unusedCommands(),
+						choose_wallpaper_folder: '/pictures',
+						wallpapers: [
+							{
+								path: '/pictures/dusk.jpg',
+								name: 'Dusk',
+								thumbnail: 'data:image/svg+xml,x',
+								palette: ['#1b3a5c'],
+							},
+						],
+						// The command resolved, so the wallpaper *was* set — only
+						// the name of what did it is unreadable.
+						set_wallpaper: 42 as never,
+					}),
+				),
+			],
+		});
+		const store = TestBed.inject(WallpapersStore);
+		await store.chooseFolder();
+		store.choose(store.wallpapers()[0]);
+
+		await store.setWallpaper();
+
+		expect(store.lastSet()).toEqual({ setter: 'an unnamed setter' });
+	});
+});

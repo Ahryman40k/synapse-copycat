@@ -10,4 +10,6 @@ export * from './mock-defaults';
 export * from './mock-groups';
 export * from './mock-wallpapers';
 export * from './mock-twinkly';
+export * from './twinkly';
+export * from './validate';
 export * from './wallpaper';

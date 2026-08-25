@@ -190,3 +190,111 @@ async fn speaks_a_wider_vocabulary_than_the_app() {
         DeviceKind::Unknown
     ));
 }
+
+// ─── capability discovery ─────────────────────────────────────────────────────
+
+/// The point of discovery: devices differ, and finer than by kind.
+///
+/// Introspected against the fake daemon, which reports exactly what the real
+/// one would. A Huntsman publishes `setWave`; a Goliathus publishes the same
+/// `razer.device.lighting.chroma` interface **without** it. Anything deciding
+/// from the interface alone offers a wave that answers `UnknownMethod`.
+#[tokio::test]
+#[ignore = "needs the fake daemon: scripts/openrazer-fake.sh start"]
+async fn discovery_separates_devices_that_share_an_interface() {
+    let backend = backend().await;
+
+    let huntsman = backend
+        .supported_methods("XX0000000226")
+        .await
+        .expect("introspection failed");
+    let goliathus = backend
+        .supported_methods("XX0000000C02")
+        .await
+        .expect("introspection failed");
+
+    // Both publish chroma and a static colour.
+    for device in [&huntsman, &goliathus] {
+        assert!(device.contains("razer.device.lighting.chroma.setStatic"));
+    }
+
+    // Only one of them can wave.
+    assert!(huntsman.contains("razer.device.lighting.chroma.setWave"));
+    assert!(
+        !goliathus.contains("razer.device.lighting.chroma.setWave"),
+        "the Goliathus would be offered a wave it refuses"
+    );
+}
+
+/// Discovery answers in the vocabulary the frontend sends.
+#[tokio::test]
+#[ignore = "needs the fake daemon: scripts/openrazer-fake.sh start"]
+async fn a_mouse_reports_dpi_and_battery_and_a_keyboard_does_not() {
+    let backend = backend().await;
+
+    // The Basilisk Ultimate receiver: a wireless mouse, so DPI and power.
+    let mouse = openrazer::request::supported_from(
+        &backend.supported_methods("XX0000000088").await.unwrap(),
+    );
+    // The Huntsman Elite: a wired keyboard, so neither.
+    let keyboard = openrazer::request::supported_from(
+        &backend.supported_methods("XX0000000226").await.unwrap(),
+    );
+
+    for wanted in [
+        "GetDpi",
+        "SetDpi",
+        "GetMaxDpi",
+        "GetBatteryLevel",
+        "IsCharging",
+    ] {
+        assert!(mouse.contains(&wanted.to_string()), "mouse lacks {wanted}");
+        assert!(
+            !keyboard.contains(&wanted.to_string()),
+            "the keyboard was offered {wanted}, which it has no interface for"
+        );
+    }
+
+    // And what they do share is reported for both, so discovery is not simply
+    // answering "mouse" and "keyboard" by another name.
+    for shared in ["GetDeviceName", "GetDeviceImage"] {
+        assert!(mouse.contains(&shared.to_string()), "mouse lacks {shared}");
+        assert!(
+            keyboard.contains(&shared.to_string()),
+            "keyboard lacks {shared}"
+        );
+    }
+
+    // ⚠️ The case that makes method-level discovery necessary, and the one
+    // `src-tauri/AGENTS.md` warns about: the Basilisk publishes
+    // `razer.device.lighting.chroma` but **not `setStatic`** — its colour is
+    // per zone, on `razer.device.lighting.logo` and friends. So the keyboard
+    // takes a static colour and the mouse does not, despite both advertising
+    // the same interface. Anything reading interfaces would offer the mouse a
+    // control that answers `UnknownMethod`.
+    assert!(keyboard.contains(&"SetChromaStatic".to_string()));
+    assert!(
+        !mouse.contains(&"SetChromaStatic".to_string()),
+        "the Basilisk's colour is per zone; offering it the global static \
+         colour is exactly the trap discovery exists to close"
+    );
+}
+
+/// A headset has no matrix and no wave, and discovery has to say so.
+#[tokio::test]
+#[ignore = "needs the fake daemon: scripts/openrazer-fake.sh start"]
+async fn a_headset_is_offered_only_what_it_can_do() {
+    let backend = backend().await;
+
+    let kraken = backend.supported_methods("XX0000000527").await.unwrap();
+    let named = openrazer::request::supported_from(&kraken);
+
+    // It can take a colour.
+    assert!(named.contains(&"SetChromaStatic".to_string()));
+    // It cannot be painted — no `setKeyRow`, no `setCustom`. This is why the
+    // engine approximates a headset with one averaged colour.
+    assert!(!kraken.contains("razer.device.lighting.chroma.setKeyRow"));
+    assert!(!kraken.contains("razer.device.lighting.chroma.setCustom"));
+    // And it has no brightness interface at all.
+    assert!(!named.contains(&"SetBrightness".to_string()));
+}

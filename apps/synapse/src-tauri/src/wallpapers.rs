@@ -9,7 +9,6 @@
 use std::path::Path;
 
 use serde::Serialize;
-use specta::Type;
 use tauri_plugin_dialog::DialogExt;
 
 /// How many colours are pulled from each image.
@@ -19,7 +18,7 @@ use tauri_plugin_dialog::DialogExt;
 const PALETTE_SIZE: usize = 5;
 
 /// What a wallpaper looks like to the interface.
-#[derive(Debug, Clone, Serialize, Type)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Wallpaper {
     /// The absolute path, which is what a desktop's wallpaper setter needs.
     /// Shown to nobody; the name is what a reader sees.
@@ -33,7 +32,7 @@ pub struct Wallpaper {
 }
 
 /// A wallpaper setter this machine could actually use.
-#[derive(Debug, Clone, Serialize, Type)]
+#[derive(Debug, Clone, Serialize)]
 pub struct WallpaperSetter {
     /// `GNOME`, `swww`… shown to the reader.
     pub name: String,

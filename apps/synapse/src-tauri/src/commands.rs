@@ -253,3 +253,23 @@ pub async fn stop_group(id: GroupId, state: State<'_, RazerState>) -> Result<(),
 pub async fn remove_group(id: GroupId, state: State<'_, RazerState>) -> Result<(), BackendError> {
     state.remove_group(id).await
 }
+
+/// What one participant can actually be asked to do.
+///
+/// The call every per-device control makes before it renders. Answers the
+/// `type` names `run_capability` takes — so a control checks for the exact
+/// string it would send — and the list is per **method**, not per interface:
+/// a Goliathus publishes the chroma interface without `setWave`, so it is
+/// offered a static colour and no wave.
+///
+/// Errors rather than answering an empty list when the device cannot be
+/// reached. "Nothing is supported" and "I could not ask" look identical to an
+/// interface that greys controls out, and only one of them is the hardware's
+/// fault.
+#[tauri::command]
+pub async fn capabilities(
+    participant: String,
+    state: State<'_, RazerState>,
+) -> Result<Vec<String>, BackendError> {
+    state.capabilities(&participant).await
+}

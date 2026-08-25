@@ -1,4 +1,4 @@
-import { type InferOutput, literal, object, string, union } from 'valibot';
+import { type InferOutput, object, string } from 'valibot';
 
 export const ApplicationConfig = object({
 	envName: string(),

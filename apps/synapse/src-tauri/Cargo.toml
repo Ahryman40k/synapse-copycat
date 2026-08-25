@@ -16,7 +16,6 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2.3.0", features = [] }
-tauri-typegen = "0.5.0"
 
 [dependencies]
 # The protocol libraries. Each knows its own hardware and nothing about groups,
@@ -36,8 +35,6 @@ tokio = { version =  "1.0.0", features = ["full"] }
 thiserror = "2.0.18"
 log = "0.4.29"
 futures = "0.3.32"
-specta        = { version = "2.0.0-rc.22", features = ["derive"] }
-tauri-specta  = { version = "2.0.0-rc.21", features = ["derive", "typescript"] }
 rmcp = { version = "2.2.0", features = ["server", "macros", "transport-streamable-http-server", "server-side-http"] }
 axum = "0.8.4"
 schemars = "1.2.2"

@@ -1,6 +1,12 @@
 import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
-import { BackendApi, type Wallpaper } from '@synapse-copycat/backend-api';
+import {
+	BackendApi,
+	parsedList,
+	parsedValue,
+	Wallpaper,
+	WallpaperSetter,
+} from '@synapse-copycat/backend-api';
 import { safeParse, string } from 'valibot';
 
 /** Where the chosen folder is remembered between runs. */
@@ -83,7 +89,7 @@ type WallpapersState = {
 	 * ⚠️ Empty is a real answer, not a failure to look — a desktop none of the
 	 * adapters know is a situation the page has to be able to state.
 	 */
-	setters: { name: string; program: string }[];
+	setters: WallpaperSetter[];
 
 	/** What the last attempt said, good or bad. Cleared by the next one. */
 	lastSet: { setter?: string; problem?: string } | undefined;
@@ -117,7 +123,14 @@ export const WallpapersStore = signalStore(
 		 * complains about it is worse than one that says nothing.
 		 */
 		async chooseFolder(): Promise<void> {
-			const folder = await backendApi.invoke('choose_wallpaper_folder', {});
+			// Parsed like anything else off the wire, and `undefined` covers both
+			// answers that mean "carry on as you were": a dismissed dialog, and a
+			// path in a shape this build cannot use.
+			const folder = parsedValue(
+				string(),
+				await backendApi.invoke('choose_wallpaper_folder', {}),
+				'choose_wallpaper_folder',
+			);
 			if (!folder) return;
 
 			patchState(store, { folder, chosen: undefined });
@@ -137,7 +150,17 @@ export const WallpapersStore = signalStore(
 
 			patchState(store, { reading: true });
 			try {
-				const wallpapers = await backendApi.invoke('wallpapers', { folder });
+				// ⚠️ An image whose palette came back empty is dropped here, by
+				// `minLength(1)` on the schema. That is deliberate — the palette
+				// is the whole reason this page exists, and Rust's
+				// `extract(...).unwrap_or_default()` can answer with none — but
+				// it means a picture can be missing from a folder it is in, and
+				// the console warning is the only thing that says so.
+				const wallpapers = parsedList(
+					Wallpaper,
+					await backendApi.invoke('wallpapers', { folder }),
+					'wallpapers',
+				);
 				// Anything chosen before is gone with the listing it came from.
 				patchState(store, { wallpapers, chosen: undefined });
 				return wallpapers;
@@ -150,7 +173,11 @@ export const WallpapersStore = signalStore(
 		async findSetters(): Promise<void> {
 			try {
 				patchState(store, {
-					setters: await backendApi.invoke('wallpaper_setters', {}),
+					setters: parsedList(
+						WallpaperSetter,
+						await backendApi.invoke('wallpaper_setters', {}),
+						'wallpaper_setters',
+					),
 				});
 			} catch (error) {
 				// Not fatal: the page falls back to saying it found nothing,
@@ -173,10 +200,17 @@ export const WallpapersStore = signalStore(
 
 			patchState(store, { lastSet: undefined });
 			try {
-				const setter = await backendApi.invoke('set_wallpaper', {
-					path: chosen.path,
+				const setter = parsedValue(
+					string(),
+					await backendApi.invoke('set_wallpaper', { path: chosen.path }),
+					'set_wallpaper',
+				);
+				// It did happen — the command resolved. An unreadable name is
+				// worth saying plainly rather than printing `undefined` next to
+				// a wallpaper that is now on the desktop.
+				patchState(store, {
+					lastSet: { setter: setter ?? 'an unnamed setter' },
 				});
-				patchState(store, { lastSet: { setter } });
 			} catch (error) {
 				patchState(store, {
 					lastSet: {

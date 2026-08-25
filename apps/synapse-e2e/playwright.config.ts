@@ -26,23 +26,33 @@ export default defineConfig({
 	webServer: {
 		command: 'pnpm exec nx run synapse:serve',
 		url: 'http://localhost:4200',
-		reuseExistingServer: true,
+		// Reuse a server a developer already has open (fast local iteration:
+		// `nx serve synapse` in one terminal, `nx e2e synapse-e2e` in another),
+		// but never in CI. `reuseExistingServer: true` unconditionally has the
+		// same hazard the Storybook target (`nx run synapse:test-storybook`)
+		// guards against with an explicit port check: it will happily test
+		// whatever is already answering on 4200, including a stale build left
+		// behind by a crashed previous run. CI has no legitimate reason for
+		// something to already be on this port, so there `false` turns that
+		// hazard into a clean startup failure instead of a silent pass against
+		// stale content.
+		reuseExistingServer: !process.env['CI'],
 		cwd: workspaceRoot,
 	},
+	// Chromium only. The three-engine template triples the run for a UI whose
+	// only shipping target is a Tauri webview on Linux (WebKitGTK) — and
+	// neither Playwright's `webkit` (upstream WebKit, not WebKitGTK) nor
+	// `firefox` gets closer to that than `chromium` does. Browser+mock e2e was
+	// never going to prove anything about the webview either way: per root
+	// AGENTS.md §1 this mode exists to prove UI logic and flows without a
+	// backend, and mode 3 (real hardware, real webview) is the only one that
+	// can speak to fidelity — and only the maintainer can run it. Re-add
+	// firefox/webkit here if cross-engine DOM/CSS bugs actually show up; until
+	// then it is 3x the runtime for a browser nothing ships with.
 	projects: [
 		{
 			name: 'chromium',
 			use: { ...devices['Desktop Chrome'] },
-		},
-
-		{
-			name: 'firefox',
-			use: { ...devices['Desktop Firefox'] },
-		},
-
-		{
-			name: 'webkit',
-			use: { ...devices['Desktop Safari'] },
 		},
 
 		// Uncomment for mobile browsers support

@@ -123,6 +123,74 @@ async fn every_change_is_on_disk_before_it_returns() {
 
     state.stop_all().await;
 }
+
+/// ⚠️ What Quit does, and the defect it fixes.
+///
+/// `stop_all` was written for the real quit — "so the devices are not left
+/// being driven by a process that is going away" — and was wired to nothing.
+/// The tray's Quit was a bare `app.exit(0)`, so quitting left every device
+/// showing its last frame with nothing still running that could turn it off.
+///
+/// Both halves matter. Stopping has to actually stop the engines, and it must
+/// **not** clear `started`: quitting the application is not switching the
+/// ambience off, and the next launch has to bring the room back.
+#[tokio::test]
+#[ignore = "needs the fake daemon: scripts/openrazer-fake.sh start"]
+async fn quitting_stops_the_engines_and_still_comes_back_next_launch() {
+    let dir = scratch("quit");
+
+    {
+        let state = RazerState::new().await;
+        let running = state.groups().await;
+        assert!(running[0].group.started, "the first run draws");
+        assert!(
+            !running[0].devices.is_empty(),
+            "started should mean running, not merely marked"
+        );
+
+        // ⚠️ A rename only to get the group on disk. A first run builds it in
+        // memory and saves nothing until something changes it, so without this
+        // the relaunch below would be another first run and would prove
+        // nothing about what was restored. Reported separately — it is not
+        // what this test is about.
+        state
+            .rename_group(running[0].group.id, "Desk")
+            .await
+            .unwrap();
+
+        // What Quit now reaches, through `lifecycle::quiesce`.
+        state.stop_all().await;
+
+        let quiet = state.groups().await;
+        assert!(
+            quiet[0].devices.is_empty(),
+            "a device is still being driven by a process that is quitting"
+        );
+        assert!(
+            quiet[0].group.started,
+            "quitting un-marked the group, so the next launch would open dark"
+        );
+    }
+
+    // And it does come back. This is why `stop_all` deliberately differs from
+    // `stop`, which does clear the flag.
+    assert!(dir.join("synapse/groups.json").exists());
+    let relaunched = RazerState::new().await;
+    let restored = relaunched.groups().await;
+
+    assert_eq!(
+        restored[0].group.name, "Desk",
+        "a different group came back"
+    );
+    assert!(restored[0].group.started);
+    assert!(
+        !restored[0].devices.is_empty(),
+        "the ambience did not resume after a quit"
+    );
+
+    relaunched.stop_all().await;
+}
+
 /// ⚠️ A first run has to write itself down.
 ///
 /// Every other save happens because the user changed something. A first run

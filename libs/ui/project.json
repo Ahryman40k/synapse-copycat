@@ -16,6 +16,19 @@
 		},
 		"lint": {
 			"executor": "@nx/eslint:lint"
+		},
+		"typecheck": {
+			"executor": "nx:run-commands",
+			"cache": true,
+			"inputs": ["default", "^default"],
+			"options": {
+				"cwd": "{projectRoot}",
+				"commands": [
+					"../../node_modules/.bin/tsc -p tsconfig.lib.json --noEmit",
+					"../../node_modules/.bin/tsc -p tsconfig.spec.json --noEmit"
+				],
+				"parallel": false
+			}
 		}
 	}
 }

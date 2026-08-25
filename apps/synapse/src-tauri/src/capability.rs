@@ -92,6 +92,17 @@ pub struct StripLighting {
     pub color: Rgb,
 }
 
+/// What a Twinkly can be asked for, as the `type` names `run_capability` takes.
+///
+/// A constant, unlike the Razer side: the light string protocol is the same on
+/// every device that speaks it, so there is nothing to introspect. What does
+/// vary is firmware — `TwinklyGetLighting` needs 2.7.1 for the colour endpoint
+/// — and that cannot be known without asking, so it is reported as available
+/// and fails honestly on an older string rather than being hidden from a
+/// device that probably has it.
+pub const TWINKLY_CATALOGUE: &[&str] =
+    &["TwinklySetPower", "TwinklySetColor", "TwinklyGetLighting"];
+
 // ─── The pool ─────────────────────────────────────────────────────────────────
 
 /// Every Twinkly a sweep has seen, by participant.

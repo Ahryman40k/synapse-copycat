@@ -9,7 +9,6 @@ use std::net::Ipv4Addr;
 use std::time::Duration;
 
 use serde::Serialize;
-use specta::Type;
 
 use crate::capability::TwinklyPool;
 use crate::razer::engine::group::ParticipantId;
@@ -22,7 +21,7 @@ const DISCOVERY_WINDOW: Duration = Duration::from_secs(2);
 ///
 /// `PartialEq` because the watcher diffs sweeps: an event goes out only when
 /// the list actually changed.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Type)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct TwinklyDevice {
     /// `twinkly-1c9dc285dd79`.
     pub participant: ParticipantId,

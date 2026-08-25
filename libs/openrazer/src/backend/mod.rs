@@ -143,6 +143,24 @@ pub trait DeviceBackend: Send + Sync + 'static {
     /// this would tear the picture as it is built.
     fn show_custom_frame(&self, serial: &str) -> BoxFuture<'_, Result<(), BackendError>>;
 
+    // ── discovery ─────────────────────────────────────────────────────────────
+
+    /// Every method this device actually publishes, as `interface.method`.
+    ///
+    /// The daemon is asked rather than guessed at, and asked per **method**
+    /// rather than per interface: a Goliathus publishes
+    /// `razer.device.lighting.chroma` without `setWave`, and a Kraken
+    /// publishes it without `setKeyRow`. An interface-level answer would offer
+    /// controls that fail with `UnknownMethod` the moment they are used —
+    /// worse than not offering them, because the user has already tried.
+    ///
+    /// Pair it with [`crate::request::supported_from`] to turn the answer into
+    /// the capability names the frontend sends.
+    fn supported_methods(
+        &self,
+        serial: &str,
+    ) -> BoxFuture<'_, Result<std::collections::BTreeSet<String>, BackendError>>;
+
     // ── hotplug ───────────────────────────────────────────────────────────────
 
     /// One notice per device arriving or leaving, for as long as the channel
