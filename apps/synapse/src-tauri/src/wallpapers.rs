@@ -32,6 +32,30 @@ pub struct Wallpaper {
     pub palette: Vec<String>,
 }
 
+/// A wallpaper setter this machine could actually use.
+#[derive(Debug, Clone, Serialize, Type)]
+pub struct WallpaperSetter {
+    /// `GNOME`, `swww`… shown to the reader.
+    pub name: String,
+    /// The program it drives, so a reader can tell why it is or is not there.
+    pub program: String,
+}
+
+/// Which setters were found here, most appropriate first.
+///
+/// ⚠️ Reported rather than assumed. A control that silently does nothing on
+/// three desktops out of four is worse than one that says what it found — and
+/// "nothing found" is a real answer this application has to be able to give.
+pub fn setters() -> Vec<WallpaperSetter> {
+    wallpaper::available()
+        .into_iter()
+        .map(|setter| WallpaperSetter {
+            name: setter.name().to_owned(),
+            program: setter.program().to_owned(),
+        })
+        .collect()
+}
+
 /// Extensions worth trying. Anything else in the folder is somebody's notes.
 const IMAGES: &[&str] = &["jpg", "jpeg", "png", "webp", "gif", "bmp"];
 

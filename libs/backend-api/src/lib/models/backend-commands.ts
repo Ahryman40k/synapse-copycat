@@ -81,6 +81,28 @@ export type BackendCommands = {
 		returnType: Wallpaper[];
 	};
 
+	/**
+	 * Which wallpaper setters this machine has, most appropriate first.
+	 *
+	 * ⚠️ An empty list is a real answer, not a failure: a desktop none of the
+	 * adapters know is a situation the interface has to be able to show.
+	 */
+	wallpaper_setters: {
+		args: Record<string, never>;
+		options: Record<string, never>;
+		returnType: { name: string; program: string }[];
+	};
+
+	/**
+	 * Put an image on the desktop. Answers with the name of the setter that
+	 * did it, and refuses when nothing here can.
+	 */
+	set_wallpaper: {
+		args: { path: string };
+		options: Record<string, never>;
+		returnType: string;
+	};
+
 	twinkly_devices: {
 		args: Record<string, never>;
 		options: Record<string, never>;

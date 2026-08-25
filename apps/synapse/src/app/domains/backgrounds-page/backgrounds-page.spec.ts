@@ -9,14 +9,31 @@ import { render, screen, waitFor } from '@testing-library/angular';
 import { ApplicationStore } from '../../core/stores/application-store';
 import { BackgroundsPage } from './backgrounds-page';
 
-const setup = async () => {
+const setup = async (
+	setters: { name: string; program: string }[] = [
+		{ name: 'swww', program: 'swww' },
+	],
+) => {
 	const rendered = await render(BackgroundsPage, {
 		providers: [
-			provideBackendApi(withMock({ ...unusedCommands(), ...mockWallpapers() })),
+			provideBackendApi(
+				withMock({ ...unusedCommands(), ...mockWallpapers(setters) }),
+			),
 		],
 	});
 
 	return { ...rendered, store: TestBed.inject(ApplicationStore) };
+};
+
+/** Choose the folder and pick a picture, which every setting test needs. */
+const openFolder = async (fixture: { detectChanges: () => void }) => {
+	screen.getByRole('button', { name: 'Choose a folder…' }).click();
+	await waitFor(() => {
+		fixture.detectChanges();
+		expect(screen.getByText('Harbour at dusk')).toBeVisible();
+	});
+	screen.getByText('Harbour at dusk').click();
+	fixture.detectChanges();
 };
 
 describe('BackgroundsPage', () => {
@@ -64,19 +81,47 @@ describe('BackgroundsPage', () => {
 		).toBeVisible();
 	});
 
-	it('says the wallpaper itself is not set', async () => {
-		// ⚠️ Two of the three parts work. Doing half of it silently would be
-		// worse than doing half of it out loud.
+	it('offers to set the wallpaper, and names what would do it', async () => {
 		const { fixture } = await setup();
-		screen.getByRole('button', { name: 'Choose a folder…' }).click();
+		await openFolder(fixture);
+
+		expect(
+			screen.getByRole('button', { name: 'Set as wallpaper' }),
+		).toBeVisible();
+		expect(screen.getByText(/with swww/)).toBeVisible();
+	});
+
+	it('says which setter did it', async () => {
+		const { fixture } = await setup();
+		await openFolder(fixture);
+
+		screen.getByRole('button', { name: 'Set as wallpaper' }).click();
+
 		await waitFor(() => {
 			fixture.detectChanges();
-			expect(screen.getByText('Harbour at dusk')).toBeVisible();
+			expect(screen.getByText(/Set with swww/)).toBeVisible();
 		});
-		screen.getByText('Harbour at dusk').click();
-		fixture.detectChanges();
+	});
 
-		expect(screen.getByText(/It does not set the wallpaper/)).toBeVisible();
+	it('says so when nothing here can set a wallpaper', async () => {
+		// ⚠️ A real situation, not a failure to look — a desktop none of the
+		// adapters know. A control that silently does nothing would be the one
+		// thing this page exists not to be.
+		const { fixture } = await setup([]);
+		await openFolder(fixture);
+
+		expect(screen.getByText(/Nothing here can set a wallpaper/)).toBeVisible();
+		expect(
+			screen.queryByRole('button', { name: 'Set as wallpaper' }),
+		).not.toBeInTheDocument();
+	});
+
+	it('lists what it found on this machine', async () => {
+		await setup([{ name: 'GNOME', program: 'gsettings' }]);
+
+		await waitFor(() => {
+			expect(screen.getByText('GNOME')).toBeVisible();
+		});
 	});
 
 	it('names what each desktop needs, rather than promising one control', async () => {
@@ -84,7 +129,12 @@ describe('BackgroundsPage', () => {
 		// page claiming otherwise would be the wrong kind of empty.
 		await setup();
 
-		for (const desktop of ['GNOME', 'KDE Plasma', 'XFCE', 'swww, hyprpaper']) {
+		for (const desktop of [
+			'GNOME',
+			'KDE Plasma',
+			'XFCE',
+			'swww, hyprpaper, feh',
+		]) {
 			expect(screen.getByText(desktop)).toBeVisible();
 		}
 	});

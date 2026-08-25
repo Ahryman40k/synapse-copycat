@@ -15,6 +15,7 @@ members = [
 	"libs/openrazer",
 	"libs/palette",
 	"libs/twinkly",
+	"libs/wallpaper",
 ]
 
 [workspace.package]

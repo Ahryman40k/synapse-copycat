@@ -64,11 +64,30 @@ function thumbnail(palette: string[]): string {
 	return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
-export function mockWallpapers(): Pick<
+export function mockWallpapers(
+	setters: { name: string; program: string }[] = [
+		{ name: 'swww', program: 'swww' },
+	],
+): Pick<
 	Mock,
-	'choose_wallpaper_folder' | 'wallpapers'
+	| 'choose_wallpaper_folder'
+	| 'wallpapers'
+	| 'wallpaper_setters'
+	| 'set_wallpaper'
 > {
 	return {
+		wallpaper_setters: () => setters,
+
+		set_wallpaper: () => {
+			// ⚠️ Nothing is set: there is no desktop here. It answers the way the
+			// backend would so the interface can be built against the shape,
+			// and refuses the way the backend would when nothing is available —
+			// which is the branch worth being able to see.
+			const first = setters[0];
+			if (!first) throw new Error('no wallpaper setter found');
+			return first.name;
+		},
+
 		choose_wallpaper_folder: () => FOLDER,
 
 		wallpapers: ({ folder }) =>

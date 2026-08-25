@@ -24,6 +24,7 @@ tauri-typegen = "0.5.0"
 openrazer = { path = "../../../libs/openrazer" }
 palette = { path = "../../../libs/palette" }
 twinkly = { path = "../../../libs/twinkly" }
+wallpaper = { path = "../../../libs/wallpaper" }
 
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }

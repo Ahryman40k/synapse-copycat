@@ -30,6 +30,8 @@ export function unusedCommands(): Mock {
 		twinkly_devices: [],
 		choose_wallpaper_folder: null,
 		wallpapers: [],
+		wallpaper_setters: [],
+		set_wallpaper: '',
 		watch_twinkly: null,
 		...mockGroups([]),
 		...mockTwinkly([]),

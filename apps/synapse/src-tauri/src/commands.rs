@@ -2,7 +2,7 @@ use tauri::State;
 
 use crate::capability::{AnyCapabilityRequest, AnyCapabilityResponse};
 use crate::discovery::TwinklyDevice;
-use crate::wallpapers::Wallpaper;
+use crate::wallpapers::{Wallpaper, WallpaperSetter};
 use crate::razer::engine::ambience::Ambience;
 use crate::razer::engine::cadence::Cadence;
 use crate::razer::engine::group::{GroupError, GroupId, GroupStatus, ParticipantId};
@@ -156,6 +156,23 @@ pub async fn wallpapers(folder: String) -> Result<Vec<Wallpaper>, BackendError> 
     Ok(crate::wallpapers::wallpapers(&folder))
 }
 
+/// Which wallpaper setters this machine has.
+#[tauri::command]
+pub async fn wallpaper_setters() -> Result<Vec<WallpaperSetter>, BackendError> {
+    Ok(crate::wallpapers::setters())
+}
+
+/// Put an image on the desktop, and say which setter did it.
+///
+/// ⚠️ Answers with an error when nothing here can — which is a real outcome on
+/// a machine running a desktop none of the adapters know, and one the interface
+/// has to be able to show rather than swallow.
+#[tauri::command]
+pub async fn set_wallpaper(path: String) -> Result<String, BackendError> {
+    wallpaper::set(std::path::Path::new(&path))
+        .map_err(|error| BackendError::Protocol(error.to_string()))
+}
+
 /// The devices no group has claimed. Not driven and not broken — worth showing,
 /// since one omitted from the list reads as one the app failed to notice.
 #[tauri::command]
@@ -198,9 +215,7 @@ pub async fn set_group_members(
     members: Vec<ParticipantId>,
     state: State<'_, RazerState>,
 ) -> Result<(), GroupError> {
-    state
-        .with_groups(|conductor| conductor.set_members(id, members))
-        .await
+    state.set_group_members(id, members).await
 }
 
 /// Changes what a group shows. Takes effect at once on a running group.

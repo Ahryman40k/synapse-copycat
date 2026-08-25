@@ -1,0 +1,10 @@
+[package]
+name = "wallpaper"
+version = "0.1.0"
+description = "Set the desktop wallpaper, through whatever the desktop actually uses"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+thiserror = { workspace = true }

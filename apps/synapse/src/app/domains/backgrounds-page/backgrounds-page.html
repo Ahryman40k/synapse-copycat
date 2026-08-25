@@ -78,10 +78,35 @@
       ></ambience-preview>
     }
 
-    <p class="backgrounds-page__quiet">
-      ⚠️ This gives the colours to a group. It does not set the wallpaper —
-      nothing here can yet.
-    </p>
+    <!--
+      The wallpaper, and the lighting, as two deliberate actions rather than
+      one. Someone may want the colours without changing what is on screen, and
+      the reverse is just as reasonable.
+    -->
+    @if (setters().length) {
+      <div class="backgrounds-page__targets">
+        <button syn-button type="button" (click)="setWallpaper()">
+          Set as wallpaper
+        </button>
+        <span class="backgrounds-page__quiet">
+          with {{ setters()[0].name }}
+        </span>
+      </div>
+    } @else {
+      <p class="backgrounds-page__quiet">
+        Nothing here can set a wallpaper — see below for what is looked for.
+      </p>
+    }
+
+    @if (lastSet(); as last) {
+      <p class="backgrounds-page__result" role="status">
+        @if (last.setter) {
+          Set with {{ last.setter }}.
+        } @else {
+          Could not set it: {{ last.problem }}
+        }
+      </p>
+    }
 
     @if (groups().length) {
       <div class="backgrounds-page__targets">
@@ -109,11 +134,30 @@
   machines. What makes this hard is not the interface.
 -->
 <syn-panel class="backgrounds-page__pending">
-  <h2>The hard part</h2>
+  <h2>What this machine has</h2>
+
+  <!--
+    Reported, not assumed. A desktop none of the adapters know is a real
+    situation, and the page has to be able to state it.
+  -->
+  @if (setters().length) {
+    <p>
+      Found:
+      @for (setter of setters(); track setter.name) {
+        <strong>{{ setter.name }}</strong>
+        @if (!$last) {
+          ,
+        }
+      }
+      — the first is used.
+    </p>
+  } @else {
+    <p>None of these was found here.</p>
+  }
 
   <p>
     Setting a wallpaper on Linux means driving whatever your desktop uses, and
-    there is no common way in. This will be a set of adapters, not a call:
+    there is no common way in, so this is a set of adapters:
   </p>
 
   <dl>
@@ -135,9 +179,17 @@
       property path contains both.
     </dd>
 
-    <dt>swww, hyprpaper</dt>
-    <dd>Their own client or their own socket, and each one different.</dd>
+    <dt>swww, hyprpaper, feh</dt>
+    <dd>Their own client, and each one different.</dd>
   </dl>
+
+  <p>
+    ⚠️ Having the program is not enough for the first three.
+    <code>gsettings</code> ships with glib and is on machines that have never
+    run GNOME; writing GNOME's key there changes nothing anyone can see. So the
+    desktop has to be the one running, which is read from
+    <code>XDG_CURRENT_DESKTOP</code>.
+  </p>
 
   <p>
     Whichever of those land will say which ones were found on your machine,

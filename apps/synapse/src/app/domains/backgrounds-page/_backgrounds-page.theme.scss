@@ -37,6 +37,13 @@
 
   // The chosen one, marked by a filled border rather than a tick: the tile is
   // mostly picture, and something small in a corner is lost against it.
+  backgrounds-page .backgrounds-page__result {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.25rem;
+    background-color: var(--syn-surface-variant);
+    color: var(--syn-on-surface);
+  }
+
   backgrounds-page .backgrounds-page__image--chosen {
     border-color: var(--syn-primary);
     box-shadow: inset 0 0 0 1px var(--syn-primary);

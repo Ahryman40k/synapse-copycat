@@ -24,6 +24,8 @@ const setup = () => {
 };
 
 describe('WallpapersStore', () => {
+	beforeEach(() => localStorage.clear());
+
 	it('starts with nothing chosen', () => {
 		const store = setup();
 
@@ -82,5 +84,42 @@ describe('WallpapersStore', () => {
 		await store.read();
 
 		expect(store.chosen()).toBeUndefined();
+	});
+
+	it('remembers the folder between runs', async () => {
+		// Re-picking it on every launch is the kind of small friction that makes
+		// a feature not worth opening.
+		const store = setup();
+		await store.chooseFolder();
+		const chosen = store.folder();
+
+		// A second store, as a fresh launch would build.
+		TestBed.resetTestingModule();
+		const next = setup();
+
+		expect(next.folder()).toBe(chosen);
+	});
+
+	it('does not remember the listing', async () => {
+		// ⚠️ Reading a folder decodes and cuts every image in it. Doing that at
+		// startup would put seconds behind a window opening, for a tab nobody
+		// may visit.
+		const store = setup();
+		await store.chooseFolder();
+
+		TestBed.resetTestingModule();
+		const next = setup();
+
+		expect(next.folder()).toBeDefined();
+		expect(next.wallpapers()).toEqual([]);
+	});
+
+	it('forgets a remembered value it cannot read', () => {
+		// Storage is external input like anything crossing a boundary: written
+		// by an older version, or edited. A path is not something to hand the
+		// backend on trust.
+		localStorage.setItem('synapse.wallpaperFolder', '{"not":"a string"}');
+
+		expect(setup().folder()).toBeUndefined();
 	});
 });

@@ -51,6 +51,8 @@ pub fn run() {
             commands::twinkly_devices,
             commands::choose_wallpaper_folder,
             commands::wallpapers,
+            commands::wallpaper_setters,
+            commands::set_wallpaper,
             commands::watch_twinkly,
             // commands::modules,
             commands::run_capability,
