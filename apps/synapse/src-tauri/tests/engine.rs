@@ -51,7 +51,7 @@ async fn drives_every_device_it_is_given() {
     let backend = backend().await;
     let serials = every_device(&backend).await;
 
-    let engine = Engine::start(backend, &no_strips(), &serials, moving(), Cadence::Normal).await;
+    let engine = Engine::start(Some(backend), &no_strips(), &serials, moving(), Cadence::Normal).await;
 
     assert_eq!(engine.device_count(), serials.len());
     assert!(engine.skipped().is_empty(), "{:?}", engine.skipped());
@@ -75,7 +75,7 @@ async fn a_device_it_cannot_reach_is_skipped_not_fatal() {
     let mut serials = every_device(&backend).await;
     serials.push("XXNOTADEVICE".to_string());
 
-    let engine = Engine::start(backend, &no_strips(), &serials, moving(), Cadence::Normal).await;
+    let engine = Engine::start(Some(backend), &no_strips(), &serials, moving(), Cadence::Normal).await;
 
     // A peripheral unplugged between enumeration and here must not cost the
     // user the ambience on everything else.
@@ -93,7 +93,7 @@ async fn changing_the_ambience_is_one_send() {
     let backend = backend().await;
     let serials = every_device(&backend).await;
     let engine = Engine::start(
-        backend,
+        Some(backend),
         &no_strips(),
         &serials,
         Ambience::still(Rgb::new(255, 0, 0)),
@@ -114,7 +114,7 @@ async fn changing_the_ambience_is_one_send() {
 async fn reports_what_each_device_costs() {
     let backend = backend().await;
     let serials = every_device(&backend).await;
-    let engine = Engine::start(backend, &no_strips(), &serials, moving(), Cadence::Normal).await;
+    let engine = Engine::start(Some(backend), &no_strips(), &serials, moving(), Cadence::Normal).await;
 
     // The meters report about once a second.
     tokio::time::sleep(Duration::from_millis(1400)).await;
@@ -173,7 +173,7 @@ async fn dropping_the_engine_stops_the_drawing() {
 
     {
         let _engine = Engine::start(
-            backend.clone(),
+            Some(backend.clone()),
             &no_strips(),
             &serials,
             moving(),

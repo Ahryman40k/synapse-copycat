@@ -70,11 +70,11 @@ async fn two_groups_draw_different_ambiences_at_once() {
         .unwrap();
 
     conductor
-        .start(desk, backend.clone(), &no_strips())
+        .start(desk, Some(backend.clone()), &no_strips())
         .await
         .unwrap();
     conductor
-        .start(quiet, backend.clone(), &no_strips())
+        .start(quiet, Some(backend.clone()), &no_strips())
         .await
         .unwrap();
     tokio::time::sleep(Duration::from_millis(300)).await;
@@ -105,7 +105,7 @@ async fn a_group_can_be_prepared_and_run_later() {
     assert!(!conductor.group(evening).unwrap().started);
 
     conductor
-        .start(evening, backend, &no_strips())
+        .start(evening, Some(backend), &no_strips())
         .await
         .unwrap();
     assert!(conductor.group(evening).unwrap().started);
@@ -124,7 +124,7 @@ async fn changing_a_running_group_takes_effect_without_a_restart() {
     let id = conductor
         .create("Desk", ids(&[HUNTSMAN]), still(Rgb::new(255, 0, 0)))
         .unwrap();
-    conductor.start(id, backend, &no_strips()).await.unwrap();
+    conductor.start(id, Some(backend), &no_strips()).await.unwrap();
     tokio::time::sleep(Duration::from_millis(100)).await;
 
     let blue = still(Rgb::new(0, 0, 255));
@@ -146,7 +146,7 @@ async fn the_first_run_lights_everything_in_one_group() {
     let serials = backend.list_devices().await.unwrap();
     let mut conductor = Conductor::with_everything(serials.clone(), moving());
 
-    conductor.start_marked(backend, &no_strips()).await;
+    conductor.start_marked(Some(backend), &no_strips()).await;
     tokio::time::sleep(Duration::from_millis(300)).await;
 
     let status = &conductor.status()[0];
@@ -166,7 +166,7 @@ async fn removing_a_group_stops_it_and_frees_its_participants() {
         .create("Desk", ids(&[HUNTSMAN, BASILISK]), moving())
         .unwrap();
     conductor
-        .start(id, backend.clone(), &no_strips())
+        .start(id, Some(backend.clone()), &no_strips())
         .await
         .unwrap();
 
@@ -192,11 +192,11 @@ async fn each_group_keeps_its_own_cadence() {
     conductor.set_cadence(slow, Cadence::Slow).unwrap();
 
     conductor
-        .start(fast, backend.clone(), &no_strips())
+        .start(fast, Some(backend.clone()), &no_strips())
         .await
         .unwrap();
     conductor
-        .start(slow, backend.clone(), &no_strips())
+        .start(slow, Some(backend.clone()), &no_strips())
         .await
         .unwrap();
     tokio::time::sleep(Duration::from_millis(1300)).await;
@@ -231,4 +231,75 @@ async fn each_group_keeps_its_own_cadence() {
     );
 
     conductor.stop_all().await;
+}
+
+/// Adding a member to a **running** group makes it draw.
+///
+/// ⚠️ The defect this covers: `set_members` edited the group's record and
+/// stopped there, so an engine already running kept the members it was built
+/// with. Putting a light string into a running group changed the list and lit
+/// nothing — reported from a real machine, with a Twinkly and a group called
+/// G3.
+///
+/// A rebuild, not a nudge: `set_ambience` can be pushed into a running engine
+/// because every device keeps painting the same surface, and there is no way to
+/// tell one about a device it never opened.
+#[tokio::test]
+#[ignore = "needs the fake daemon: scripts/openrazer-fake.sh start"]
+async fn adding_a_member_to_a_running_group_makes_it_draw() {
+    // A config directory of its own: `RazerState` reads the saved groups on the
+    // way up and writes them on every change, and a test has no business
+    // touching what is really on this machine.
+    let temporary = std::env::temp_dir().join(format!("synapse-test-{}", std::process::id()));
+    std::fs::create_dir_all(&temporary).unwrap();
+    std::env::set_var("XDG_CONFIG_HOME", &temporary);
+
+    let state = app_lib::razer::state::RazerState::new().await;
+
+    // A first run puts everything the daemon reports into one group, so the
+    // participant has to be let go before another group can take it — the rule
+    // that keeps two engines off one device.
+    for existing in state.groups().await {
+        state
+            .set_group_members(existing.group.id, Vec::new())
+            .await
+            .unwrap();
+    }
+
+    let id = state
+        .with_groups(|conductor| {
+            conductor.create("G3", Vec::new(), still(Rgb::new(255, 0, 0)))
+        })
+        .await
+        .unwrap();
+
+    state.start_group(id).await.unwrap();
+    tokio::time::sleep(Duration::from_millis(100)).await;
+
+    // Empty and running: nothing is attached, which is the state a group is in
+    // the moment after it is made.
+    assert!(state.groups().await.iter().any(|status| status.group.id == id
+        && status.devices.is_empty()));
+
+    state
+        .set_group_members(id, ids(&[HUNTSMAN]))
+        .await
+        .unwrap();
+    tokio::time::sleep(Duration::from_millis(200)).await;
+
+    let status = state
+        .groups()
+        .await
+        .into_iter()
+        .find(|status| status.group.id == id)
+        .expect("the group");
+
+    assert!(status.group.started, "it should still be running");
+    assert_eq!(
+        status.devices.len(),
+        1,
+        "the new member was never attached: {status:?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&temporary);
 }

@@ -5,7 +5,9 @@ use tokio::sync::Mutex;
 use crate::capability::TwinklyPool;
 use crate::razer::engine::ambience::Ambience;
 use crate::razer::engine::frame::Rgb;
-use crate::razer::engine::group::{Conductor, GroupId, GroupStatus, ParticipantId};
+use crate::razer::engine::group::{
+    Conductor, GroupError, GroupId, GroupStatus, ParticipantId,
+};
 use crate::razer::persistence;
 use openrazer::backend::{BackendError, DeviceBackend};
 
@@ -85,7 +87,7 @@ impl RazerState {
                 .conductor
                 .lock()
                 .await
-                .start_marked(backend, &state.strips)
+                .start_marked(Some(backend), &state.strips)
                 .await;
         }
         state
@@ -191,11 +193,129 @@ impl RazerState {
 
     /// Starts a group. Separate from `with_groups` because it needs the
     /// backend and is `async` all the way down.
+    /// Change who is in a group, and make a running one act on it.
+    ///
+    /// ⚠️ A rebuild, not a nudge. `set_ambience` can be pushed into a running
+    /// engine because every device keeps painting the same surface; changing
+    /// the membership changes **which devices are attached**, and there is no
+    /// way to tell a running engine about one it never opened.
+    ///
+    /// This is the defect behind "I put the light string in a group and nothing
+    /// happened": the group's record changed, the engine kept the members it
+    /// was built with, and the strip was never asked to do anything.
+    ///
+    /// The cost is a blink on the devices that were already in the group. That
+    /// is the honest price of the change, and cheaper than the alternative,
+    /// which is a member that is in the list and dark.
+    pub async fn set_group_members(
+        &self,
+        id: GroupId,
+        members: Vec<ParticipantId>,
+    ) -> Result<(), GroupError> {
+        let mut conductor = self.conductor.lock().await;
+
+        // Who is new here, before the list is replaced — a stopped group has to
+        // be told to darken them, and one that was already a member is already
+        // dark.
+        let arriving: Vec<ParticipantId> = match conductor.group(id) {
+            Some(group) => members
+                .iter()
+                .filter(|member| !group.members.contains(member))
+                .cloned()
+                .collect(),
+            None => Vec::new(),
+        };
+
+        conductor.set_members(id, members)?;
+
+        if conductor.is_running(id) {
+            // ⚠️ The backend is optional here, and that is the point: a group
+            // of light strings has nothing for the daemon to do, and demanding
+            // one made the rebuild silently skip.
+            let _ = conductor
+                .start(id, self.backend.clone(), &self.strips)
+                .await;
+        } else {
+            // ⚠️ A stopped group has no engine, so nothing would ever speak to
+            // a device that has just joined one — it would sit there showing
+            // whatever its previous group left it with. A participant's state
+            // follows its group's, and a stopped group shows nothing.
+            self.darken(&arriving).await;
+        }
+
+        self.persist(&conductor);
+        Ok(())
+    }
+
+    /// Switch participants off, outside any engine.
+    ///
+    /// Used where there is no runner to do it: joining a stopped group. Best
+    /// effort — a device that cannot be reached is one that is showing nothing
+    /// anyway, as far as anyone can tell.
+    async fn darken(&self, participants: &[ParticipantId]) {
+        for participant in participants {
+            if participant.starts_with("twinkly-") {
+                if let Ok(device) = self.strips.device(participant).await {
+                    let _ = device.set_mode(twinkly::Mode::Off).await;
+                }
+            } else if let Ok(backend) = self.backend() {
+                let _ = backend.set_chroma_static(participant, 0, 0, 0).await;
+            }
+        }
+    }
+
+    /// Rebuild any running group that lists a participant it is not driving.
+    ///
+    /// ⚠️ The other half of "the effect does not apply". A device found *after*
+    /// its group started was skipped when the engine attached, and an engine
+    /// has no way to learn of one later — so a light string that appears on the
+    /// network sits in a group's member list, dark, until something restarts
+    /// it. This is that something, called after every sweep.
+    ///
+    /// Only groups that are both running and missing one of the named
+    /// participants are touched: a rebuild blinks the devices already in the
+    /// group, and doing it on every sweep would be a stutter every fifteen
+    /// seconds.
+    pub async fn adopt(&self, present: &[ParticipantId]) {
+        let mut conductor = self.conductor.lock().await;
+
+        let waiting: Vec<GroupId> = conductor
+            .status()
+            .iter()
+            .filter(|status| status.group.started)
+            .filter(|status| {
+                status.group.members.iter().any(|member| {
+                    present.contains(member)
+                        && !status.devices.iter().any(|device| &device.serial == member)
+                })
+            })
+            .map(|status| status.group.id)
+            .collect();
+
+        if waiting.is_empty() {
+            return;
+        }
+
+        for id in waiting {
+            let _ = conductor
+                .start(id, self.backend.clone(), &self.strips)
+                .await;
+        }
+        self.persist(&conductor);
+    }
+
+    /// Start a group.
+    ///
+    /// ⚠️ No daemon is **not** a reason to refuse. This used to take the
+    /// backend or fail, so on a machine with a light string and no OpenRazer,
+    /// pressing Run did nothing at all — the group could never start, and
+    /// nothing could ever light the strip. A Razer member with no daemon is now
+    /// reported as one participant that could not be driven, which is what the
+    /// interface already knows how to show.
     pub async fn start_group(&self, id: GroupId) -> Result<(), BackendError> {
-        let backend = self.backend_handle()?;
         let mut conductor = self.conductor.lock().await;
         conductor
-            .start(id, backend, &self.strips)
+            .start(id, self.backend.clone(), &self.strips)
             .await
             .map_err(|error| BackendError::Protocol(error.to_string()))?;
         self.persist(&conductor);

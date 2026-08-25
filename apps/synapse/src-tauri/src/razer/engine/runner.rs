@@ -54,8 +54,6 @@ struct Strip {
     /// it is what heals both an expired token (the call re-logs-in on 401) and
     /// a device that quietly fell back to movie mode.
     asserted: Option<Instant>,
-    /// The last frame's average — the parting colour when the runner stops.
-    last: Option<Rgb>,
 }
 
 /// How long an rt assertion is trusted before it is repeated.
@@ -95,7 +93,12 @@ impl Strip {
 const SINGLE: Geometry = Geometry::new(1, 1);
 
 pub struct Runner {
-    backend: Arc<dyn DeviceBackend>,
+    /// ⚠️ Optional, because a group can hold nothing the daemon knows. A
+    /// machine with a light string and no OpenRazer has participants to drive
+    /// and no backend to drive them through; requiring one here made
+    /// `start_group` fail outright, so pressing Run on such a group did
+    /// nothing at all.
+    backend: Option<Arc<dyn DeviceBackend>>,
     serial: String,
     surface: Surface,
 }
@@ -109,7 +112,7 @@ impl Runner {
     /// backend. Either refusal becomes a `Skipped` with its reason, never a
     /// fault.
     pub async fn attach(
-        backend: Arc<dyn DeviceBackend>,
+        backend: Option<Arc<dyn DeviceBackend>>,
         strips: &TwinklyPool,
         serial: impl Into<String>,
     ) -> Result<Self, BackendError> {
@@ -130,7 +133,6 @@ impl Runner {
                 rgbw: gestalt.bytes_per_led == 4,
                 geometry: Geometry::new(1, columns),
                 asserted: None,
-                last: None,
             });
             return Ok(Self {
                 backend,
@@ -139,7 +141,17 @@ impl Runner {
             });
         }
 
-        let canvas = Canvas::discover(backend.as_ref(), &serial).await?;
+        // Everything past here is the daemon's. ⚠️ Saying so plainly matters:
+        // this is what a group of Razer devices on a machine with no OpenRazer
+        // now reports, one participant at a time, instead of the whole group
+        // refusing to start.
+        let Some(handle) = backend.clone() else {
+            return Err(BackendError::DaemonUnavailable(format!(
+                "{serial} needs the OpenRazer daemon, which is not running"
+            )));
+        };
+
+        let canvas = Canvas::discover(handle.as_ref(), &serial).await?;
 
         let surface = match canvas.geometry() {
             // One pixel is a colour, not a picture. Painting it would cost a
@@ -256,14 +268,21 @@ impl Runner {
         match &mut self.surface {
             Surface::Painted(painter) => {
                 let frame = ambience.compose(painter.geometry(), tick);
-                painter.draw(self.backend.as_ref(), &frame).await?;
+                // A painted surface only exists where a backend did.
+                let backend = self.backend.as_deref().ok_or_else(|| {
+                    BackendError::DaemonUnavailable("the daemon went away".into())
+                })?;
+                painter.draw(backend, &frame).await?;
             }
             Surface::Approximated { showing } => {
                 let colour = ambience.compose(SINGLE, tick).average();
                 // Same idea as the dirty rows: an unchanged colour is a round
                 // trip that would tell the device what it already shows.
                 if *showing != Some(colour) {
-                    self.backend
+                    let backend = self.backend.as_deref().ok_or_else(|| {
+                        BackendError::DaemonUnavailable("the daemon went away".into())
+                    })?;
+                    backend
                         .set_chroma_static(&self.serial, colour.r, colour.g, colour.b)
                         .await?;
                     *showing = Some(colour);
@@ -271,7 +290,6 @@ impl Runner {
             }
             Surface::Streamed(strip) => {
                 let frame = ambience.compose(strip.geometry, tick);
-                strip.last = Some(frame.average());
 
                 // HTTP only every few seconds; the frames themselves are UDP.
                 if strip.asserted.map_or(true, |at| at.elapsed() > REASSERT_RT) {
@@ -304,17 +322,33 @@ impl Runner {
         }
     }
 
-    /// A Razer device keeps its last frame when the runner stops; a string in
-    /// rt mode would fall back to its movie instead. The closest thing to the
-    /// promise is the last frame's average, pinned as the stored static
-    /// colour. Best effort — stopping must never fail.
-    async fn rest(&self) {
+    /// What a device is left showing when its runner stops: **nothing**.
+    ///
+    /// ⚠️ This used to pin the last frame's average as a static colour, on the
+    /// reasoning that stopping a group and turning its devices off were
+    /// different requests. In use they are not: a stopped group that leaves
+    /// six peripherals lit looks like a group that is still running, and there
+    /// is nothing to press to make it stop. The device's state follows its
+    /// group's.
+    ///
+    /// A string is switched off rather than painted black. Painting it would
+    /// leave it in rt mode with no frames coming, and it abandons rt after a
+    /// while and falls back to whatever it was showing before — dark now,
+    /// something else in a minute.
+    ///
+    /// Best effort throughout: stopping must never fail.
+    async fn rest(&mut self) {
         if let Surface::Streamed(strip) = &self.surface {
-            if let Some(colour) = strip.last {
-                let _ = strip.device.set_color(colour.r, colour.g, colour.b).await;
-                let _ = strip.device.set_mode(twinkly::Mode::Color).await;
-            }
+            let _ = strip.device.set_mode(twinkly::Mode::Off).await;
+            return;
         }
+
+        // Everything else goes dark through the same path it was drawn with,
+        // so a matrix and a single LED are both handled without a second way
+        // of saying black.
+        let _ = self
+            .show(&Ambience::still(Rgb::new(0, 0, 0)), Duration::ZERO)
+            .await;
     }
 }
 

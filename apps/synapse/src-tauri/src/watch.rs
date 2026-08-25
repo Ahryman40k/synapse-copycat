@@ -112,6 +112,15 @@ pub async fn set_twinkly_watch(app: AppHandle, watch: &TwinklyWatch, enabled: bo
                     // Discovery answers in arrival order, which varies sweep
                     // to sweep; sorted, a reshuffle is not a change.
                     found.sort_by(|a, b| a.participant.cmp(&b.participant));
+
+                    // A strip that appears while its group is already running
+                    // was skipped when the engine attached, and the engine has
+                    // no way to learn of it. Nothing happens unless a running
+                    // group is actually missing one of these.
+                    let present: Vec<String> =
+                        found.iter().map(|device| device.participant.clone()).collect();
+                    state.adopt(&present).await;
+
                     if known.as_ref() != Some(&found) {
                         if let Err(error) = handle.emit(TWINKLY_DEVICES_CHANGED, &found) {
                             eprintln!("warn: could not emit {TWINKLY_DEVICES_CHANGED} — {error}");

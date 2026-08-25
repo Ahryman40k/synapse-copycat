@@ -248,7 +248,7 @@ impl Conductor {
     pub async fn start(
         &mut self,
         id: GroupId,
-        backend: Arc<dyn DeviceBackend>,
+        backend: Option<Arc<dyn DeviceBackend>>,
         strips: &TwinklyPool,
     ) -> Result<(), GroupError> {
         self.require(id)?;
@@ -281,7 +281,11 @@ impl Conductor {
 
     /// Starts every group marked as started. What launch does, once there is a
     /// saved configuration to restore.
-    pub async fn start_marked(&mut self, backend: Arc<dyn DeviceBackend>, strips: &TwinklyPool) {
+    pub async fn start_marked(
+        &mut self,
+        backend: Option<Arc<dyn DeviceBackend>>,
+        strips: &TwinklyPool,
+    ) {
         let wanted: Vec<GroupId> = self
             .groups
             .iter()

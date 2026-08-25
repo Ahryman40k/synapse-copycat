@@ -74,3 +74,53 @@ async fn groups_survive_a_missing_daemon() {
     // answer from refusing to say.
     assert_eq!(unassigned.unwrap(), Vec::<String>::new());
 }
+
+/// A group can run on a machine with no OpenRazer daemon.
+///
+/// ⚠️ The defect this covers, reported from a real machine: a light string in a
+/// group, the group stopped, the string lit — and pressing Run changed nothing.
+/// `start_group` took the backend or failed, so a group holding nothing the
+/// daemon knows could never start at all. Nothing could ever light the strip,
+/// and nothing could ever stop it either.
+///
+/// A Razer member with no daemon is reported as one participant that could not
+/// be driven, which is what the interface already knows how to show — instead
+/// of the whole group refusing.
+#[tokio::test]
+async fn a_group_starts_without_a_daemon() {
+    let temporary = std::env::temp_dir().join(format!("synapse-nodaemon-{}", std::process::id()));
+    std::fs::create_dir_all(&temporary).unwrap();
+    std::env::set_var("XDG_CONFIG_HOME", &temporary);
+
+    let state = RazerState::new().await;
+
+    let id = state
+        .with_groups(|conductor| {
+            conductor.create(
+                "G3",
+                vec!["twinkly-000000000000".to_owned()],
+                app_lib::razer::engine::ambience::Ambience::still(
+                    app_lib::razer::engine::frame::Rgb::new(255, 0, 0),
+                ),
+            )
+        })
+        .await
+        .unwrap();
+
+    // Answers rather than refusing. The strip is not on this network either, so
+    // it lands in `skipped` — which is a report, not a refusal.
+    let started = state.start_group(id).await;
+    assert!(started.is_ok(), "a group must start without a daemon: {started:?}");
+
+    let status = state
+        .groups()
+        .await
+        .into_iter()
+        .find(|status| status.group.id == id)
+        .expect("the group");
+
+    assert!(status.group.started, "it should be running");
+    assert_eq!(status.skipped.len(), 1, "{status:?}");
+
+    let _ = std::fs::remove_dir_all(&temporary);
+}

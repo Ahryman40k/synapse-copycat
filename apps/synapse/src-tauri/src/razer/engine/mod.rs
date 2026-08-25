@@ -115,7 +115,7 @@ impl Engine {
     /// peripheral unplugged between enumeration and here must not cost the user
     /// the ambience on everything else.
     pub async fn start(
-        backend: Arc<dyn DeviceBackend>,
+        backend: Option<Arc<dyn DeviceBackend>>,
         strips: &TwinklyPool,
         serials: &[String],
         ambience: Ambience,

@@ -52,7 +52,7 @@ fn moving() -> Ambience {
 async fn attaches_to_each_device_as_it_can_be_driven() {
     let backend = backend().await;
 
-    let keyboard = Runner::attach(backend.clone(), &no_strips(), HUNTSMAN)
+    let keyboard = Runner::attach(Some(backend.clone()), &no_strips(), HUNTSMAN)
         .await
         .unwrap();
     assert!(keyboard.is_painted());
@@ -60,14 +60,14 @@ async fn attaches_to_each_device_as_it_can_be_driven() {
 
     // No matrix at all: it belongs to the ambience through a single averaged
     // colour, which is not a failure to handle but the only thing it can show.
-    let headset = Runner::attach(backend.clone(), &no_strips(), KRAKEN)
+    let headset = Runner::attach(Some(backend.clone()), &no_strips(), KRAKEN)
         .await
         .unwrap();
     assert!(!headset.is_painted());
 
     // And one that *has* a matrix of exactly one pixel. Painting it would cost
     // a round trip per frame to say what setStatic says once.
-    let mousemat = Runner::attach(backend.clone(), &no_strips(), GOLIATHUS)
+    let mousemat = Runner::attach(Some(backend.clone()), &no_strips(), GOLIATHUS)
         .await
         .unwrap();
     assert!(!mousemat.is_painted());
@@ -77,7 +77,7 @@ async fn attaches_to_each_device_as_it_can_be_driven() {
 #[ignore = "needs the fake daemon: scripts/openrazer-fake.sh start"]
 async fn runs_until_the_ambience_channel_closes() {
     let backend = backend().await;
-    let runner = Runner::attach(backend, &no_strips(), HUNTSMAN)
+    let runner = Runner::attach(Some(backend), &no_strips(), HUNTSMAN)
         .await
         .unwrap();
     let (ambience, receiver) = watch::channel(moving());
@@ -98,7 +98,7 @@ async fn runs_until_the_ambience_channel_closes() {
 #[ignore = "needs the fake daemon: scripts/openrazer-fake.sh start"]
 async fn reports_what_the_cadence_actually_cost() {
     let backend = backend().await;
-    let runner = Runner::attach(backend, &no_strips(), HUNTSMAN)
+    let runner = Runner::attach(Some(backend), &no_strips(), HUNTSMAN)
         .await
         .unwrap();
     let (ambience, receiver) = watch::channel(moving());
@@ -144,7 +144,7 @@ async fn drives_a_whole_setup_at_once() {
 
     let mut tasks = Vec::new();
     for serial in [HUNTSMAN, KRAKEN, GOLIATHUS, "XX0000000088", "XX000000022B"] {
-        let runner = Runner::attach(backend.clone(), &no_strips(), serial)
+        let runner = Runner::attach(Some(backend.clone()), &no_strips(), serial)
             .await
             .unwrap();
         tasks.push(tokio::spawn(runner.run(
@@ -175,7 +175,7 @@ async fn drives_a_whole_setup_at_once() {
 #[ignore = "needs the fake daemon: scripts/openrazer-fake.sh start"]
 async fn follows_the_ambience_when_it_changes() {
     let backend = backend().await;
-    let runner = Runner::attach(backend, &no_strips(), HUNTSMAN)
+    let runner = Runner::attach(Some(backend), &no_strips(), HUNTSMAN)
         .await
         .unwrap();
     let (ambience, receiver) = watch::channel(Ambience::still(Rgb::new(255, 0, 0)));
