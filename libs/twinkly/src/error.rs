@@ -13,10 +13,7 @@ pub enum Error {
     /// unreachable and the other means our reading of the protocol is wrong,
     /// and those call for very different responses.
     #[error("{address} answered something unexpected: {detail}")]
-    Unexpected {
-        address: Ipv4Addr,
-        detail: String,
-    },
+    Unexpected { address: Ipv4Addr, detail: String },
 }
 
 impl From<reqwest::Error> for Error {

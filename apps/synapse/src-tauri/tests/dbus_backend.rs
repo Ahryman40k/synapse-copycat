@@ -18,8 +18,8 @@
 //! latency, the firmware, or what a frame looks like.
 #![cfg(target_os = "linux")]
 
-use openrazer::backend::{dbus::DbusBackend, BackendError, DeviceBackend};
 use app_lib::razer::device::DeviceKind;
+use openrazer::backend::{dbus::DbusBackend, BackendError, DeviceBackend};
 
 /// Serials the fake driver derives from each device's product id. One per
 /// device type OpenRazer can report, bar `core`.

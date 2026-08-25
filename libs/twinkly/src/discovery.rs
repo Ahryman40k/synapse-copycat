@@ -76,11 +76,19 @@ pub async fn discover(timeout: Duration) -> Result<Vec<Discovered>> {
     // Broadcast first: on a network where it works, the answer arrives before
     // the sweep has finished being sent.
     let _ = socket
-        .send_to(PROBE, SocketAddr::from((broadcast_for(local), DISCOVERY_PORT)))
+        .send_to(
+            PROBE,
+            SocketAddr::from((broadcast_for(local), DISCOVERY_PORT)),
+        )
         .await;
 
     for host in 1..=254u8 {
-        let target = Ipv4Addr::new(local.octets()[0], local.octets()[1], local.octets()[2], host);
+        let target = Ipv4Addr::new(
+            local.octets()[0],
+            local.octets()[1],
+            local.octets()[2],
+            host,
+        );
         // A refusal on one address says nothing about the rest — an unreachable
         // host is the ordinary case in a sweep.
         let _ = socket

@@ -117,8 +117,10 @@ pub async fn set_twinkly_watch(app: AppHandle, watch: &TwinklyWatch, enabled: bo
                     // was skipped when the engine attached, and the engine has
                     // no way to learn of it. Nothing happens unless a running
                     // group is actually missing one of these.
-                    let present: Vec<String> =
-                        found.iter().map(|device| device.participant.clone()).collect();
+                    let present: Vec<String> = found
+                        .iter()
+                        .map(|device| device.participant.clone())
+                        .collect();
                     state.adopt(&present).await;
 
                     if known.as_ref() != Some(&found) {

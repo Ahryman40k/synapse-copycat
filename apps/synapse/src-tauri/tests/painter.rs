@@ -11,10 +11,10 @@
 //! ```
 #![cfg(target_os = "linux")]
 
-use openrazer::backend::dbus::DbusBackend;
 use app_lib::razer::engine::ambience::{Ambience, MotionSource, Tick};
 use app_lib::razer::engine::frame::{Geometry, Rgb};
 use app_lib::razer::engine::painter::{Canvas, Painter};
+use openrazer::backend::dbus::DbusBackend;
 
 const HUNTSMAN: &str = "XX0000000226"; // 9 x 22
 const KRAKEN: &str = "XX0000000527"; // no matrix at all

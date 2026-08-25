@@ -66,7 +66,9 @@ pub fn extract_from(image: &image::DynamicImage, count: usize) -> Result<Vec<Rgb
             .enumerate()
             .filter(|(_, box_)| box_.len() > 1 && spread(box_) > FLAT)
             .max_by(|(_, a), (_, b)| {
-                spread(a).partial_cmp(&spread(b)).unwrap_or(std::cmp::Ordering::Equal)
+                spread(a)
+                    .partial_cmp(&spread(b))
+                    .unwrap_or(std::cmp::Ordering::Equal)
             })
             .map(|(index, _)| index);
 
@@ -125,7 +127,10 @@ pub fn thumbnail(path: &Path) -> Result<String> {
             detail: error.to_string(),
         })?;
 
-    Ok(format!("data:image/png;base64,{}", base64(&bytes.into_inner())))
+    Ok(format!(
+        "data:image/png;base64,{}",
+        base64(&bytes.into_inner())
+    ))
 }
 
 /// How far apart the extremes of a box are, on its widest axis.
@@ -174,14 +179,20 @@ fn cut(mut box_: Vec<Oklab>) -> (Vec<Oklab>, Vec<Oklab>) {
         1 => colour.a,
         _ => colour.b,
     };
-    box_.sort_by(|x, y| key(x).partial_cmp(&key(y)).unwrap_or(std::cmp::Ordering::Equal));
+    box_.sort_by(|x, y| {
+        key(x)
+            .partial_cmp(&key(y))
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
 
     // The largest step between neighbours, which is where one cluster ends and
     // the next begins. Never at 0, so both sides keep at least one sample.
     let at = (1..box_.len())
         .max_by(|x, y| {
             let gap = |index: usize| key(&box_[index]) - key(&box_[index - 1]);
-            gap(*x).partial_cmp(&gap(*y)).unwrap_or(std::cmp::Ordering::Equal)
+            gap(*x)
+                .partial_cmp(&gap(*y))
+                .unwrap_or(std::cmp::Ordering::Equal)
         })
         .unwrap_or(box_.len() / 2)
         .max(1);
@@ -207,8 +218,7 @@ fn centre(box_: &[Oklab]) -> Oklab {
 /// Base64, written out rather than depended on: it is twenty lines and this
 /// crate has one caller.
 fn base64(bytes: &[u8]) -> String {
-    const ALPHABET: &[u8; 64] =
-        b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    const ALPHABET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
     let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
     for chunk in bytes.chunks(3) {

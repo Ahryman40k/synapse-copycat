@@ -88,7 +88,9 @@ impl Setter {
         let desktop = desktop.to_lowercase();
         match self {
             Setter::Gnome => {
-                desktop.contains("gnome") || desktop.contains("unity") || desktop.contains("cinnamon")
+                desktop.contains("gnome")
+                    || desktop.contains("unity")
+                    || desktop.contains("cinnamon")
             }
             Setter::Kde => desktop.contains("kde") || desktop.contains("plasma"),
             Setter::Xfce => desktop.contains("xfce"),
@@ -148,7 +150,10 @@ impl Setter {
 
             Setter::Hyprpaper => vec![
                 // Preloaded first, or the second command has nothing to show.
-                Step::new("hyprctl", &["hyprpaper".into(), "preload".into(), file.clone()]),
+                Step::new(
+                    "hyprctl",
+                    &["hyprpaper".into(), "preload".into(), file.clone()],
+                ),
                 Step::new(
                     "hyprctl",
                     &["hyprpaper".into(), "wallpaper".into(), format!(",{file}")],
@@ -299,7 +304,11 @@ mod tests {
         let steps = Setter::Gnome.steps(&image());
 
         assert!(
-            steps[0].args.last().unwrap().starts_with("file:///home/you/"),
+            steps[0]
+                .args
+                .last()
+                .unwrap()
+                .starts_with("file:///home/you/"),
             "{:?}",
             steps[0].args
         );
@@ -321,7 +330,10 @@ mod tests {
 
         assert_eq!(steps.len(), 2);
         assert!(steps[0].args.contains(&"preload".to_owned()));
-        assert_eq!(steps[1].args.last().unwrap(), ",/home/you/Pictures/dusk.jpg");
+        assert_eq!(
+            steps[1].args.last().unwrap(),
+            ",/home/you/Pictures/dusk.jpg"
+        );
     }
 
     #[test]
@@ -330,7 +342,10 @@ mod tests {
         let script = steps[0].args.last().unwrap();
 
         assert!(script.contains("desktops()"), "{script}");
-        assert!(script.contains("file:///home/you/Pictures/dusk.jpg"), "{script}");
+        assert!(
+            script.contains("file:///home/you/Pictures/dusk.jpg"),
+            "{script}"
+        );
     }
 
     #[test]
@@ -353,7 +368,9 @@ mod tests {
         let found = xfce_properties(listing);
 
         assert_eq!(found.len(), 3, "{found:?}");
-        assert!(found.iter().all(|property| property.ends_with("/last-image")));
+        assert!(found
+            .iter()
+            .all(|property| property.ends_with("/last-image")));
     }
 
     #[test]

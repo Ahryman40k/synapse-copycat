@@ -689,7 +689,10 @@ mod tests {
         let frame = palette(&[RED, BLUE]).compose(Geometry::new(1, 8), Tick::at(0.0));
         let last = frame.get(0, 7);
 
-        assert!(last.r > 0, "the wrap never returns towards the first colour");
+        assert!(
+            last.r > 0,
+            "the wrap never returns towards the first colour"
+        );
         assert!(last.b > 0, "the wrap left the last colour too early");
     }
 
