@@ -4,10 +4,9 @@ use tokio::sync::Mutex;
 
 use crate::capability::TwinklyPool;
 use crate::razer::engine::ambience::Ambience;
+use crate::razer::engine::cadence::Cadence;
 use crate::razer::engine::frame::Rgb;
-use crate::razer::engine::group::{
-    Conductor, GroupError, GroupId, GroupStatus, ParticipantId,
-};
+use crate::razer::engine::group::{Conductor, GroupError, GroupId, GroupStatus, ParticipantId};
 use crate::razer::persistence;
 use openrazer::backend::{BackendError, DeviceBackend};
 
@@ -143,12 +142,24 @@ impl RazerState {
         BackendError::DaemonUnavailable(self.reason.clone().unwrap_or_else(|| "unknown".into()))
     }
 
-    /// Runs something against the groups and writes the result to disk.
+    /// Edit the groups and write them to disk.
     ///
     /// Every change saves. A crash between a change and a save would lose it,
     /// and there is no natural moment to batch on — the user closes the window
     /// rather than the application.
-    pub async fn with_groups<T>(&self, edit: impl FnOnce(&mut Conductor) -> T) -> T {
+    ///
+    /// ⚠️ **Private, and that is the point.** Three ways in reach this type —
+    /// the window over Tauri's IPC, an assistant over MCP, and the command
+    /// line — and each of them is a *translation* layer with no business
+    /// building domain values. Left public, this was the hole through which
+    /// they did: `create_group` existed twice, differently, within a single
+    /// afternoon — the window taking a name, members and an ambience, the MCP
+    /// server taking a name and hard-coding green.
+    ///
+    /// Every operation is a named method below. A caller that needs something
+    /// new adds one here, where all three get it at once, rather than a closure
+    /// only one of them has.
+    async fn with_groups<T>(&self, edit: impl FnOnce(&mut Conductor) -> T) -> T {
         let mut conductor = self.conductor.lock().await;
         let outcome = edit(&mut conductor);
         self.persist(&conductor);
@@ -191,8 +202,46 @@ impl RazerState {
         Ok(conductor.unassigned(&all).into_iter().cloned().collect())
     }
 
-    /// Starts a group. Separate from `with_groups` because it needs the
-    /// backend and is `async` all the way down.
+    /// Make a group.
+    pub async fn create_group(
+        &self,
+        name: impl Into<String>,
+        members: Vec<ParticipantId>,
+        ambience: Ambience,
+    ) -> Result<GroupId, GroupError> {
+        let name = name.into();
+        self.with_groups(|conductor| conductor.create(name, members, ambience))
+            .await
+    }
+
+    pub async fn rename_group(
+        &self,
+        id: GroupId,
+        name: impl Into<String>,
+    ) -> Result<(), GroupError> {
+        let name = name.into();
+        self.with_groups(|conductor| conductor.rename(id, name))
+            .await
+    }
+
+    /// Change what a group shows. A running one absorbs this without a rebuild:
+    /// every device keeps painting the same surface, only differently.
+    pub async fn set_group_ambience(
+        &self,
+        id: GroupId,
+        ambience: Ambience,
+    ) -> Result<(), GroupError> {
+        self.with_groups(|conductor| conductor.set_ambience(id, ambience))
+            .await
+    }
+
+    /// Change how fast a group ticks. Applies on the next start — a runner
+    /// cannot be retuned while it is going.
+    pub async fn set_group_cadence(&self, id: GroupId, cadence: Cadence) -> Result<(), GroupError> {
+        self.with_groups(|conductor| conductor.set_cadence(id, cadence))
+            .await
+    }
+
     /// Change who is in a group, and make a running one act on it.
     ///
     /// ⚠️ A rebuild, not a nudge. `set_ambience` can be pushed into a running

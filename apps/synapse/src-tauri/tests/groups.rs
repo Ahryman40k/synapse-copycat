@@ -124,7 +124,10 @@ async fn changing_a_running_group_takes_effect_without_a_restart() {
     let id = conductor
         .create("Desk", ids(&[HUNTSMAN]), still(Rgb::new(255, 0, 0)))
         .unwrap();
-    conductor.start(id, Some(backend), &no_strips()).await.unwrap();
+    conductor
+        .start(id, Some(backend), &no_strips())
+        .await
+        .unwrap();
     tokio::time::sleep(Duration::from_millis(100)).await;
 
     let blue = still(Rgb::new(0, 0, 255));
@@ -267,9 +270,7 @@ async fn adding_a_member_to_a_running_group_makes_it_draw() {
     }
 
     let id = state
-        .with_groups(|conductor| {
-            conductor.create("G3", Vec::new(), still(Rgb::new(255, 0, 0)))
-        })
+        .create_group("G3", Vec::new(), still(Rgb::new(255, 0, 0)))
         .await
         .unwrap();
 
@@ -278,13 +279,13 @@ async fn adding_a_member_to_a_running_group_makes_it_draw() {
 
     // Empty and running: nothing is attached, which is the state a group is in
     // the moment after it is made.
-    assert!(state.groups().await.iter().any(|status| status.group.id == id
-        && status.devices.is_empty()));
-
-    state
-        .set_group_members(id, ids(&[HUNTSMAN]))
+    assert!(state
+        .groups()
         .await
-        .unwrap();
+        .iter()
+        .any(|status| status.group.id == id && status.devices.is_empty()));
+
+    state.set_group_members(id, ids(&[HUNTSMAN])).await.unwrap();
     tokio::time::sleep(Duration::from_millis(200)).await;
 
     let status = state

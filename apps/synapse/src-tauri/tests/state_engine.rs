@@ -54,10 +54,7 @@ async fn what_was_running_is_running_again_after_a_restart() {
         let state = RazerState::new().await;
         let id = state.groups().await[0].group.id;
         state.stop_group(id).await;
-        state
-            .with_groups(|conductor| conductor.rename(id, "Desk"))
-            .await
-            .unwrap();
+        state.rename_group(id, "Desk").await.unwrap();
         state.stop_all().await;
     }
 
@@ -103,9 +100,7 @@ async fn a_participant_cannot_be_taken_by_a_second_group() {
     let held = state.groups().await[0].group.members[0].clone();
 
     let refused = state
-        .with_groups(|conductor| {
-            conductor.create("Other", vec![held.clone()], Ambience::still(Rgb::BLACK))
-        })
+        .create_group("Other", vec![held.clone()], Ambience::still(Rgb::BLACK))
         .await;
 
     assert!(refused.is_err(), "two groups claimed one device");
@@ -119,10 +114,7 @@ async fn every_change_is_on_disk_before_it_returns() {
     let state = RazerState::new().await;
     let id = state.groups().await[0].group.id;
 
-    state
-        .with_groups(|conductor| conductor.set_cadence(id, Cadence::Slow))
-        .await
-        .unwrap();
+    state.set_group_cadence(id, Cadence::Slow).await.unwrap();
 
     // No natural moment to batch on: the user closes the window rather than
     // the application, so a change that is not saved now may never be.

@@ -95,22 +95,23 @@ async fn a_group_starts_without_a_daemon() {
     let state = RazerState::new().await;
 
     let id = state
-        .with_groups(|conductor| {
-            conductor.create(
-                "G3",
-                vec!["twinkly-000000000000".to_owned()],
-                app_lib::razer::engine::ambience::Ambience::still(
-                    app_lib::razer::engine::frame::Rgb::new(255, 0, 0),
-                ),
-            )
-        })
+        .create_group(
+            "G3",
+            vec!["twinkly-000000000000".to_owned()],
+            app_lib::razer::engine::ambience::Ambience::still(
+                app_lib::razer::engine::frame::Rgb::new(255, 0, 0),
+            ),
+        )
         .await
         .unwrap();
 
     // Answers rather than refusing. The strip is not on this network either, so
     // it lands in `skipped` — which is a report, not a refusal.
     let started = state.start_group(id).await;
-    assert!(started.is_ok(), "a group must start without a daemon: {started:?}");
+    assert!(
+        started.is_ok(),
+        "a group must start without a daemon: {started:?}"
+    );
 
     let status = state
         .groups()

@@ -2,6 +2,7 @@ pub mod capability;
 mod commands;
 mod discovery;
 mod lifecycle;
+mod mcp;
 pub mod razer;
 mod wallpapers;
 mod watch;
@@ -24,6 +25,10 @@ pub fn run() {
             lifecycle::reveal(app);
         }))
         .setup(|app| {
+            // Something other than the window can drive the lighting: the same
+            // state, the same commands, over MCP on loopback.
+            mcp::spawn(app.handle().clone());
+
             lifecycle::install(app)?;
 
             // Hotplug, forwarded for the window's whole life. The Twinkly

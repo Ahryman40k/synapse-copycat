@@ -2,10 +2,10 @@ use tauri::State;
 
 use crate::capability::{AnyCapabilityRequest, AnyCapabilityResponse};
 use crate::discovery::TwinklyDevice;
-use crate::wallpapers::{Wallpaper, WallpaperSetter};
 use crate::razer::engine::ambience::Ambience;
 use crate::razer::engine::cadence::Cadence;
 use crate::razer::engine::group::{GroupError, GroupId, GroupStatus, ParticipantId};
+use crate::wallpapers::{Wallpaper, WallpaperSetter};
 use openrazer::{
     backend::{BackendError, DeviceBackend},
     dispatch::dispatch,
@@ -143,7 +143,9 @@ pub async fn watch_twinkly(
 /// not a failure, and reporting it as one makes the interface apologise for
 /// something the user did on purpose.
 #[tauri::command]
-pub async fn choose_wallpaper_folder(app: tauri::AppHandle) -> Result<Option<String>, BackendError> {
+pub async fn choose_wallpaper_folder(
+    app: tauri::AppHandle,
+) -> Result<Option<String>, BackendError> {
     Ok(crate::wallpapers::choose_folder(&app))
 }
 
@@ -189,9 +191,7 @@ pub async fn create_group(
     ambience: Ambience,
     state: State<'_, RazerState>,
 ) -> Result<GroupId, GroupError> {
-    state
-        .with_groups(|conductor| conductor.create(name, members, ambience))
-        .await
+    state.create_group(name, members, ambience).await
 }
 
 #[tauri::command]
@@ -200,9 +200,7 @@ pub async fn rename_group(
     name: String,
     state: State<'_, RazerState>,
 ) -> Result<(), GroupError> {
-    state
-        .with_groups(|conductor| conductor.rename(id, name))
-        .await
+    state.rename_group(id, name).await
 }
 
 /// Replaces a group's membership.
@@ -225,9 +223,7 @@ pub async fn set_group_ambience(
     ambience: Ambience,
     state: State<'_, RazerState>,
 ) -> Result<(), GroupError> {
-    state
-        .with_groups(|conductor| conductor.set_ambience(id, ambience))
-        .await
+    state.set_group_ambience(id, ambience).await
 }
 
 /// Changes a group's rate. Applies on the next start.
@@ -237,9 +233,7 @@ pub async fn set_group_cadence(
     cadence: Cadence,
     state: State<'_, RazerState>,
 ) -> Result<(), GroupError> {
-    state
-        .with_groups(|conductor| conductor.set_cadence(id, cadence))
-        .await
+    state.set_group_cadence(id, cadence).await
 }
 
 #[tauri::command]
