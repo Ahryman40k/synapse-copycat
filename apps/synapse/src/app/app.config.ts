@@ -119,13 +119,6 @@ export function makeAppConfig(config: Config) {
 					},
 				],
 
-				modules: [
-					{
-						kind: 'twinkly',
-						name: 'Twinlky',
-					},
-				],
-
 				// One Twinkly, shaped exactly like the one on the bench — a
 				// TWS050STQ with 50 RGB LEDs. The browser path has no network
 				// sweep, so this is where the interface for a network

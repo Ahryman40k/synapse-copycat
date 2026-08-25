@@ -7,7 +7,7 @@ import * as stories from './appbar.stories.ts';
 
 # Application bar
 
-Top-level navigation: home, then one entry per connected device and module.
+Top-level navigation: the three fixed places, and the settings gear.
 
 <Canvas of={stories.All} />
 
@@ -38,16 +38,21 @@ reader announces, and what the theme file selects on.
 Only the label is recoloured, where the page bar uses a **filled pill** — the
 two levels of navigation stay told apart while sharing the same colour.
 
-Exactly one entry is current at a time; with no module open, that is Home.
+Exactly one entry is current at a time; on the dashboard, that is Home.
 
 > The current entry is signalled by colour alone (WCAG 1.4.1). `aria-current`
 > covers assistive technology, but `primary` and `on-surface-variant` sit at
 > tones 0.72 and 0.76 — close enough in lightness that colour vision deficiency
 > may flatten them. A background tint would fix it without a border.
 
-## Devices are not in here
+## Nothing data-driven is in here
 
-They were, one entry per kind — `mouse (1)`, `mouse (2)` — and both halves of
+The bar renders a fixed table and nothing else. It got there in two steps, and
+both are worth keeping because both were mistakes made first.
+
+### Devices went first
+
+They were one entry per kind — `mouse (1)`, `mouse (2)` — and both halves of
 that were wrong.
 
 The labels came from the kind because device names are long and inconsistent
@@ -61,81 +66,57 @@ A device is opened from its own tile now — with its picture and its real name,
 inside the group driving it — and what opens is a dialog, not a page. Those
 routes are gone.
 
-**Modules stay.** There are few of them, their names are short, and nothing
-else on screen shows them.
+### Modules went with the command behind them
 
-Labels are still numbered where a kind repeats:
+They were the last data-driven entries, and they were rendered from a `modules`
+command **Rust never registered**. Under Tauri the call rejected; the browser
+mock answered happily, which is what kept it invisible. Clicking one then threw
+`NG04002: Cannot match any routes` — the bar offered a destination
+`app.routes.ts` had never had a route for, and the guard meant to catch that
+could not fire, because an unmatched segment rejects rather than resolving
+`false`.
 
-| Connected           | Labels                            |
-| ------------------- | --------------------------------- |
-| one Twinkly         | `twinkly`                         |
-| two Twinklys, a Hue | `twinkly (1)` `twinkly (2)` `hue` |
+The whole feature was removed rather than routed: nothing on the Rust side
+emitted a module, so there was no shape to build a page against.
 
-The full name is the `title`, so hovering still reveals it.
+### What went with them, and why it is written down
 
-> Never as an `aria-label`. WCAG 2.5.3 (Label in Name) requires the accessible
-> name to contain the visible text — overriding "twinkly (2)" with "Twinkly, the
-> spare one" would stop voice control from matching what is written on the
-> button.
+The module entries were the only ones that could overflow, so the **`⋯` menu
+went too** — along with its `IntersectionObserver`, its stories and its tests.
+The fixed places never overflowed: they carried no observed ref, so no
+reachable behaviour was lost.
 
-> ⚠️ Two modules of the same kind are told apart in the label but **not** in
-> `activeId`, which is a module's `kind` — both would be marked current. Modules
-> have no id of their own yet.
+It is recorded here rather than only in git because the design took two attempts
+and the second one is not obvious:
 
-## When it does not fit
+- Entries that did not fit moved into a menu; they did **not** scroll out of
+  sight. With the scrollbar hidden the overflow was invisible, and with it shown
+  it would eat a third of a 2.5em bar. Neither is reachable with a mouse without
+  hunting.
+- Only the **entries region** was clipped, never the host. An `overflow: hidden`
+  ancestor clips absolutely positioned descendants as well, so a menu rendered
+  inside the clipping box is in the DOM and invisible — exactly what happened on
+  the first attempt.
+- Which entries fit was decided by an `IntersectionObserver`, not by width
+  arithmetic. Clipped buttons kept their box — `[hidden]` plus
+  `visibility: hidden` rather than `display: none` — so they stayed in the
+  layout. That is what stops the classic oscillation: remove an item, it frees
+  room, which makes it fit, which puts it back. `[hidden]` still took it out of
+  the tab order and the accessibility tree, so it was reachable in exactly one
+  place: the menu.
+- The observer's root was the entries region, so no `rootMargin` fudge was
+  needed — the trigger sat beside the clipped box rather than over it.
 
-<Canvas of={stories.Narrow} />
-
-Entries that do not fit move into a **`⋯` menu**, they do not scroll out of
-sight. Scrolling was tried first and was the wrong answer twice over: with the
-scrollbar hidden the overflow was invisible, and with it shown it would eat a
-third of a 2.5em bar. Neither is reachable with a mouse without hunting.
-
-The bar is therefore clipped, not scrollable, and the trigger keeps a slot of
-its own at the right — reserved even when empty, so what fits does not change as
-it comes and goes. The menu closes on selection and on Escape.
-
-> Only the **entries region** is clipped, never the host. An `overflow: hidden`
-> ancestor clips absolutely positioned descendants as well, so a menu rendered
-> inside the clipping box is in the DOM and invisible — which is exactly what
-> happened on the first attempt.
-
-**Which entries fit is decided by an `IntersectionObserver`**, not by width
-arithmetic. Clipped buttons keep their box — `[hidden]` plus
-`visibility: hidden` rather than `display: none` — so they stay in the layout.
-That is what stops the classic oscillation: remove an item and it frees room,
-which makes it fit, which puts it back. `[hidden]` still takes it out of the tab
-order and the accessibility tree, so it is reachable in exactly one place: the
-menu.
-
-The observer's root is the entries region, so no `rootMargin` fudge is needed —
-the trigger sits beside the clipped box rather than over it.
-
-The menu is asserted in `appbar.spec.ts` by driving the clipped set directly,
-since jsdom has neither an `IntersectionObserver` nor any layout. _Which_
-entries clip is only observable in a browser — hence the story above.
+`.bar__entries` still clips, and is still the right boundary. The day an entry
+comes back that is rendered from data, lift that machinery out of history rather
+than rediscovering it.
 
 ## It stays dumb
 
-The bar emits what was activated; `DefaultLayout`, which already owns the
-`Router`, navigates and feeds `activeKind` back:
-
-```ts
-readonly activeId = computed(() => {
-  const segments = this.#url().split('?')[0].split('/').filter(Boolean);
-  return segments[0] === 'device' ? segments.at(2) : segments.at(1);
-});
-```
-
-Read from the **URL**, not remembered on click, so it survives a back/forward
-and a page opened directly on its address. The bar never imports the router.
-
-> ⚠️ Several kinds have **no route**: `module/**` has none at all, and the
-> keyboard, accessory and streaming device routes are commented out in
-> `app.routes.ts`. `Router.navigate` resolves to `false` rather than throwing,
-> so those clicks used to do nothing at all — no URL change, no current entry.
-> The layout now warns on the console instead of failing silently, but the
-> pages still have to be written.
+The bar emits which place was asked for; `DefaultLayout`, which already owns the
+`Router`, navigates and feeds `place` back. `Navigation.location` reads it from
+the **URL**, not from what was last clicked, so it survives a back/forward and a
+page opened directly on its address. The bar never imports the router.
 
 ## Theming
 

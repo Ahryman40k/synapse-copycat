@@ -23,7 +23,6 @@ const meta: Meta<SettingsPage> = {
 					withMock({
 						...unusedCommands(),
 						devices: [],
-						modules: [],
 					}),
 				),
 			],

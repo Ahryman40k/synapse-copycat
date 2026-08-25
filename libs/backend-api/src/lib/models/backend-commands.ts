@@ -2,8 +2,8 @@ import type { Ambience } from './ambience';
 import type { CapabilityRequest, CapabilityResponse } from './capability';
 import type { Device } from './device';
 import type { Cadence, GroupId, GroupStatus, ParticipantId } from './group';
-import type { Module } from './module';
-import type { Wallpaper } from './wallpaper';
+import type { WireTwinklyDevice } from './twinkly';
+import type { Wallpaper, WallpaperSetter } from './wallpaper';
 
 export type BackendCommands = {
 	devices: {
@@ -31,15 +31,6 @@ export type BackendCommands = {
 			name: string;
 		}[];
 	};
-	modules: {
-		args: Record<string, never>;
-		options: Record<string, never>;
-		returnType: {
-			kind: Module['kind'];
-			name: string;
-		}[];
-	};
-
 	/**
 	 * Twinklys found on the local network.
 	 *

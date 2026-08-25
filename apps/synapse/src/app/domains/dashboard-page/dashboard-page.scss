@@ -73,16 +73,6 @@ h2 {
   border-radius: 0.5rem;
 }
 
-.dashboard-page__modules {
-  display: grid;
-  gap: 1rem;
-  // Cards size themselves to the track rather than to a fixed width, so the
-  // grid reflows instead of overflowing. The `min()` matters below 16rem:
-  // a bare `minmax(16rem, …)` keeps a 16rem floor and overflows a narrower
-  // window rather than shrinking.
-  grid-template-columns: repeat(auto-fill, minmax(min(16rem, 100%), 1fr));
-}
-
 .dashboard-page__actions {
   display: flex;
   justify-content: center;

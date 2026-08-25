@@ -1,13 +1,6 @@
 import { locationOf } from './navigation';
 
 describe('locationOf', () => {
-	it('reads a module out of its address', () => {
-		expect(locationOf('/module/twinkly')).toEqual({
-			on: 'module',
-			kind: 'twinkly',
-		});
-	});
-
 	it('recognises every fixed place', () => {
 		// Matched against the table the bar renders from, so a page added there
 		// is recognised here without anyone remembering to come back.
@@ -24,10 +17,19 @@ describe('locationOf', () => {
 	});
 
 	it('ignores the query string', () => {
-		expect(locationOf('/module/twinkly?tab=lighting')).toEqual({
-			on: 'module',
-			kind: 'twinkly',
-		});
+		expect(locationOf('/studio?tab=lighting')).toEqual({ on: 'studio' });
+	});
+
+	/**
+	 * ⚠️ `/module/twinkly` used to be a location of its own, and the address
+	 * that produced ux's `NG04002: Cannot match any routes` — the bar offered
+	 * modules, `app.routes.ts` never had a route for them, and the guard in
+	 * `Navigation` could not fire because an unmatched segment rejects rather
+	 * than resolving false. The whole feature is gone, so the address is
+	 * unreachable and reads as home like any other stranger.
+	 */
+	it('has no address for a module any more', () => {
+		expect(locationOf('/module/twinkly')).toEqual({ on: 'home' });
 	});
 
 	it('has no address for a device any more', () => {

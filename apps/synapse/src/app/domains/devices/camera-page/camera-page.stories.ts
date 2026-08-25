@@ -25,7 +25,6 @@ const mock = {
 			product_id: 3587,
 		},
 	],
-	modules: [],
 } satisfies Mock;
 
 const meta: Meta<CameraPageComponent> = {

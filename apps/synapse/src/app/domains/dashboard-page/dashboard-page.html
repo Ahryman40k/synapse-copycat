@@ -88,22 +88,6 @@
   </section>
 </div>
 
-@if (modules().length) {
-  <h2>Modules</h2>
-  <section class="dashboard-page__modules">
-    @for (module of modules(); track module.kind) {
-      <button
-        syn-card
-        type="button"
-        [image]="module.visual"
-        (click)="openModule(module)"
-      >
-        {{ module.name }}
-      </button>
-    }
-  </section>
-}
-
 <!--
   At the end of the page: it is the one thing someone arriving with no groups
   has to find, and what they come back to when they want another. A primary

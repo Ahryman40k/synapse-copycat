@@ -25,7 +25,6 @@ const mock = {
 			product_id: 136,
 		},
 	],
-	modules: [],
 } satisfies Mock;
 
 const meta: Meta<MousePageComponent> = {

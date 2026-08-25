@@ -37,7 +37,6 @@ const backend = (participants: string[]): Mock => ({
 			product_id: 550,
 		},
 	],
-	modules: [],
 	twinkly_devices: [
 		{
 			participant: 'twinkly-1c9dc285dd79',

@@ -10,11 +10,10 @@ import type {
 	Cadence,
 	GroupId,
 	GroupOutcome,
-	Module,
 	ParticipantId,
 } from '@synapse-copycat/backend-api';
 import { still } from '@synapse-copycat/backend-api';
-import { Button, Card } from '@synapse-copycat/ui';
+import { Button } from '@synapse-copycat/ui';
 import { Dialog } from '@angular/cdk/dialog';
 import {
 	CdkDrag,
@@ -29,7 +28,6 @@ import {
 import { NewGroupDialog } from '../../core/components/new-group-dialog/new-group-dialog';
 import { GroupCard } from '../../core/components/group-card/group-card';
 import { ParticipantCard } from '../../core/components/participant-card/participant-card';
-import { Navigation } from '../../core/navigation/navigation';
 import { ApplicationStore } from '../../core/stores/application-store';
 
 /**
@@ -50,7 +48,6 @@ import { ApplicationStore } from '../../core/stores/application-store';
 	styleUrl: './dashboard-page.scss',
 	imports: [
 		Button,
-		Card,
 		CdkDrag,
 		CdkDropList,
 		CdkDropListGroup,
@@ -61,11 +58,9 @@ import { ApplicationStore } from '../../core/stores/application-store';
 })
 export class DashboardPage {
 	readonly #store = inject(ApplicationStore);
-	readonly #navigation = inject(Navigation);
 	readonly #dialog = inject(Dialog);
 
 	protected devices = this.#store.devices;
-	protected modules = this.#store.modules;
 	protected groups = this.#store.groups;
 
 	/**
@@ -247,10 +242,6 @@ export class DashboardPage {
 			panelClass: 'syn-dialog-panel',
 			ariaLabel: detail.device?.name ?? participant,
 		});
-	}
-
-	protected openModule(module: Module): void {
-		this.#navigation.openModule(module);
 	}
 
 	/**

@@ -25,7 +25,6 @@ const mock = {
 			product_id: 550,
 		},
 	],
-	modules: [],
 } satisfies Mock;
 
 const meta: Meta<KeyboardPageComponent> = {

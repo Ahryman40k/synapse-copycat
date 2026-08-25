@@ -59,7 +59,6 @@ pub fn run() {
             commands::wallpaper_setters,
             commands::set_wallpaper,
             commands::watch_twinkly,
-            // commands::modules,
             commands::run_capability,
             // ── groups ──
             commands::groups,

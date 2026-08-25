@@ -26,7 +26,6 @@ import { mockTwinkly } from './mock-twinkly';
 export function unusedCommands(): Mock {
 	return {
 		devices: [],
-		modules: [],
 		twinkly_devices: [],
 		choose_wallpaper_folder: null,
 		wallpapers: [],

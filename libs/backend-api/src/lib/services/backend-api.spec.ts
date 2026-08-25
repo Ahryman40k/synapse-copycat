@@ -27,7 +27,6 @@ const mock: Mock = {
 			product_id: 3074,
 		},
 	],
-	modules: [{ kind: 'twinkly', name: 'Twinlky' }],
 };
 
 describe('BackendApi Service', () => {
@@ -35,7 +34,6 @@ describe('BackendApi Service', () => {
 		const service = new BackendApiService(mock);
 
 		expect(await service.invoke('devices', {})).toMatchObject(mock.devices);
-		expect(await service.invoke('modules', {})).toMatchObject(mock.modules);
 	});
 
 	it('goes to Tauri when there is no mock', async () => {
@@ -78,7 +76,7 @@ describe('BackendApi Service', () => {
 		const incomplete = { devices: [] } as unknown as Mock;
 		const service = new BackendApiService(incomplete);
 
-		await expect(service.invoke('modules', {})).rejects.toThrowError(/modules/);
+		await expect(service.invoke('groups', {})).rejects.toThrowError(/groups/);
 	});
 });
 

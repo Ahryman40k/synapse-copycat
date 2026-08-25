@@ -1,7 +1,6 @@
-import type { Module } from '@synapse-copycat/backend-api';
 import type { Meta, StoryObj } from '@storybook/angular';
 import { Component, signal } from '@angular/core';
-import { componentWrapperDecorator, moduleMetadata } from '@storybook/angular';
+import { moduleMetadata } from '@storybook/angular';
 import { expect, fn, within } from 'storybook/test';
 import { AppBar } from './appbar';
 
@@ -9,7 +8,6 @@ const meta: Meta<AppBar> = {
 	component: AppBar,
 	title: 'Synapse application / Components / Application Bar',
 	args: {
-		moduleActivated: fn(),
 		placeRequested: fn(),
 	},
 };
@@ -18,43 +16,24 @@ export default meta;
 type Story = StoryObj<AppBar>;
 
 /**
- * ⚠️ No devices here. They were entries in this bar — `mouse (1)`, `mouse (2)`
- * — and are not any more: the label could not be matched to the thing on the
- * desk, and the dashboard already owned that job. Modules stay, because nothing
- * else shows them.
+ * ⚠️ Nothing data-driven is in this bar any more, so there is nothing to seed.
+ *
+ * Devices went first — entries like `mouse (1)`, `mouse (2)`, a label nobody
+ * can match to the thing on the desk, and a second route to a place the
+ * dashboard already owned. Modules went with the `modules` command, which Rust
+ * never registered; the `⋯` overflow menu went with them, because the module
+ * entries were the only things that could overflow. The `Narrower than its
+ * contents` story went too — the fixed places are never clipped.
  */
-const modules = [
-	{
-		__type: 'module',
-		name: 'Twinkly',
-		kind: 'twinkly',
-		visual: 'assets/modules/twinkly.png',
-	},
-	{
-		__type: 'module',
-		name: 'Goove',
-		kind: 'goove',
-		visual: 'assets/modules/goove.png',
-	},
-	{
-		__type: 'module',
-		name: 'Nanoleaf',
-		kind: 'nanoleaf',
-		visual: 'assets/modules/nanoleaf.png',
-	},
-] satisfies Module[];
-
-/** Nothing connected yet — the state the app opens in before enumeration. */
 export const Default: Story = {
 	name: 'Default Bar',
-	args: { modules: [] },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
 		await expect(
-			canvas.getByRole('navigation', { name: 'Modules' }),
+			canvas.getByRole('navigation', { name: 'Places' }),
 		).toBeVisible();
-		// With no device open, Home is where you are.
+		// Home is where you are until something says otherwise.
 		await expect(
 			canvas.getByRole('button', { name: 'Synapse' }),
 		).toHaveAttribute('aria-current', 'page');
@@ -63,35 +42,19 @@ export const Default: Story = {
 
 export const All: Story = {
 	name: 'Full bar',
-	args: { modules },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
-		await expect(canvas.getByRole('button', { name: 'twinkly' })).toBeVisible();
-		await expect(canvas.getByRole('button', { name: 'goove' })).toBeVisible();
-
-		// The full name stays reachable without overriding the visible label.
 		await expect(
-			canvas.getByRole('button', { name: 'twinkly' }),
-		).toHaveAttribute('title', 'Twinkly');
+			canvas.getByRole('button', { name: 'Effect studio' }),
+		).toBeVisible();
+		await expect(
+			canvas.getByRole('button', { name: 'Background manager' }),
+		).toBeVisible();
+		await expect(
+			canvas.getByRole('button', { name: 'Settings' }),
+		).toBeVisible();
 	},
-};
-
-/**
- * Too narrow for its entries. What does not fit moves into the `⋯` menu rather
- * than scrolling out of sight — a hidden scrollbar cannot be reached with the
- * mouse, and a visible one would eat a third of a 2.5em bar. Open the menu and
- * pick from it.
- */
-export const Narrow: Story = {
-	name: 'Narrower than its contents',
-	args: { modules },
-	decorators: [
-		componentWrapperDecorator(
-			(story) =>
-				`<div style="width: 220px; outline: 1px dashed rgb(128 128 128 / 0.5)">${story}</div>`,
-		),
-	],
 };
 
 // ── selection ───────────────────────────────────────────────────────────────
@@ -100,39 +63,24 @@ export const Narrow: Story = {
 	selector: 'syn-bar-story-host',
 	imports: [AppBar],
 	template: `
-		<syn-bar
-			[modules]="modules"
-			[activeId]="activeId()"
-			[place]="place()"
-			(placeRequested)="go($event)"
-			(moduleActivated)="open($event.kind)"
-		></syn-bar>
+		<syn-bar [place]="place()" (placeRequested)="go($event)"></syn-bar>
 		<p style="padding:1rem; font:13px system-ui; opacity:0.7">
-			current: {{ activeId() ?? 'home' }}
+			current: {{ place() ?? 'home' }}
 		</p>
 	`,
 })
 export class AppBarStoryHost {
-	readonly modules = modules;
-	readonly activeId = signal<string | undefined>(undefined);
 	readonly place = signal<string | undefined>('home');
 
 	go(place: string): void {
-		this.activeId.set(undefined);
 		this.place.set(place);
-	}
-
-	open(kind: string): void {
-		// No fixed place is current while a module is open.
-		this.place.set(undefined);
-		this.activeId.set(kind);
 	}
 }
 
 /**
  * The bar does not move its own selection — it emits, and whoever owns routing
- * feeds `activeId` back. In the arg-driven stories above `activeId` is fixed,
- * so clicking looks inert; here a host closes the loop, which is what
+ * feeds `place` back. In the arg-driven stories above `place` is fixed, so
+ * clicking looks inert; here a host closes the loop, which is what
  * `DefaultLayout` does with the Router.
  */
 export const Interactive: Story = {
@@ -144,13 +92,12 @@ export const Interactive: Story = {
 
 		await expect(await canvas.findByText(/current: home/)).toBeVisible();
 
-		canvas.getByRole('button', { name: 'goove' }).click();
+		canvas.getByRole('button', { name: 'Effect studio' }).click();
 
-		await expect(await canvas.findByText(/current: goove/)).toBeVisible();
-		await expect(canvas.getByRole('button', { name: 'goove' })).toHaveAttribute(
-			'aria-current',
-			'page',
-		);
+		await expect(await canvas.findByText(/current: studio/)).toBeVisible();
+		await expect(
+			canvas.getByRole('button', { name: 'Effect studio' }),
+		).toHaveAttribute('aria-current', 'page');
 	},
 };
 
@@ -161,14 +108,13 @@ export const Interactive: Story = {
  */
 export const CurrentEntry: Story = {
 	name: 'Current entry',
-	args: { modules, activeId: 'goove', place: undefined },
+	args: { place: 'backgrounds' },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 
-		await expect(canvas.getByRole('button', { name: 'goove' })).toHaveAttribute(
-			'aria-current',
-			'page',
-		);
+		await expect(
+			canvas.getByRole('button', { name: 'Background manager' }),
+		).toHaveAttribute('aria-current', 'page');
 		await expect(
 			canvas.getByRole('button', { name: 'Synapse' }),
 		).not.toHaveAttribute('aria-current');
@@ -188,11 +134,11 @@ export const CurrentEntry: Story = {
  */
 export const AgainstThePageBar: Story = {
 	name: 'Depth against the page bar',
-	args: { modules, activeId: 'twinkly', place: undefined },
+	args: { place: 'home' },
 	render: (args) => ({
 		props: args,
 		template: `
-			<syn-bar [modules]="modules" [activeId]="activeId"></syn-bar>
+			<syn-bar [place]="place"></syn-bar>
 			<div style="background: var(--syn-surface-container); padding: 0.375rem; display: flex; gap: 0.25rem">
 				<button style="padding:0.625rem 1.25rem; border:0; border-radius:999px; font:inherit; font-weight:900; text-transform:uppercase; background:var(--syn-primary); color:var(--syn-on-primary)">customize</button>
 				<button style="padding:0.625rem 1.25rem; border:0; border-radius:999px; font:inherit; font-weight:900; text-transform:uppercase; background:none; color:var(--syn-on-surface-variant)">lighting</button>

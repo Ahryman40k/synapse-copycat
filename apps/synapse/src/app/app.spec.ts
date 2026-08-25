@@ -30,7 +30,6 @@ describe('Application', () => {
 								name: 'Test keyboard',
 							},
 						],
-						modules: [],
 					}),
 				),
 

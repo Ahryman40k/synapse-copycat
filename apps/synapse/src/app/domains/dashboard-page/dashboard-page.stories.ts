@@ -58,7 +58,6 @@ const backend = (participants: string[]): Mock => ({
 			product_id: 3587,
 		},
 	],
-	modules: [{ kind: 'twinkly', name: 'Twinkly' }],
 	...mockGroups(participants),
 });
 

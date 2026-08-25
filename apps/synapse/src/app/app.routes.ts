@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import type { ResolveFn, Route } from '@angular/router';
-import type { Device, GroupStatus, Module } from '@synapse-copycat/backend-api';
+import type { Device, GroupStatus } from '@synapse-copycat/backend-api';
 import { ApplicationStore } from './core/stores/application-store';
 import { DashboardPage } from './domains/dashboard-page/dashboard-page';
 
@@ -23,12 +23,6 @@ export const discoveredResolver: ResolveFn<Device[]> = () => {
 	return store.discovered();
 };
 
-export const modulesResolver: ResolveFn<Module[]> = () => {
-	const store = inject(ApplicationStore);
-	store.getModules();
-	return store.modules();
-};
-
 /**
  * The groups, which the dashboard is now about.
  *
@@ -49,7 +43,6 @@ export const appRoutes: Route[] = [
 		component: DashboardPage,
 		resolve: {
 			devices: devicesResolver,
-			modules: modulesResolver,
 			groups: groupsResolver,
 			discovered: discoveredResolver,
 		},

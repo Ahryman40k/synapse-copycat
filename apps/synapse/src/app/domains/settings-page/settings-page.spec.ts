@@ -13,7 +13,6 @@ const setup = () =>
 				withMock({
 					...unusedCommands(),
 					devices: [],
-					modules: [],
 				}),
 			),
 		],

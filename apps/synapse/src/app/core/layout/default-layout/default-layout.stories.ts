@@ -33,7 +33,6 @@ const mock = {
 			product_id: 3074,
 		},
 	],
-	modules: [{ kind: 'twinkly', name: 'Twinkly' }],
 } satisfies Mock;
 
 /**
@@ -58,7 +57,6 @@ const meta: Meta<DefaultLayout> = {
 				provideRouter([]),
 				provideAppInitializer(() => {
 					void inject(ApplicationStore).getDevices();
-					void inject(ApplicationStore).getModules();
 				}),
 			],
 		}),
@@ -75,12 +73,19 @@ export const Default: Story = {
 		// The outlet is empty — there are no routes here — so the bar is the whole
 		// of what the shell contributes.
 		await expect(canvas.getByRole('button', { name: 'Synapse' })).toBeVisible();
-		await expect(canvas.getByRole('button', { name: 'twinkly' })).toBeVisible();
+		await expect(
+			canvas.getByRole('button', { name: 'Effect studio' }),
+		).toBeVisible();
 
-		// ⚠️ The devices are enumerated above and none of them is in the bar.
-		// They are tiles on the dashboard now, inside the group driving them.
+		// ⚠️ The devices are enumerated above and none of them is in the bar —
+		// they are tiles on the dashboard, inside the group driving them. Nor is
+		// anything else data-driven: the module entries went with the `modules`
+		// command Rust never registered, so the bar is now a fixed table.
 		await expect(
 			canvas.queryByRole('button', { name: 'mousemat' }),
+		).not.toBeInTheDocument();
+		await expect(
+			canvas.queryByRole('button', { name: 'twinkly' }),
 		).not.toBeInTheDocument();
 	},
 };

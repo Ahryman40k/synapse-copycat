@@ -26,7 +26,6 @@ const providers = [
 					name: 'Test keyboard',
 				},
 			],
-			modules: [],
 		}),
 	),
 ];

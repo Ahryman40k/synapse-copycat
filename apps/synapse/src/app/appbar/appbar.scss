@@ -1,10 +1,8 @@
 // Structure only — every colour lives in _appbar.theme.scss.
 
-$trigger-width: 44px;
-
-// NOT clipped: an `overflow: hidden` ancestor also clips absolutely positioned
-// descendants, which is what made the overflow menu invisible. Only the entries
-// are clipped, one level down.
+// NOT clipped, and worth keeping that way: an `overflow: hidden` ancestor also
+// clips absolutely positioned descendants, which is what once made the overflow
+// menu invisible. Only the entries are clipped, one level down.
 :host {
   display: flex;
   align-items: center;
@@ -17,14 +15,18 @@ $trigger-width: 44px;
   gap: 0.25em;
   height: 100%;
 
-  // Takes the room the trigger leaves, and may shrink below its contents —
-  // `min-width: 0` is what allows that inside a flex parent.
+  // May shrink below its contents — `min-width: 0` is what allows that inside
+  // a flex parent.
   flex: 1 1 auto;
   min-width: 0;
 
-  // Clipped, not scrolled. What does not fit goes into the overflow menu, which
-  // the mouse can reach — a hidden scrollbar cannot be, and a visible one would
-  // eat a third of a 2.5em bar.
+  // Clipped, not scrolled: a hidden scrollbar cannot be reached with the mouse,
+  // and a visible one would eat a third of a 2.5em bar.
+  //
+  // ⚠️ Nothing clips today — the three fixed places fit any window this app
+  // opens in, and the module entries that could overflow are gone along with
+  // the `⋯` menu that caught them. Kept because the region is still the right
+  // place for the boundary if a data-driven entry returns.
   overflow: hidden;
 
   .spacer {
@@ -86,59 +88,6 @@ button[navbar][hidden] {
 // positioning over them, and no rootMargin fudge in the observer. The slot
 // keeps its width even when empty, so what fits does not change as the trigger
 // comes and goes.
-.overflow {
-  position: relative;
-  flex: 0 0 $trigger-width;
-  height: 100%;
-}
-
-.overflow--empty {
-  visibility: hidden;
-}
-
-.overflow__trigger {
-  width: $trigger-width;
-  padding: 0;
-  // The character is the icon; the accessible name is on the aria-label.
-  font-size: 1.25em;
-  line-height: 1;
-}
-
-.overflow__menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  z-index: 2;
-
-  display: flex;
-  flex-direction: column;
-  min-width: 12ch;
-  padding: 0.25rem;
-  border-radius: 0.5rem;
-}
-
-.overflow__item {
-  padding: 0.5rem 0.75rem;
-  border: none;
-  border-radius: 0.25rem;
-  background: none;
-
-  font: inherit;
-  font-weight: 900;
-  text-transform: uppercase;
-  text-align: left;
-  white-space: nowrap;
-  cursor: pointer;
-
-  &:focus {
-    outline: none;
-  }
-
-  &:focus-visible {
-    outline-offset: -2px;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   button[navbar] {
     transition: none;

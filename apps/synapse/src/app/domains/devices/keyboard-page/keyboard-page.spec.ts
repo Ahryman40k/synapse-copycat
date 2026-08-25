@@ -33,7 +33,6 @@ const setup = () =>
 							product_id: 550,
 						},
 					],
-					modules: [],
 				}),
 			),
 			// The dashboard route fills the store in the running application.

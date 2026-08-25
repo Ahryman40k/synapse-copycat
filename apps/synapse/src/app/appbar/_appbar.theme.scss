@@ -53,34 +53,5 @@
     button[navbar][aria-current] {
       color: var(--syn-primary);
     }
-
-    // ── overflow menu ───────────────────────────────────────────────────────
-    // Raised above the bar: `surface-container`, the same step the page bar
-    // sits on, so the depth ladder still reads.
-    .overflow__menu {
-      background-color: var(--syn-surface-container);
-      box-shadow: 0 4px 16px rgb(0 0 0 / 0.4);
-    }
-
-    .overflow__item {
-      color: var(--syn-on-surface-variant);
-
-      &:hover {
-        background-color: color-mix(
-          in srgb,
-          var(--syn-primary) 12%,
-          transparent
-        );
-        color: var(--syn-on-surface);
-      }
-
-      &[aria-current] {
-        color: var(--syn-primary);
-      }
-
-      &:focus-visible {
-        outline: 2px solid var(--syn-primary);
-      }
-    }
   }
 }

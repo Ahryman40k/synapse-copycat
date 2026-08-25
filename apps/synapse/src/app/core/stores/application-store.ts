@@ -7,11 +7,7 @@ import {
 	withProps,
 	withState,
 } from '@ngrx/signals';
-import {
-	BackendApi,
-	type Device,
-	type Module,
-} from '@synapse-copycat/backend-api';
+import { BackendApi, type Device } from '@synapse-copycat/backend-api';
 import type {
 	Ambience,
 	BackendEvents,
@@ -150,7 +146,6 @@ class LatestWins {
 export type ApplicationState = {
 	/** What the Razer backend enumerated, over DBus. */
 	wired: Device[];
-	modules: Module[];
 
 	/**
 	 * The groups, as the backend last reported them.
@@ -232,7 +227,6 @@ export type ApplicationState = {
  */
 export const INITIAL_STATE: ApplicationState = {
 	wired: [],
-	modules: [],
 	groups: [],
 	claimable: [],
 	discovered: [],
@@ -779,22 +773,6 @@ export const ApplicationStore = signalStore(
 				if (!store.sources().twinkly) return;
 				patchState(store, { discovered: found.map(toStrip) });
 			});
-		},
-		async getModules(): Promise<Module[]> {
-			const result = await backendApi.invoke('modules', {});
-
-			// TODO: add wrapper and validator
-			const modules = result.map(
-				(r) =>
-					({
-						__type: 'module',
-						name: r.name,
-						kind: r.kind,
-						visual: `assets/modules/${r.kind}.png`,
-					}) satisfies Module,
-			);
-			patchState(store, { modules });
-			return modules;
 		},
 	})),
 );
